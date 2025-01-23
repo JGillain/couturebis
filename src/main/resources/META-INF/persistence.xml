@@ -1,6 +1,36 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<persistence xmlns="http://java.sun.com/xml/ns/persistence" version="2.0">
-    <persistence-unit name="default">
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<persistence xmlns="http://xmlns.jcp.org/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence
+                    http://xmlns.jcp.org/xml/ns/persistence/persistence_2_2.xsd"
+             version="2.2">
 
+    <persistence-unit name="couture">
+        <class>entities.Adresse</class>
+        <class>entities.Article</class>
+        <class>entities.ExemplaireArticle</class>
+        <class>entities.Fabricant</class>
+        <class>entities.Facture</class>
+        <class>entities.FactureDetail</class>
+        <class>entities.Jour</class>
+        <class>entities.Localite</class>
+        <class>entities.Magasin</class>
+        <class>entities.Pays</class>
+        <class>entities.Penalite</class>
+        <class>entities.Reservation</class>
+        <class>entities.Role</class>
+        <class>entities.Tarif</class>
+        <class>entities.TarifJour</class>
+        <class>entities.TarifPenalite</class>
+        <class>entities.Utilisateur</class>
+        <class>entities.UtilisateurAdresse</class>
+        <class>entities.UtilisateurMagasin</class>
+        <class>entities.UtilisateurRole</class>
+        <properties>
+            <property name="eclipselink.jdbc.url" value="jdbc:mysql://localhost:3306/couture?autoReconnect=true"/>
+            <property name="eclipselink.jdbc.driver" value="com.mysql.cj.jdbc.Driver"/>
+            <property name="eclipselink.jdbc.user" value="root" />
+            <property name="eclipselink.jdbc.password" value="root" />
+        </properties>
     </persistence-unit>
 </persistence>
