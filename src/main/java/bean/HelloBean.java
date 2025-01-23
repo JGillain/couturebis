@@ -1,7 +1,8 @@
+package bean;
 
-import javax.faces.bean.ManagedBean;
+import javax.inject.Named;
 
-@ManagedBean
+@Named
 public class HelloBean {
     private String message = "Hello, JSF!";
 
