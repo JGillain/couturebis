@@ -8,10 +8,7 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
-import javax.inject.Named;
 
-
-@Named
 @FacesConverter(value = "localiteConverter")
 public class LocaliteConverter implements Converter {
     private static final Logger log = Logger.getLogger(LocaliteConverter.class);

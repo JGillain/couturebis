@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:shiro="http://shiro.apache.org/tags"
+      xmlns:p="http://primefaces.org/ui">
+
+
+
+<ui:composition template="/Template/template.xhtml">
+    <ui:define name="title">#{I18N['application.welcomepage.titre']}</ui:define>
+    <ui:define name="content">
+
+        <shiro:authenticated>
+            <br/><br/>
+            <p:panelGrid class="table" columns="3">
+                <p:outputLabel value="test"/>
+                Hello <shiro:principal/> how are you today?
+            </p:panelGrid>
+            <br /><br />
+        </shiro:authenticated>
+        <shiro:notAuthenticated>
+            <p:outputLabel value="#{I18N['application.page.accessrefuse']}"/>
+        </shiro:notAuthenticated>
+    </ui:define>
+</ui:composition>
+
+
+
+</html>

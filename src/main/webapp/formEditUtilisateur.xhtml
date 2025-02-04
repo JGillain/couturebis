@@ -1,0 +1,125 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f = "http://java.sun.com/jsf/core"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:shiro="http://shiro.apache.org/tags"
+      xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="Template/template.xhtml">
+    <ui:define name="title">#{I18N['utilisateur.form.modif.titre']}</ui:define>
+
+    <ui:define name="content">
+        <p:growl id="growl" showDetail="true" sticky="true" />
+        <c:if test= "#{(rolesBean.checkPermission('Utilisateurs:Modification') or loginBean.utilisateurAuth eq utilisateursBean.utilisateur)}">
+        <h:form id="form" prependId="false">
+            <h:head>
+                <title>#{I18N['utilisateur.form.modif.titre']}</title>
+            </h:head>
+            <h2 style="text-align:center">#{I18N['utilisateur.form.modif.titre']}</h2>
+            <p:panelGrid id="newrecform" columns="3" columnClasses="col1Newrec,col2Newrec,col3Newrec">
+
+
+                <p:outputLabel value = "#{I18N['utilisateur.label.Nom']}"/>
+                <p:inputText id="utilisateurNom"
+                             value="#{utilisateursBean.utilisateur.nom}"
+                             required="true"
+                             requiredMessage="#{I18N['formulaire.message.required.nom']}"
+                             validator = "nomPrenomValidator"
+                             maxlength ="100">
+                    <f:validateLength minimum="1" maximum="100"/>
+                </p:inputText>
+                <!--<h:message for="utilisateurNom" styleClass="errorMessage"/>-->
+
+                <p:outputLabel value = "#{I18N['utilisateur.label.Prenom']}"/>
+                <p:inputText id="utilisateurPrenom"
+                             value="#{utilisateursBean.utilisateur.prenom}"
+                             required="true"
+                             requiredMessage="#{I18N['formulaire.message.required.prenom']}"
+                             validator= "nomPrenomValidator"
+                             maxlength ="100">
+                </p:inputText>
+                <!--<h:message for="utilisateurPrenom" styleClass="errorMessage"/>-->
+
+                <p:outputLabel value = "#{I18N['utilisateur.label.Sexe']}"/>
+                <p:selectOneRadio id="sexe" value="#{utilisateursBean.utilisateur.sexe}"
+                                  required="true"
+                                  requiredMessage="#{I18N['formulaire.message.required.sexe']}">
+                    <f:selectItems value="#{utilisateursEnumBean.sexeEnum}" />
+                </p:selectOneRadio>
+                <!--<h:message for="sexe" styleClass="errorMessage"/>-->
+
+                <p:outputLabel value = "#{I18N['utilisateur.label.Courriel']}"/>
+                <p:inputText id="utilisateurCourriel"
+                             value="#{utilisateursBean.utilisateur.courriel}"
+                             required="true"
+                             requiredMessage="#{I18N['formulaire.message.required.courriel']}"
+                             validator = "emailValidator"
+                             maxlength="100">
+                    <f:validateLength minimum="3" maximum="100"/>
+                </p:inputText>
+                <!--<h:message for="utilisateurCourriel" styleClass="errorMessage"/>-->
+
+                <c:if test= "#{utilisateursBean.utilisateur.roles.denomination ne 'Client'}">
+                <p:outputLabel value = "#{I18N['utilisateur.label.Mdp']}"/>
+                <p:password id="utilisateurMdp"
+                             value="#{utilisateursBean.utilisateur.mdp}"
+                             toggleMask="true"
+                             redisplay ="true"
+                             requiredMessage="#{I18N['formulaire.message.required.mdp']}"
+                             required="true">
+                </p:password>
+                    <!--<h:message for="utilisateurMdp" styleClass="errorMessage"/>-->
+                </c:if>
+
+                <c:if test= "#{utilisateursBean.utilisateur.roles.denomination ne 'Client' and utilisateursBean.utilisateur.roles.denomination ne 'Administrateur'}">
+                <p:outputLabel value = "#{I18N['role.label.Denomination']}" rendered="#{rolesBean.checkPermission('Utilisateurs:Modification')}"/>
+                <p:selectOneMenu value = "#{utilisateursBean.utilisateur.roles}" id="roles" required="true" rendered="#{rolesBean.checkPermission('Utilisateurs:Modification')}" requiredMessage="#{I18N['formulaire.message.required.role']}"
+                                 converter="roleConverter">
+                    <shiro:hasRole name="1">
+                        <f:selectItems value = "#{rolesBean.readActivUtil}" var="ro"
+                                       itemLabel="#{ro.denomination}"
+                                       itemValue="#{ro}"/>
+                    </shiro:hasRole>
+                    <shiro:lacksRole name="1">
+                        <f:selectItems value = "#{rolesBean.readActiv}" var="ro"
+                                       itemLabel="#{ro.denomination}"
+                                       itemValue="#{ro}"/>
+                    </shiro:lacksRole>
+                </p:selectOneMenu>
+
+                </c:if>
+                <p:outputLabel value = "#{I18N['adresse.label.Rue']}"/>
+                <p:selectOneMenu value = "#{utilisateursBean.adresses}" id="utiladress" required="true"
+                                 requiredMessage="#{I18N['formulaire.message.required.adresse']}"
+                                 converter="adressConverter">
+                    <f:selectItems value = "#{adressesBean.readAll}" var="ad"
+                                   itemLabel="#{ad.rue} #{ad.numero} #{ad.boite} #{ad.localites.cp}"
+                                   itemValue="#{ad}"/>
+                </p:selectOneMenu>
+                <!--<h:message for="utiladress" styleClass="errorMessage"/>-->
+
+
+                <!-- A rajouter l'adresse-->
+
+            </p:panelGrid>
+
+            <p:commandButton icon="pi pi-check-circle" value="#{I18N['application.button.validate']}" action="#{utilisateursBean.newUtil}"/>
+
+            <c:if test= "#{utilisateursBean.utilisateur.roles.denomination ne 'Client'}">
+            <p:commandButton icon="pi pi-home" value="#{I18N['application.button.return']}" action="#{utilisateursBean.flushUtil}" immediate="true"/>
+            </c:if>
+            <c:if test= "#{utilisateursBean.utilisateur.roles.denomination eq 'Client'}">
+            <p:commandButton icon="pi pi-home" value="#{I18N['application.button.return']}" action="#{utilisateursBean.flushUtilCli}" immediate="true"/>
+            </c:if>
+        </h:form>
+        </c:if>
+        <c:if test="#{!(rolesBean.checkPermission('Utilisateurs:Modification') or loginBean.utilisateurAuth eq utilisateursBean.utilisateur)}">
+            <p:outputLabel value="#{I18N['application.page.accessrefuse']}"/>
+        </c:if>
+    </ui:define>
+</ui:composition>
+
+</html>

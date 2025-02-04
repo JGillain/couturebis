@@ -1,0 +1,53 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:shiro="http://shiro.apache.org/tags"
+      xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="/Template/template.xhtml">
+    <ui:define name="title">#{I18N['application.loginpage.titre']}</ui:define>
+
+    <ui:define name="header">
+        <p:panel id="header">
+            <p:panelGrid class="table-entete" columns="2">
+                <!--Pourquoi le p:graphicimage ne fonctionne pas-->
+                <p:graphicImage value="/Images/biblioLib.png" width="550" height="150"/>
+            </p:panelGrid>
+        </p:panel>
+    </ui:define>
+    <!--TODO : Changer le niveau des messages d'erreurs (info, warning, erreur)-->
+    <ui:define name="content">
+        <p:panel id="content">
+            <h:form prependId="false">
+                <p:growl id="growl" showDetail="true" sticky="true" />
+                <p:panelGrid columns="2" style="margin: 0 auto">
+                    <p:outputLabel for="utilisateurLogin" value="#{I18N['utilisateur.label.Login']}"/>
+                    <p:inputText id="utilisateurLogin" 	value="#{loginBean.login}"
+                                 required="true"
+                                 validatorMessage="La longueur ne peut être inférieur à 4 caracteres"
+                                 requiredMessage="#{I18N['utilisateur.login.validation']}"
+                                 maxlength="80">
+                        <f:validateLength minimum ="4" maximum = "80" />
+                    </p:inputText>
+                    <p:outputLabel value="#{I18N['utilisateur.label.Mdp']}"/>
+                    <p:password id="password" value="#{loginBean.mdp}"
+                                   toggleMask="true"
+                                   redisplay="true"
+                                   required="true"
+                                   validatorMessage="La longueur ne peut être inférieur à 8 caracteres"
+                                   requiredMessage="#{I18N['utilisateur.password.validation']}"
+                                   maxlength="40">
+                        <f:validateLength minimum = "8" maximum = "40" />
+                    </p:password>
+                    <p:commandButton icon="pi pi-sign-in" value ="#{I18N['application.button.login']}" action="#{loginBean.auth}" update="growl" ajax="false"/>
+                    <p:commandButton icon="pi pi-lock-open" value ="#{I18N['application.button.MdpOublie']}" action="formReinitialisation.xhtml" immediate="true" update="growl" ajax="false"/>
+                </p:panelGrid>
+
+            </h:form>
+        </p:panel>
+    </ui:define>
+</ui:composition>
+</html>

@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="/Template/template.xhtml">
+    <ui:define name="title">#{I18N['application.loginpage.titre']}</ui:define>
+
+    <ui:define name="header">
+        <p:panel id="header">
+            <p:panelGrid class="table-entete" columns="2">
+                <!--Pourquoi le p:graphicimage ne fonctionne pas-->
+                <p:graphicImage value="/Images/biblioLib.png" width="550" height="150"/>
+            </p:panelGrid>
+        </p:panel>
+    </ui:define>
+    <!--TODO : Changer le niveau des messages d'erreurs (info, warning, erreur)-->
+    <ui:define name="content">
+        <p:panel id="content">
+            <h:form prependId="false">
+                <p:growl id="growl" showDetail="true" sticky="true" />
+                <p:panelGrid columns="2" style="margin: 0 auto">
+                    <p:outputLabel value="#{I18N['application.label.MessageInfo']}"/>
+                </p:panelGrid>
+                <p:commandButton icon="pi pi-home" value="Retour page connexion" action="login"/>
+            </h:form>
+        </p:panel>
+    </ui:define>
+</ui:composition>
+</html>

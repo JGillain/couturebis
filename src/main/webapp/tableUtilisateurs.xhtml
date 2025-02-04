@@ -1,0 +1,112 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:shiro="http://shiro.apache.org/tags"
+      xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="Template/template.xhtml">
+    <ui:define name="title">#{I18N['application.utilisateur.title']}</ui:define>
+    <ui:define name="content">
+            <h:form prependId="false">
+                <p:panel layout="block" id="content">
+                    <p:growl id="growl" showDetail="true" sticky="true" />
+                    <h2 style="text-align:center">#{I18N['application.utilisateur.title']}</h2>
+                    <p:dataTable value="#{utilisateurBean.listUtil}" var="ut" id="tableUtilisateurs"
+                                 Class="table" headerClass="table-header" rowClasses="table-odd-row,table-even-row">
+                        <p:column>
+                            <f:facet name="header">#{I18N['utilisateur.label.Nom']}</f:facet>
+                            <p:outputLabel value ="#{ut.nom}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">#{I18N['utilisateur.label.Prenom']}</f:facet>
+                            <p:outputLabel value ="#{ut.prenom}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">#{I18N['utilisateur.label.Sexe']}</f:facet>
+                            <p:outputLabel value ="#{ut.sexe}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">#{I18N['utilisateur.label.Courriel']}</f:facet>
+                            <p:outputLabel value ="#{ut.courriel}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">#{I18N['utilisateur.label.Role']}</f:facet>
+                            <ui:repeat value="#{ut.utilisateurRole}" var="utar">
+                                <p:outputLabel rendered="#{utar.actif}" value ="#{utar.roleIdRole.denomination}"/>
+                                <br/>
+                            </ui:repeat>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">#{I18N['adresse.label.complete']}</f:facet>
+                            <ui:repeat value="#{ut.utilisateurAdresse}" var="utad">
+                                    <p:outputLabel rendered="#{utad.actif}" value ="#{utad.adresseIdAdresse.rue}, #{utad.adresseIdAdresse.numero}#{utad.adresseIdAdresse.boite} #{utad.adresseIdAdresse.localiteIdLocalite.cp} #{utad.adresseIdAdresse.localiteIdLocalite.ville}"/>
+                            </ui:repeat>
+                        </p:column>
+                        <p:column>
+                            <p:commandButton rendered="#{( (loginBean.utilisateurAuth eq ut))}"
+                                             icon="pi pi-pencil" value="Modifier" action="#{utilisateurBean.redirectModifUtil}">
+                                <f:setPropertyActionListener target="#{utilisateurBean.utilisateur}" value="#{ut}" />
+                            </p:commandButton>
+
+                       </p:column>
+                        <p:column>
+                            <p:commandButton value="Modif.MDP" type="button">
+                                <f:setPropertyActionListener target="#{utilisateurBean.utilisateur}" value="#{ut}" />
+                                <f:ajax event="click" onevent="function f(data){PF('dlg1').show();}"/>
+                            </p:commandButton>
+
+
+                        </p:column>
+                        <shiro:hasAnyRoles name="1,2">
+                           <p:column>
+                               <p:commandButton
+                                                 icon="pi pi-power-off" value ="Desactiver" action="#{utilisateurBean.activdesactivUtil}">
+                                   <f:setPropertyActionListener target="#{utilisateurBean.utilisateur}" value="#{ut}" />
+                               </p:commandButton>
+                               <p:commandButton
+                                                     icon="pi pi-check" value ="Activer" action="#{utilisateurBean.activdesactivUtil}">
+                                    <f:setPropertyActionListener target="#{utilisateurBean.utilisateur}" value="#{ut}" />
+                               </p:commandButton>
+                           </p:column>
+                       </shiro:hasAnyRoles>
+                    </p:dataTable>
+                </p:panel>
+                <p:commandButton icon="pi pi-plus" value="#{I18N['application.button.new']}" action="formNewUtilisateur" />
+
+                <p:commandButton icon="pi pi-search-plus" value="#{I18N['application.button.utilActiv']}" action="#{utilisateurBean.getReadUtilActiv}"/>
+                <p:commandButton icon="pi pi-search-minus" value="#{I18N['application.button.utilInactiv']}" action="#{utilisateurBean.getReadUtilInactiv}"/>
+
+                <p:commandButton icon="pi pi-home" value="#{I18N['application.button.returnbienvenue']}" action="#{utilisateurBean.flushBienv}"/>
+
+            </h:form>
+
+
+        <!--TODO : evitez la faille de sécurité pour si l'utilisateur ferme la fenetre avec la croix-->
+        <p:dialog header="Basic Dialog" widgetVar="dlg1" minHeight="40">
+
+            <h:form id="formModifMdp" prependId = "false">
+                <p:panelGrid columns="2" StyleClass="formConfig">
+                    <h:outputText value="Veuillez changer votre mot de passe" />
+                    <p:password id="mdp" value="#{utilisateurBean.mdpNouveau}" update="msg" maxlength="40">
+                        <f:validateLength minimum="8" maximum="40"/>
+                    </p:password>
+                    <h:outputText value="Confirmer le nouveau mot de passe" />
+                    <p:password id="confmdp" value="#{utilisateurBean.mdpNouveau2}" update="msg" maxlength="40"
+                    validator="checkMdpValidator">
+                        <f:validateLength minimum="8" maximum="40"/>
+                    </p:password>
+                </p:panelGrid>
+                <p:commandButton value="Modifier" action="#{utilisateurBean.modifMdp}"
+                                 onclick="PF('popup').hide();">
+                </p:commandButton>
+
+                <p:commandButton value="Annuler" action="#{utilisateurBean.init}" onclick="PF('popup').hide();" />
+            </h:form>
+        </p:dialog>
+    </ui:define>
+</ui:composition>
+
+</html>

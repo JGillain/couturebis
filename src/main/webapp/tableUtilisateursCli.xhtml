@@ -1,0 +1,100 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:shiro="http://shiro.apache.org/tags"
+      xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="Template/template.xhtml">
+    <ui:define name="title">#{I18N['application.utilisateur.title']}</ui:define>
+    <ui:define name="content">
+        <shiro:hasPermission name="Client:Lire">
+            <h:form prependId="false">
+                <p:panel layout="block" id="content">
+                    <p:growl id="growl" showDetail="true" sticky="true" />
+                    <h2 style="text-align:center">#{I18N['application.utilisateurCli.title']}</h2>
+                    <p:dataTable value="#{utilisateursBean.listCli}" var="ut" id="tableUtilisateurs"
+                                 Class="table" headerClass="table-header" rowClasses="table-odd-row,table-even-row">
+                        <p:column>
+                            <!-- column header -->
+                            <f:facet name="header">#{I18N['utilisateur.label.Id']}</f:facet>
+                            <!-- row record -->
+                            <p:outputLabel value ="#{ut.idUtilisateurs}"/>
+                        </p:column>
+                        <p:column>
+                            <!-- column header -->
+                            <f:facet name="header">#{I18N['utilisateur.label.Nom']}</f:facet>
+                            <!-- row record -->
+                            <p:outputLabel value ="#{ut.nom}"/>
+                        </p:column>
+                        <p:column>
+                            <!-- column header -->
+                            <f:facet name="header">#{I18N['utilisateur.label.Prenom']}</f:facet>
+                            <!-- row record -->
+                            <p:outputLabel value ="#{ut.prenom}"/>
+                        </p:column>
+                        <p:column>
+                            <!-- column header -->
+                            <f:facet name="header">#{I18N['utilisateur.label.Sexe']}</f:facet>
+                            <!-- row record -->
+                            <p:outputLabel value ="#{ut.sexe}"/>
+                        </p:column>
+                        <p:column>
+                            <!-- column header Cette colonne doit être modifier pour voir l'utilisateur qui a cette adresse-->
+                            <f:facet name="header">#{I18N['utilisateur.label.Courriel']}</f:facet>
+                            <!-- row record -->
+                            <p:outputLabel value ="#{ut.courriel}"/>
+                        </p:column>
+                        <p:column>
+                            <!-- column header Cette colonne doit être modifier pour voir l'utilisateur qui a cette adresse-->
+                            <f:facet name="header">#{I18N['utilisateur.label.NumMembre']}</f:facet>
+                            <!-- row record -->
+                            <p:outputLabel value ="#{ut.numMembre}"/>
+                        </p:column>
+                        <p:column>
+                            <!-- column header Cette colonne doit être modifier pour voir l'utilisateur qui a cette adresse-->
+                            <f:facet name="header">#{I18N['adresse.label.complete']}</f:facet>
+                            <!-- row record -->
+                            <ui:repeat value="#{ut.utilisateursAdresses}" var="utad">
+
+                                <p:outputLabel rendered="#{utad.actif}" value ="#{utad.adresse.rue}, #{utad.adresse.numero}#{utad.adresse.boite} #{utad.adresse.localites.cp} #{utad.adresse.localites.ville}"/>
+
+                            </ui:repeat>
+                        </p:column>
+                        <shiro:hasPermission name="Client:Modification">
+                            <p:column>
+                                <p:commandButton  icon="pi pi-pencil" value="Modifier" action="#{utilisateursBean.redirectModifUtil}">		<!-- u minuscule -->
+                                    <f:setPropertyActionListener target="#{utilisateursBean.utilisateur}" value="#{ut}" /><!-- u minuscule -->
+                                </p:commandButton>
+                            </p:column>
+                        </shiro:hasPermission>
+                            <p:column>
+                                <p:commandButton icon="pi pi-power-off" value ="Desactiver" rendered="#{ut.actif}" action="#{utilisateursBean.activdesactivUtil}">
+                                    <f:setPropertyActionListener target="#{utilisateursBean.utilisateur}" value="#{ut}" />
+                                </p:commandButton>
+                                    <p:commandButton icon="pi pi-check" value ="Activer" rendered="#{!ut.actif}" action="#{utilisateursBean.activdesactivUtil}">
+                                        <f:setPropertyActionListener target="#{utilisateursBean.utilisateur}" value="#{ut}" />
+                                    </p:commandButton>
+                            </p:column>
+                    </p:dataTable>
+                </p:panel>
+                <shiro:hasPermission name="Client:Creer">
+                    <p:commandButton icon="pi pi-plus" value="#{I18N['application.button.new']}" action="formNewUtilisateurCli" />
+                </shiro:hasPermission>
+                <p:commandButton icon="pi pi-search" value="#{I18N['application.button.find']}" action="formSearchUtilisateur"/>
+                <p:commandButton icon="pi pi-search-plus" value="#{I18N['application.button.utilActiv']}" action="#{utilisateursBean.getReadCliActiv}"/>
+                <p:commandButton icon="pi pi-search-minus" value="#{I18N['application.button.utilInactiv']}" action="#{utilisateursBean.getReadCliInactiv}"/>
+                <shiro:hasPermission name="Autre:Connexion">
+                    <p:commandButton icon="pi pi-home" value="#{I18N['application.button.returnbienvenue']}" action="#{utilisateursBean.flushBienv}"/>
+                </shiro:hasPermission>
+            </h:form>
+        </shiro:hasPermission>
+        <shiro:lacksPermission name="Client:Lire">
+            <p:outputLabel value="#{I18N['application.page.accessrefuse']}"/>
+        </shiro:lacksPermission>
+    </ui:define>
+</ui:composition>
+</html>
