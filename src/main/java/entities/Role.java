@@ -8,7 +8,11 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "role")
-@NamedQuery(name = "Roles.findRoleById", query="SELECT r FROM Role r WHERE r.id=:id")
+@NamedQueries({
+        @NamedQuery(name = "Role.findRoleById", query="SELECT r FROM Role r WHERE r.id=:id"),
+        @NamedQuery(name = "Role.findAllUtil", query="SELECT r FROM Role r WHERE r.denomination <>'Client' AND r.denomination <>'Administrateur'")
+})
+
 public class Role implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id

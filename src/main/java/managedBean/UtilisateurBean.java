@@ -1,13 +1,14 @@
 package managedBean;
 
-import entities.Adresse;
-import entities.Utilisateur;
-import entities.UtilisateurAdresse;
+import entities.*;
+
 import javax.annotation.PostConstruct;
 import org.apache.log4j.Logger;
 import security.SecurityManager;
+import services.SvcRole;
 import services.SvcUtilisateur;
 import services.SvcUtilisateurAdresse;
+import services.SvcUtilisateurRole;
 
 import javax.enterprise.context.SessionScoped;
 import javax.faces.application.FacesMessage;
@@ -33,7 +34,9 @@ public class UtilisateurBean implements Serializable {
     private List<Utilisateur> searchResults;
     private String numMembre;
     private Adresse adresses;
+    private Role role;
     private UtilisateurAdresse UA;
+    private UtilisateurRole UR;
     private String mdpNouveau;
     private String mdpNouveau2;
 
@@ -48,7 +51,9 @@ public class UtilisateurBean implements Serializable {
         listCli = getReadAllCli();
         utilisateur = new Utilisateur();
         UA = new UtilisateurAdresse();
+        UR = new UtilisateurRole();
         adresses = new Adresse();
+        role = new Role();
         SvcUtilisateur service = new SvcUtilisateur();
         if (service.findlastMembre().size()==0){
             numMembre = "0";
@@ -94,11 +99,13 @@ public class UtilisateurBean implements Serializable {
     public void saveUtilisateur() {
         SvcUtilisateur service = new SvcUtilisateur();
         SvcUtilisateurAdresse serviceUA = new SvcUtilisateurAdresse();
+        SvcUtilisateurRole serviceUR = new SvcUtilisateurRole();
         serviceUA.setEm(service.getEm());
         EntityTransaction transaction = service.getTransaction();
         transaction.begin();
         try {
             service.save(utilisateur);
+
             if(utilisateur.getId()!=0) {
                 for (UtilisateurAdresse utiladress : utilisateur.getUtilisateurAdresse()) {
                     if (!utiladress.equals(UA) && utiladress.getActif()) {
@@ -106,8 +113,14 @@ public class UtilisateurBean implements Serializable {
                         serviceUA.save(utiladress);
                     }
                 }
+                for (UtilisateurRole utilrole : utilisateur.getUtilisateurRole()) {
+                    if (!utilrole.equals(UR) && utilrole.getActif()) {
+                        utilrole.setActif(false);
+                        serviceUR.save(utilrole);
+                    }
+                }
             }
-
+            serviceUR.save(UR);
             serviceUA.save(UA);
             transaction.commit();
             FacesContext fc = FacesContext.getCurrentInstance();
@@ -186,6 +199,7 @@ public class UtilisateurBean implements Serializable {
     public String newUtil() {
         boolean flag = false;
         SvcUtilisateurAdresse serviceUA = new SvcUtilisateurAdresse();
+        SvcUtilisateurRole serviceUR = new SvcUtilisateurRole();
         utilisateur.setNom(utilisateur.getNom().substring(0,1).toUpperCase() + utilisateur.getNom().substring(1));
         utilisateur.setPrenom(utilisateur.getPrenom().substring(0,1).toUpperCase() + utilisateur.getPrenom().substring(1));
 
@@ -195,7 +209,7 @@ public class UtilisateurBean implements Serializable {
         //PasswordMatcher matcher = new PasswordMatcher();
         //log.debug(matcher.getPasswordService().passwordsMatch(utilisateur.getMdp(),SecurityManager.encryptPassword(utilisateur.getMdp())));
 
-
+        log.debug("utilisateur objet : " + utilisateur);
         if (utilisateur.getId()!=0) {
             for (UtilisateurAdresse ua : utilisateur.getUtilisateurAdresse()) {
                 if (ua.getAdresseIdAdresse().equals(adresses)) {
@@ -207,6 +221,7 @@ public class UtilisateurBean implements Serializable {
         }
         if (!flag){
             UA = serviceUA.createUtilisateurAdresse(utilisateur, adresses);
+            UR = serviceUR.createUtilisateurRole(utilisateur, role);
         }
         if(verifUtilExist(utilisateur)) {
             UA.setActif(true);
@@ -218,15 +233,13 @@ public class UtilisateurBean implements Serializable {
             fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"L'utilisateur existe déjà tel quel en DB; opération échouée",null));
         }
 
-
-
             init();
             return "/tableUtilisateurs.xhtml?faces-redirect=true";
 
     }
 
 
-    //todo : correct the function to check if user exist
+    //todo : test the function to check if user exist in the case of changed roles
 
     public boolean verifUtilExist(Utilisateur util)
     {
@@ -510,6 +523,14 @@ public class UtilisateurBean implements Serializable {
 
     public void setAdresses(Adresse adresses) {
         this.adresses = adresses;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
     }
 
     public UtilisateurAdresse getUA() {

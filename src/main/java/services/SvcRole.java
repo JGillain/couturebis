@@ -1,7 +1,6 @@
 package services;
 
 import entities.Role;
-import entities.Utilisateur;
 import org.apache.log4j.Logger;
 
 import java.io.Serializable;
@@ -34,6 +33,10 @@ public class SvcRole extends Service<Role> implements Serializable {
         Map<String, Integer> param = new HashMap<>();
         param.put("id", id);
 
-        return finder.findByNamedQuery("Roles.findRoleById", param);
+        return finder.findByNamedQuery("Role.findRoleById", param);
+    }
+
+    public List<Role> findAllRoleUtil() {
+        return finder.findByNamedQuery("Role.findAllUtil", null);
     }
 }

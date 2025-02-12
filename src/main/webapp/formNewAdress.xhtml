@@ -5,14 +5,24 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:shiro="http://shiro.apache.org/tags"
       xmlns:p="http://primefaces.org/ui">
+
+
 <ui:composition template="Template/template.xhtml">
     <ui:define name="title">#{I18N['adresse.form.nouveau.titre']}</ui:define>
-
     <ui:define name="content">
+        <ui:debug hotkey="x"/>
+        <h:outputScript>
+            $(document).ajaxSend(function(event, xhr, settings) {
+                console.log("🔵 AJAX Request Sent: ", settings.url, settings.data);
+            });
+
+            $(document).ajaxComplete(function(event, xhr, settings) {
+                console.log("🟢 AJAX Response: ", xhr.responseText);
+            });
+        </h:outputScript>
         <p:growl id="growl" showDetail="true" sticky="true" />
         <shiro:hasAnyRoles name="1,2,3">
         <h:form id="addressForm" prependId="false">
-            <p:log />
             <h:head>
                 <title>#{I18N['adresse.form.nouveau.titre']}</title>
             </h:head>
@@ -28,6 +38,7 @@
                              requiredMessage="#{I18N['formulaire.message.required.rue']}"
                              maxlength="100">
                 <f:validateLength minimum="2" maximum="100"/>
+                    <f:ajax execute="@this"/>
                 </p:inputText>
                 <h:message for="adresseRue" styleClass="errorMessage"/>
 
@@ -36,6 +47,7 @@
                              required="false"
                              value="#{adresseBean.adresse.boite}"
                              maxlength="4">
+                    <f:ajax execute="@this"/>
                 </p:inputText>
                 <h:message for="adresseBoite" styleClass="errorMessage"/>
 
@@ -46,6 +58,7 @@
                              required="true"
                              requiredMessage="#{I18N['formulaire.message.required.numero']}"
                              maxlength="6">
+                    <f:ajax execute="@this"/>
                     <f:validateLength minimum="1" maximum="6"/>
                 </p:inputText>
                 <h:message for="adresseNumero" styleClass="errorMessage"/>
@@ -55,11 +68,12 @@
                 converter="localiteConverter">
                     <f:selectItems value = "#{localiteBean.readAll}" var="loca"
                                    itemLabel="#{loca.cp} - #{loca.ville}" itemValue="#{loca}"/>
+                    <f:ajax execute="@this"/>
                 </p:selectOneMenu>
 
             </p:panelGrid>
 
-            <p:commandButton icon="pi pi-check-circle" value="#{I18N['application.button.validate']}" action="#{adresseBean.newAdress}" process="addressForm" update="addressForm"/>
+            <p:commandButton icon="pi pi-check-circle" value="#{I18N['application.button.validate']}" action="#{adresseBean.newAdress}" process="@all" update="@all" partialSubmit="false" ignoreAutoUpdate="true"/>
             <p:commandButton icon="pi pi-home" value="#{I18N['application.button.return']}" action="#{adresseBean.flushAdd}" immediate="true"/>
         </h:form>
         </shiro:hasAnyRoles>

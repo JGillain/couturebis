@@ -2,12 +2,15 @@ package managedBean;
 
 import entities.Role;
 import org.apache.log4j.Logger;
+import services.SvcRole;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Named;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 @Named
 @SessionScoped
@@ -37,7 +40,15 @@ public class RoleBean implements Serializable {
     }
 
 
+    public List<Role> getReadUtil()
+    {
+        SvcRole service = new SvcRole();
+        List<Role> listRole = new ArrayList<Role>();
+        listRole = service.findAllRoleUtil();
 
+
+        return listRole;
+    }
 
 
 

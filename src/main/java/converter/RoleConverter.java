@@ -1,18 +1,18 @@
 package converter;
 
-import entities.Localite;
+import entities.Role;
 import org.apache.log4j.Logger;
-import services.SvcLocalite;
+import services.SvcRole;
 
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 
-@FacesConverter(value = "localiteConverter")
-public class LocaliteConverter implements Converter {
-    private static final Logger log = Logger.getLogger(LocaliteConverter.class);
-    private final SvcLocalite service = new SvcLocalite();
+@FacesConverter(value = "roleConverter")
+public class RoleConverter implements Converter {
+    private static final Logger log = Logger.getLogger(RoleConverter.class);
+    private final SvcRole service = new SvcRole();
 
     @Override
     public Object getAsObject(FacesContext facesContext, UIComponent uiComponent, String s) {
@@ -27,7 +27,7 @@ public class LocaliteConverter implements Converter {
     @Override
     public String getAsString(FacesContext facesContext, UIComponent uiComponent, Object o) {
         if (o != null) {
-            return String.valueOf(((Localite) o).getId());
+            return String.valueOf(((Role) o).getId());
         }
         else
             return null;
