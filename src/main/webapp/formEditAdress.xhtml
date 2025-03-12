@@ -5,19 +5,17 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:shiro="http://shiro.apache.org/tags"
       xmlns:p="http://primefaces.org/ui">
-
-
 <ui:composition template="Template/template.xhtml">
-    <ui:define name="title">#{I18N['adresse.form.nouveau.titre']}</ui:define>
+    <ui:define name="title">#{I18N['adresse.form.modif.titre']}</ui:define>
+    <!--TODO A refaire-->
     <ui:define name="content">
         <p:growl id="growl" showDetail="true" sticky="true" />
         <shiro:hasAnyRoles name="1,2,3">
-        <h:form id="addressForm" prependId="false">
+        <h:form id="form" prependId="false">
             <h:head>
-                <title>#{I18N['adresse.form.nouveau.titre']}</title>
+                <title>#{I18N['adresse.form.modif.titre']}</title>
             </h:head>
-            <p:messages id="messages" showDetail="true" autoUpdate="true" />
-            <h2 style="text-align:center">#{I18N['adresse.form.nouveau.titre']}</h2>
+            <h2 style="text-align:center">#{I18N['adresse.form.modif.titre']}</h2>
             <p:panelGrid id="newrecform" columns="3" columnClasses="col1Newrec,col2Newrec,col3Newrec">
 
                 <p:outputLabel value = "#{I18N['adresse.label.Rue']}"/>
@@ -27,7 +25,7 @@
                              required="true"
                              requiredMessage="#{I18N['formulaire.message.required.rue']}"
                              maxlength="100">
-                <f:validateLength minimum="2" maximum="100"/>
+                    <f:validateLength minimum="2" maximum="100"/>
                 </p:inputText>
                 <h:message for="adresseRue" styleClass="errorMessage"/>
 
@@ -52,14 +50,14 @@
 
                 <p:outputLabel value = "#{I18N['localite.label.Cp']}"/>
                 <p:selectOneMenu value = "#{adresseBean.adresse.localiteIdLocalite}" id="adressLoca"
-                converter="localiteConverter">
+                                 converter="localiteConverter">
                     <f:selectItems value = "#{localiteBean.readAll}" var="loca"
                                    itemLabel="#{loca.cp} - #{loca.ville}" itemValue="#{loca}"/>
                 </p:selectOneMenu>
 
             </p:panelGrid>
 
-            <p:commandButton icon="pi pi-check-circle" value="#{I18N['application.button.validate']}" action="#{adresseBean.newAdress}" process="@all" update="@all" partialSubmit="false" ignoreAutoUpdate="true"/>
+            <p:commandButton icon="pi pi-check-circle" value="#{I18N['application.button.validate']}" action="#{adresseBean.newAdress}"/>
             <p:commandButton icon="pi pi-home" value="#{I18N['application.button.return']}" action="#{adresseBean.flushAdd}" immediate="true"/>
         </h:form>
         </shiro:hasAnyRoles>

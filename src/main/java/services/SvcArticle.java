@@ -30,4 +30,20 @@ public class SvcArticle extends Service<Article> implements Serializable {
 
         return article;
     }
+    public List<Article> getbyName(String titre) {
+        Map<String, String> param = new HashMap<>();
+        param.put("nom", titre);
+
+        return finder.findByNamedQuery("Article.search", param);
+    }
+    public List<Article> findAllArticles() {
+        return finder.findByNamedQuery("Article.findAllTri", null);
+    }
+    public List<Article> findAllActive() {
+        return finder.findByNamedQuery("Article.findActive", null);
+    }
+    public List<Article> findAllInactive() {
+        return finder.findByNamedQuery("Article.findInactive", null);
+    }
+
 }

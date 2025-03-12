@@ -1,0 +1,68 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:shiro="http://shiro.apache.org/tags"
+      xmlns:p="http://primefaces.org/ui">
+<!--TODO A refaire-->
+<ui:composition template="Template/template.xhtml">
+    <ui:define name="title">#{I18N['application.tarifs.title']}</ui:define>
+
+    <ui:define name="content">
+
+        <h:form prependId="false">
+
+            <p:panel layout="block" id="content">
+
+                <p:growl id="growl" showDetail="true" sticky="true" />
+
+                <h2 style="text-align:center">#{I18N['application.tarifs.title']}</h2>
+
+                <p:dataTable value="#{tarifBean.readAll}" var="tar" id="tableTarifs"
+                             Class="table" headerClass="table-header" rowClasses="table-odd-row,table-even-row">
+
+                    <p:column>
+                        <!-- column header -->
+                        <f:facet name="header">#{I18N['commune.label.denomination']}</f:facet>
+
+                        <!-- row record -->
+                        <p:outputLabel value ="#{tar.denomination}"/>
+                    </p:column>
+
+                    <p:column>
+                        <!-- column header -->
+                        <f:facet name="header">#{I18N['magasin.label.Nom']}</f:facet>
+
+                        <!-- row record -->
+                        <p:outputLabel value ="#{tar.magasin.nom}"/>
+                    </p:column>
+
+                    <p:column>
+                        <!-- column header -->
+                        <f:facet name="header">#{I18N['tarif.label.DateDebut']}</f:facet>
+
+                        <!-- row record -->
+                        <p:outputLabel value ="#{tar.dateDebut}">
+                            <f:convertDateTime timeZone="Europe/Brussels" type="date" pattern="dd/MM/yyyy"/>
+                        </p:outputLabel>
+                    </p:column>
+
+                    <p:column>
+                        <p:commandButton icon="pi pi-pencil" value="Modifier" action="#{tarifBean.redirectEdit}">		<!-- u minuscule -->
+                            <f:setPropertyActionListener target="#{tarifBean.tarif}" value="#{tar}" /><!-- u minuscule -->
+                        </p:commandButton>
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+
+            <p:commandButton icon="pi pi-plus" value="#{I18N['application.button.new']}" action="formNewTarif" />
+            <p:commandButton icon="pi pi-home" value="#{I18N['application.button.returnbienvenue']}" action="bienvenue"/>
+
+        </h:form>
+
+    </ui:define>
+</ui:composition>
+</html>

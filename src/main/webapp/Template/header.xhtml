@@ -2,125 +2,75 @@
 <!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:h="http://java.sun.com/jsf/html"
+	  xmlns:ui="http://java.sun.com/jsf/facelets"
+	  xmlns:h="http://java.sun.com/jsf/html"
 	  xmlns:p="http://primefaces.org/ui"
 	  xmlns:shiro="http://shiro.apache.org/tags">
 
 <ui:composition>
 	<div id="header">
-	<ui:insert name="header">
+		<ui:insert name="header">
 
-		<p:panelGrid columns="1">
-			<p:graphicImage value="/Images/biblioLib.png" width="550" height="150"/>
-			<h:form>
-				<p:commandButton icon="pi pi-sign-out" value="#{I18N['application.button.deconnexion']}" action="#{loginBean.deconnexion}"
-								 class="lienMenu"/>
-			</h:form>
+			<p:panelGrid columns="1">
+				<h:form>
+					<p:commandButton icon="pi pi-sign-out" value="#{I18N['application.button.deconnexion']}" action="#{loginBean.deconnexion}"
+									 class="lienMenu"/>
+				</h:form>
 
-		</p:panelGrid>
-		<shiro:authenticated>
-		<p:panelGrid columns="5">
-			<h:form>
-				<p:menubar>
-						<p:submenu label="Gestion des permissions" icon="pi pi-fw pi-file">
-
-								<p:menuitem value="Table des permissions" icon="pi pi-fw pi-external-link" action="tablePermissions.xhtml"/>
-
-
-								<p:menuitem value="Nouvelle permission" icon="pi pi-fw pi-plus" action="formNewPermission"/>
-
-						</p:submenu>
-
-
-						<p:submenu label="Gestion des tarifs" icon="pi pi-fw pi-file">
-
-								<p:menuitem value="Voir les tarifs" icon="pi pi-fw pi-external-link" action="tableTarifs.xhtml"/>
-
-								<p:menuitem value="Nouvelle grille tarifaire" icon="pi pi-fw pi-plus" action="formNewTarif"/>
-
-						</p:submenu>
-
-
-						<p:submenu label="Gestion des rôles" icon="pi pi-fw pi-file">
-
-								<p:menuitem value="Tables des rôles" icon="pi pi-fw pi-external-link" action="tableRoles.xhtml"/>
-
-								<p:menuitem value="Nouveau rôle" icon="pi pi-fw pi-plus" action="formNewRole"/>
-
-						</p:submenu>
-
-
-						<p:submenu label="Gestion des personnes" icon="pi pi-fw pi-file">
-							<p:submenu label="Voir les" icon="pi pi-fw pi-external-link">
-
-									<p:menuitem value="Clients" action="tableUtilisateursCli.xhtml"/>
-
-									<p:menuitem value="Utilisateurs" action="tableUtilisateurs.xhtml"/>
-
+			</p:panelGrid>
+			<shiro:authenticated>
+				<p:panelGrid columns="5">
+					<h:form>
+						<p:menubar>
+							<p:submenu label="Gestion des tarifs" icon="pi pi-fw pi-file">
+								<p:menuitem value="Voir les tarifs" icon="pi pi-fw pi-external-link" action="tableTarifs.xhtml?faces-redirect=true"/>
+								<p:menuitem value="Nouvelle grille tarifaire" icon="pi pi-fw pi-plus" action="formNewTarif.xhtml?faces-redirect=true"/>
 							</p:submenu>
-							<p:submenu label="Ajouter" icon="pi pi-fw pi-plus">
-
-									<p:menuitem value="Client" action="formNewUtilisateurCli"/>
-
-									<p:menuitem value="Utilisateur" action="formNewUtilisateur"/>
-
+							<p:submenu label="Gestion des personnes" icon="pi pi-fw pi-file">
+								<p:submenu label="Voir les" icon="pi pi-fw pi-external-link">
+									<p:menuitem value="Clients" action="tableUtilisateursCli.xhtml?faces-redirect=true"/>
+									<p:menuitem value="Utilisateurs" action="tableUtilisateurs.xhtml?faces-redirect=true"/>
+								</p:submenu>
+								<p:submenu label="Ajouter" icon="pi pi-fw pi-plus">
+									<p:menuitem value="Client" action="formNewUtilisateurCli.xhtml?faces-redirect=true"/>
+									<p:menuitem value="Utilisateur" action="formNewUtilisateur.xhtml?faces-redirect=true"/>
+								</p:submenu>
 							</p:submenu>
-						</p:submenu>
-
-						<p:submenu label="Gestion bibliothèque" icon="pi pi-fw pi-file">
-							<p:submenu label="Voir les" icon="pi pi-fw pi-external-link">
-
-									<p:menuitem value="Bibliothèques" action="tableBibliotheques.xhtml"/>
-
-									<p:menuitem value="Livres" action="tableLivres.xhtml"/>
-
-									<p:menuitem value="Genres" action="tableGenres.xhtml"/>
-
-									<p:menuitem value="Editeurs" action="tableEditeurs.xhtml"/>
-
-									<p:menuitem value="Auteurs" action="tableAuteurs.xhtml"/>
-
+							<p:submenu label="Gestion magasin" icon="pi pi-fw pi-file">
+								<p:submenu label="Voir les" icon="pi pi-fw pi-external-link">
+									<p:submenu label="articles">
+										<p:menuitem value="références" action="tableArticle.xhtml?faces-redirect=true"/>
+										<p:menuitem value="exemplaires" action="tableExArticleActif.xhtml?faces-redirect=true"/>
+									</p:submenu>
+									<p:menuitem value="Fabricants" action="tableFabricant.xhtml?faces-redirect=true"/>
+								</p:submenu>
+								<p:submenu label="Ajouter" icon="pi pi-fw pi-plus">
+									<p:submenu label="articles">
+										<p:menuitem value="référence" action="formNewArticle.xhtml?faces-redirect=true"/>
+										<p:menuitem value="exemplaire" action="formNewExArticle.xhtml?faces-redirect=true"/>
+									</p:submenu>
+									<p:menuitem value="fabricant" action="formNewFabricant.xhtml?faces-redirect=true"/>
+								</p:submenu>
 							</p:submenu>
-							<p:submenu label="Ajouter" icon="pi pi-fw pi-plus">
-
-									<p:menuitem value="Bibliothèque" action="formNewBibliotheque"/>
-
-									<p:menuitem value="Livre" action="formNewLivre"/>
-
-									<p:menuitem value="Genre" action="formNewGenre"/>
-
-									<p:menuitem value="Editeur" action="formNewEditeur"/>
-
-									<p:menuitem value="Auteur" action="formNewAuteur"/>
-
-							</p:submenu>
-						</p:submenu>
-
-						<p:submenu label="Gestion des adresses" icon="pi pi-fw pi-file">
-
-								<p:menuitem value="Table des Adresses" icon="pi pi-fw pi-external-link" action="tableAdresses.xhtml"/>
-
+							<p:submenu label="Gestion des adresses" icon="pi pi-fw pi-file">
+								<p:menuitem value="Table des Adresses" icon="pi pi-fw pi-external-link" action="tableAdresses.xhtml?faces-redirect=true"/>
 								<p:menuitem value="Nouvelle Adresses" icon="pi pi-fw pi-plus" action="formNewAdress.xhtml?faces-redirect=true" />
-
-						</p:submenu>
-
-						<p:submenu label="Gestion des factures" icon="pi pi-fw pi-file">
-
-								<p:menuitem value="Tables des factures" icon="pi pi-fw pi-external-link" action="tableFactures.xhtml"/>
-
-								<p:menuitem value="Retour de livre" icon="pi pi-fw pi-external-link" action="formEtatQuestion"/>
-
-
-								<p:menuitem value="Nouvelle Facture" icon="pi pi-fw pi-plus" action="formNewFact"/>
-
-						</p:submenu>
-
-				</p:menubar>
-			</h:form>
-		</p:panelGrid>
-		</shiro:authenticated>
-	</ui:insert>
+							</p:submenu>
+							<p:submenu label="Gestion des factures" icon="pi pi-fw pi-file">
+								<p:menuitem value="Tables des factures" icon="pi pi-fw pi-external-link" action="tableFactures.xhtml?faces-redirect=true"/>
+								<p:menuitem value="Retour d'article" icon="pi pi-fw pi-external-link" action="formEtatQuestion.xhtml?faces-redirect=true"/>
+								<p:menuitem value="Nouvelle Facture location" icon="pi pi-fw pi-plus" action="formNewFactLoca.xhtml?faces-redirect=true"/>
+								<p:menuitem value="Nouvelle Facture Vente" icon="pi pi-fw pi-plus" action="formNewFactVente.xhtml?faces-redirect=true"/>
+							</p:submenu>
+							<p:submenu label="Gestion des Réservations" icon="pi pi-fw pi-file">
+								<p:menuitem value="Table des réservations" icon="pi pi-fw pi-external-link" action="tableAdresses.xhtml?faces-redirect=true"/>
+								<p:menuitem value="Nouvelle réservation" icon="pi pi-fw pi-plus" action="formNewAdress.xhtml?faces-redirect=true" />
+							</p:submenu>
+						</p:menubar>
+					</h:form>
+				</p:panelGrid>
+			</shiro:authenticated>
+		</ui:insert>
 	</div>
 </ui:composition>
 

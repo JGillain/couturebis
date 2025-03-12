@@ -1,0 +1,45 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f = "http://java.sun.com/jsf/core"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:shiro="http://shiro.apache.org/tags"
+      xmlns:p="http://primefaces.org/ui">
+
+
+<ui:composition template="Template/template.xhtml">
+    <ui:define name="title">#{I18N['fabricant.form.nouveau.titre']}</ui:define>
+    <ui:define name="content">
+        <p:growl id="growl" showDetail="true" sticky="true" />
+        <shiro:hasAnyRoles name="1,2,3">
+        <h:form id="fabricantForm" prependId="false">
+            <h:head>
+                <title>#{I18N['adresse.form.nouveau.titre']}</title>
+            </h:head>
+            <p:messages id="messages" showDetail="true" autoUpdate="true" />
+            <h2 style="text-align:center">#{I18N['fabricant.form.nouveau.titre']}</h2>
+            <p:panelGrid id="newrecform" columns="3" columnClasses="col1Newrec,col2Newrec,col3Newrec">
+
+                <p:outputLabel value = "#{I18N['fabricant.label.Denomination']}"/>
+                <p:inputText id="fabricantNom"
+                             validatorMessage="Le nom doit avoir entre 1 et 100 caractere"
+                             value="#{fabricantBean.fabricant.nom}"
+                             required="true"
+                             requiredMessage="#{I18N['formulaire.message.required.nom']}"
+                             maxlength="100">
+                <f:validateLength minimum="1" maximum="100"/>
+                </p:inputText>
+                <h:message for="fabricantNom" styleClass="errorMessage"/>
+            </p:panelGrid>
+
+            <p:commandButton icon="pi pi-check-circle" value="#{I18N['application.button.validate']}" action="#{fabricantBean.newFabricant}" ajax="false"/>
+            <p:commandButton icon="pi pi-home" value="#{I18N['application.button.return']}" action="#{fabricantBean.flushFab()}" immediate="true"/>
+        </h:form>
+        </shiro:hasAnyRoles>
+        <shiro:notAuthenticated>
+            <p:outputLabel value="#{I18N['application.page.accessrefuse']}"/>
+        </shiro:notAuthenticated>
+    </ui:define>
+</ui:composition>
+
+</html>

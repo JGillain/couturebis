@@ -1,14 +1,13 @@
 package managedBean;
 
-import entities.Adresse;
-import javax.annotation.PostConstruct;
+import entities.Fabricant;
 import org.apache.log4j.Logger;
-import services.SvcAdresse;
+import services.SvcFabricant;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
-import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 import javax.persistence.EntityTransaction;
 import java.io.Serializable;
@@ -17,29 +16,27 @@ import java.util.List;
 
 @Named
 @SessionScoped
-public class AdresseBean implements Serializable {
+public class FabricantBean implements Serializable {
     // Déclaration des variables globales
     private static final long serialVersionUID = 1L;
-    private Adresse adresse;
-    private static final Logger log = Logger.getLogger(AdresseBean.class);
+    private Fabricant fabricant;
+    private static final Logger log = Logger.getLogger(FabricantBean.class);
 
     @PostConstruct
     public void init()
     {
-        log.info("AdresseBean init");
-        adresse = new Adresse();
+        log.debug("FabricantBean init");
+        fabricant = new Fabricant();
     }
 
     // Méthode qui permet l'appel de save() qui créée une nouvelle adresse et envoi un message si jamais
     // l'adresse se trouve déjà en base de donnée et nous renvoi sur la table des auteurs
-    public String newAdress()
+    public String newFabricant()
     {
         log.debug("test 1 ");
-        log.debug(adresse.getId());
-        log.debug(adresse.getRue());
-        log.debug(adresse.getNumero());
-        log.debug(adresse.getLocaliteIdLocalite().getCp());
-        if(verifAdresseExist(adresse))
+        log.debug(fabricant.getId());
+        log.debug(fabricant.getNom());
+        if(verifFabricantExist(fabricant))
         {
             save();
         }
@@ -49,23 +46,21 @@ public class AdresseBean implements Serializable {
             fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"La donnée est déjà existante en DB",null));
             init();
         }
-        return "/tableAdresses.xhtml?faces-redirect=true";
+        return "/tableFabricant.xhtml?faces-redirect=true";
 
     }
 
     // Méthode qui permet la sauvegarde d'une adresse en base de donnée
     public void save()
     {
-        SvcAdresse service = new SvcAdresse();
+        SvcFabricant service = new SvcFabricant();
         EntityTransaction transaction = service.getTransaction();
         transaction.begin();
         try {
             log.debug("test 2");
-            log.debug(adresse.getId());
-            log.debug(adresse.getRue());
-            log.debug(adresse.getNumero());
-            log.debug(adresse.getLocaliteIdLocalite().getCp());
-            service.save(adresse);
+            log.debug(fabricant.getId());
+            log.debug(fabricant.getNom());
+            service.save(fabricant);
             transaction.commit();
             FacesContext fc = FacesContext.getCurrentInstance();
             fc.getExternalContext().getFlash().setKeepMessages(true);
@@ -86,18 +81,18 @@ public class AdresseBean implements Serializable {
     }
 
     // Méthode qui vérifie qu'une adresse déjà ou pas dans la base de donnée
-    public boolean verifAdresseExist(Adresse ad)
+    public boolean verifFabricantExist(Fabricant fa)
     {
-        SvcAdresse serviceA = new SvcAdresse();
-        if(serviceA.findOneAdresse(ad).size() > 0)
+        SvcFabricant serviceF = new SvcFabricant();
+        if(serviceF.findOneFabricant(fa).size() > 0)
         {
             log.debug('1');
-            serviceA.close();
+            serviceF.close();
             return false;
         }
         else {
             log.debug('2');
-            serviceA.close();
+            serviceF.close();
             return true;
         }
 
@@ -105,10 +100,10 @@ public class AdresseBean implements Serializable {
     /*
      * Méthode qui permet de vider les variables et de revenir sur le table des Adresses .
      * */
-    public String flushAdd()
+    public String flushFab()
     {
         init();
-        return "/tableAdresses?faces-redirect=true";
+        return "/tableFabricant?faces-redirect=true";
     }
 
 
@@ -116,25 +111,36 @@ public class AdresseBean implements Serializable {
      * Méthode qui permet via le service de retourner
      * la liste des adresses
      */
-    public List<Adresse> getReadAll()
+    public List<Fabricant> getReadAll()
     {
-        SvcAdresse service = new SvcAdresse();
-        List<Adresse> listAd = new ArrayList<Adresse>();
-        listAd= service.findAllAdresse();
+        SvcFabricant service = new SvcFabricant();
+        List<Fabricant> listFa = new ArrayList<Fabricant>();
+        listFa= service.findAllFabricants();
 
         service.close();
-        return listAd;
+        return listFa;
+    }
+    public List<Fabricant> getReadAllActif()
+    {
+        SvcFabricant service = new SvcFabricant();
+        List<Fabricant> listFa = new ArrayList<Fabricant>();
+        listFa= service.findAllFabricants();
+
+        service.close();
+        return listFa;
     }
 
 
 //-------------------------------Getter & Setter--------------------------------------------
 
-    public Adresse getAdresse() {
-        return adresse;
+    public Fabricant getFabricant() {
+        log.debug("getFabricant call");
+        return fabricant;
     }
 
-    public void setAdresse(Adresse adresse) {
-        this.adresse = adresse;
+    public void setFabricant(Fabricant fabricant) {
+        log.debug("setFabricant call");
+        this.fabricant = fabricant;
     }
 
 }

@@ -8,6 +8,12 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "fabricant")
+@NamedQueries
+        ({
+                @NamedQuery(name = "Fabricant.findAll", query = "SELECT F FROM Fabricant F"),
+                @NamedQuery(name = "Fabricant.findAllActive", query = "SELECT F FROM Fabricant F where F."),
+                @NamedQuery(name = "Fabricant.findOne", query = "SELECT F FROM Fabricant F WHERE F.nom=:nom"),
+        })
 public class Fabricant implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id

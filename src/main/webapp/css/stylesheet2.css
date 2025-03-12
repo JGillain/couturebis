@@ -1,0 +1,201 @@
+/* Partie Header */
+#header {
+  width: 100%;
+  background-color: #b8bab9;
+  padding: 2px;
+  text-align: center;
+  font-size:20px;
+  color: black;
+}
+
+
+/*body*/
+
+body {
+	background-color:#77bbff;
+}
+
+/*footer*/
+
+#footer 
+{
+  background-color: #b8bab9;
+  padding: 10px;
+  text-align: center;
+  color: black;
+}
+
+
+#container { width:100%; }
+
+#content {
+	width: 100%;
+	padding-top: 20px;
+	padding-bottom: 20px;
+}
+#content_login, #content_form {
+	width: 100%;
+	padding-left: 600px;
+	padding-top: 20px;
+	padding-bottom: 20px;
+}
+#contentFormSitEmpl{
+	
+	padding-left: 100px;
+	padding-top: 20px;
+	padding-bottom: 20px;
+}
+
+#confirmpswd{
+	color:red;
+}
+.errorMessage {
+	color: red;
+}
+.SE_gauche{
+	float:left;
+/*	background-color:#ffff80;*/
+	width:650px;
+	align: center;
+	padding-bottom: 20px;
+}
+.SE_droite{
+	float:left;
+/*	background-color:#80ff80;*/
+	width:50%;
+	padding-bottom: 20px;
+/*	overflow: auto;*/
+}
+.SE_droite2{
+	/*	background-color:#80ff80;*/
+	float:left;
+	width:500px;
+	height: 200px;
+	padding-bottom: 20px;
+	overflow: auto;
+}
+.buttons{ padding-top: 20px; }
+.button-design{
+	margin-top: 20px;
+	margin-right: 20px;
+}
+.button-newLogin{
+	position: absolute;
+	margin-left: 230px;
+	margin-top: -21px;
+}
+.popup-panel-overlay{
+	background-color: rgba(0,0,0,0.7);
+	position:absolute;
+	top:0px;
+	left:0px;
+	width:100%;
+	height:100%;
+}
+
+.popup-panel{
+	background-color: #ffffaa;
+	margin-top: 100px;
+	margin-left: 33%;
+	padding: 20px;
+	border-radius: 5px;
+	border: 2px  solid #ffff00;
+	width: 600px;
+	height: 250px;
+	
+}
+/*-------------------config tableau-------------------*/
+.table{
+	width:100%;
+	margin-left: 20px;
+	margin-bottom: 20px;
+	text-align:center;	
+	border:0px;
+}
+
+.table-header{
+	text-align:center;
+	background:none repeat scroll 0 0 #808080;
+	border-bottom:1px solid #BBBBBB;
+	padding-left:16px;
+	padding-right:16px;
+	height:25px;
+}
+.table-odd-row{
+	text-align:center;
+	background:none repeat scroll 0 0 #CDCDCD;
+	border-top:1px solid #BBBBBB;
+}
+.table-even-row{
+	text-align:center;
+	background:none repeat scroll 0 0 #FFFFFF;
+	border-top:1px solid #BBBBBB;
+}
+
+.tableCP{ 
+	height: 250px; 
+	overflow: auto; 
+}
+
+.lienMenu{
+	text-decoration:none; 
+	color:white;
+}
+.Col1{	width: 200px; }
+.Col2{ 	width: 100%; }
+.GIcolonne{
+	text-align: center;
+	width: 250px;
+	background-color: #ffd1bb;
+}
+.columnStd{width:150px;}
+.column1{width:20px;}
+.column2{width:100px;}
+.column3{width:350px;}
+
+.textGris{ color: red; }
+.textNormal{ color: black; }
+
+.tablescroller {
+  width: 1800px;
+  height: 500px;
+  overflow-y: scroll;
+  scrollbar-color: #808080 #c0c0c0;
+  scrollbar-width: thin;
+}
+/*--------------------Menu Entete---------------------------------*/
+#menu{
+	text-align:center;
+	width: 100%;
+}
+ul {
+	 padding:0;
+	 margin:0;
+	 list-style-type:none;
+ }
+li {
+	margin-left: 2px;
+	font-family: Tahoma, Geneva, sans-serif;
+	font-size: 16px;/* float:left; /*pour IE*/
+ }
+ul li {
+	text-align: center;
+	vertical-align: middle;
+	font-family: "Arial Rounded MT Bold";
+	font-size: 20px;
+	display: inline;
+	width: auto;
+	background-color: red;
+	color: black;
+	text-decoration: none;
+	text-align: center;
+	padding: 5px;
+ }
+#header p
+ {
+	color:yellow; 
+ 	text-align:right
+ }
+ul li:hover {
+ background-color:#D3D3D3;
+ } 

@@ -22,7 +22,6 @@ import java.util.List;
 
 @Named
 @SessionScoped
-
 public class LoginBean implements Serializable {
     /*Déclaration des variables*/
     private static final long serialVersionUID = 1L;

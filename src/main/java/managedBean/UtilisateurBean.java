@@ -21,8 +21,6 @@ import java.util.List;
 
 @Named
 @SessionScoped
-
-
 public class UtilisateurBean implements Serializable {
     // Déclaration des variables globales
     private static final long serialVersionUID = 1L;

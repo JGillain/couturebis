@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:shiro="http://shiro.apache.org/tags"
+      xmlns:p="http://primefaces.org/ui">
+<!--TODO A refaire-->
+<ui:composition template="Template/template.xhtml">
+    <ui:define name="title">#{I18N['application.fact.title']}</ui:define>
+    <ui:define name="content">
+        <shiro:hasPermission name="Factures:Lire">
+        <h:form prependId="false">
+            <p:panel layout="block" id="content">
+                <p:growl id="growl" showDetail="true" sticky="true" />
+                <h2 style="text-align:center">#{I18N['application.fact.title']}</h2>
+                <p:dataTable value="#{factureBean.readAll}" var="fa" id="tableFactures"
+                             Class="table" headerClass="table-header" rowClasses="table-odd-row,table-even-row">
+                    <p:column>
+                        <!-- column header -->
+                        <f:facet name="header">#{I18N['factures.label.NumeroFacture']}</f:facet>
+                        <!-- row record -->
+                        <p:outputLabel value ="#{fa.numeroFacture}"/>
+                    </p:column>
+                    <p:column>
+                        <!-- column header -->
+                        <f:facet name="header">#{I18N['factures.label.lien']}</f:facet>
+                        <!-- row record -->
+                        <h:outputLink value="#{fa.lienPdf}">
+                            <p:graphicImage value="Images/pdf.png"/>
+                        </h:outputLink>
+                    </p:column>
+                    <p:column>
+                        <!-- column header -->
+                        <f:facet name="header">#{I18N['factures.label.Etat']}</f:facet>
+                        <!-- row record -->
+                        <p:outputLabel value ="#{fa.etat}"/>
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+            <shiro:hasPermission name="Factures:Creer">
+            <p:commandButton value="#{I18N['application.button.new']}" action="formNewFact" />
+                <p:commandButton value="#{I18N['application.button.returnlivre']}" action="formEtatQuestion"/>
+            </shiro:hasPermission>
+            <shiro:hasPermission name="Autre:Connexion">
+            <p:commandButton icon="pi pi-home" value="#{I18N['application.button.returnbienvenue']}" action="bienvenue"/>
+            </shiro:hasPermission>
+        </h:form>
+        </shiro:hasPermission>
+        <shiro:lacksPermission name="Factures:Lire">
+        <p:outputLabel value="#{I18N['application.page.accessrefuse']}"/>
+        </shiro:lacksPermission>
+    </ui:define>
+</ui:composition>
+</html>
