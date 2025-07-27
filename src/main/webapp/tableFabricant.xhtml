@@ -48,9 +48,20 @@
 
             </p:panel>
 
-            <p:commandButton icon="pi pi-plus" value="#{I18N['application.button.new']}" action="formNewFabricant.xhtml?faces-redirect=true" />
+            <h:panelGroup layout="block" styleClass="button-bar">
+                <!-- Left aligned buttons -->
+                <h:panelGroup styleClass="left-buttons">
+                    <p:commandButton icon="pi pi-plus" value="#{I18N['application.button.new']}" action="formNewFabricant.xhtml?faces-redirect=true" />
+                </h:panelGroup>
 
-            <p:commandButton icon="pi pi-home" value="#{I18N['application.button.returnbienvenue']}" action="bienvenue.xhtml?faces-redirect=true"/>
+                <!-- Right aligned button -->
+                <h:panelGroup styleClass="right-buttons">
+                    <p:commandButton icon="pi pi-home" value="#{I18N['application.button.returnbienvenue']}" action="bienvenue.xhtml?faces-redirect=true"/>
+                </h:panelGroup>
+            </h:panelGroup>
+
+
+
 
         </h:form>
 

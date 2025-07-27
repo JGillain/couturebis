@@ -82,9 +82,9 @@
                     </p:dataTable>
                 </p:panel>
                 <shiro:hasPermission name="Client:Creer">
-                    <p:commandButton icon="pi pi-plus" value="#{I18N['application.button.new']}" action="formNewUtilisateurCli" />
+                    <p:commandButton icon="pi pi-plus" value="#{I18N['application.button.new']}" action="formNewUtilisateurCli.xhtml?faces-redirect=true" />
                 </shiro:hasPermission>
-                <p:commandButton icon="pi pi-search" value="#{I18N['application.button.find']}" action="formSearchUtilisateur"/>
+                <p:commandButton icon="pi pi-search" value="#{I18N['application.button.find']}" action="formSearchUtilisateur.xhtml?faces-redirect=true"/>
                 <p:commandButton icon="pi pi-search-plus" value="#{I18N['application.button.utilActiv']}" action="#{utilisateursBean.getReadCliActiv}"/>
                 <p:commandButton icon="pi pi-search-minus" value="#{I18N['application.button.utilInactiv']}" action="#{utilisateursBean.getReadCliInactiv}"/>
                 <shiro:hasPermission name="Autre:Connexion">

@@ -70,12 +70,12 @@
             <h:panelGroup layout="block" styleClass="button-bar">
                 <!-- Left aligned buttons -->
                 <h:panelGroup styleClass="left-buttons">
-                    <p:commandButton icon="pi pi-plus" value="#{I18N['application.button.new']}" action="formNewArticle" />
+                    <p:commandButton icon="pi pi-plus" value="#{I18N['application.button.new']}" action="formNewArticle.xhtml?faces-redirect=true" />
                 </h:panelGroup>
 
                 <!-- Center aligned buttons -->
                 <h:panelGroup styleClass="center-buttons">
-                    <p:commandButton icon="pi pi-search" value="#{I18N['application.button.find']}" action="formSearchArticle"/>
+                    <p:commandButton icon="pi pi-search" value="#{I18N['application.button.find']}" action="formSearchArticle.xhtml?faces-redirect=true"/>
                     <p:commandButton icon="pi pi-search-plus" value="#{I18N['application.button.artActiv']}" action="#{articleBean.getReadActiv}" update="tableArticle"/>
                     <p:commandButton icon="pi pi-search-minus" value="#{I18N['application.button.artInactiv']}" action="#{articleBean.getReadInactiv}" update="tableArticle"/>
                 </h:panelGroup>

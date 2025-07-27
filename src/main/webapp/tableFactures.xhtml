@@ -41,11 +41,11 @@
                 </p:dataTable>
             </p:panel>
             <shiro:hasPermission name="Factures:Creer">
-            <p:commandButton value="#{I18N['application.button.new']}" action="formNewFact" />
-                <p:commandButton value="#{I18N['application.button.returnlivre']}" action="formEtatQuestion"/>
+            <p:commandButton value="#{I18N['application.button.new']}" action="formNewFact.xhtml?faces-redirect=true" />
+                <p:commandButton value="#{I18N['application.button.returnlivre']}" action="formEtatQuestion.xhtml?faces-redirect=true"/>
             </shiro:hasPermission>
             <shiro:hasPermission name="Autre:Connexion">
-            <p:commandButton icon="pi pi-home" value="#{I18N['application.button.returnbienvenue']}" action="bienvenue"/>
+            <p:commandButton icon="pi pi-home" value="#{I18N['application.button.returnbienvenue']}" action="bienvenue.xhtml?faces-redirect=true"/>
             </shiro:hasPermission>
         </h:form>
         </shiro:hasPermission>

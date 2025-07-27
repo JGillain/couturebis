@@ -74,13 +74,24 @@
                        </shiro:hasAnyRoles>
                     </p:dataTable>
                 </p:panel>
-                <p:commandButton icon="pi pi-plus" value="#{I18N['application.button.new']}" action="formNewUtilisateur" />
 
-                <p:commandButton icon="pi pi-search-plus" value="#{I18N['application.button.utilActiv']}" action="#{utilisateurBean.getReadUtilActiv}"/>
-                <p:commandButton icon="pi pi-search-minus" value="#{I18N['application.button.utilInactiv']}" action="#{utilisateurBean.getReadUtilInactiv}"/>
+                <h:panelGroup layout="block" styleClass="button-bar">
+                    <!-- Left aligned buttons -->
+                    <h:panelGroup styleClass="left-buttons">
+                        <p:commandButton icon="pi pi-plus" value="#{I18N['application.button.new']}" action="formNewUtilisateur.xhtml?faces-redirect=true" />
+                    </h:panelGroup>
 
-                <p:commandButton icon="pi pi-home" value="#{I18N['application.button.returnbienvenue']}" action="#{utilisateurBean.flushBienv}"/>
+                    <!-- Center aligned buttons -->
+                    <h:panelGroup styleClass="center-buttons">
+                        <p:commandButton icon="pi pi-search-plus" value="#{I18N['application.button.utilActiv']}" action="#{utilisateurBean.getReadUtilActiv}"/>
+                        <p:commandButton icon="pi pi-search-minus" value="#{I18N['application.button.utilInactiv']}" action="#{utilisateurBean.getReadUtilInactiv}"/>
+                    </h:panelGroup>
 
+                    <!-- Right aligned button -->
+                    <h:panelGroup styleClass="right-buttons">
+                        <p:commandButton icon="pi pi-home" value="#{I18N['application.button.returnbienvenue']}" action="#{utilisateurBean.flushBienv}"/>
+                    </h:panelGroup>
+                </h:panelGroup>
             </h:form>
 
 
