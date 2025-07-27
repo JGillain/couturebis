@@ -78,10 +78,22 @@
 
                 </p:panelGrid>
 
-                <p:commandButton icon="pi pi-check-circle" value="#{I18N['application.button.validate']}" action="#{utilisateursBean.newUtilCli}"/>
-                <shiro:hasPermission name="Autre:Connexion">
-                <p:commandButton icon="pi pi-home" value="#{I18N['application.button.return']}" action="#{utilisateursBean.flushUtilCli}" immediate="true"/>
-                </shiro:hasPermission>
+                <h:panelGroup layout="block" styleClass="button-bar">
+                    <!-- Left aligned buttons -->
+                    <h:panelGroup styleClass="left-buttons">
+                        <p:commandButton icon="pi pi-check-circle" value="#{I18N['application.button.validate']}" action="#{utilisateursBean.newUtilCli}"/>
+                    </h:panelGroup>
+
+                    <!-- Right aligned button -->
+                    <h:panelGroup styleClass="right-buttons">
+                        <shiro:hasPermission name="Autre:Connexion">
+                            <p:commandButton icon="pi pi-home" value="#{I18N['application.button.return']}" action="#{utilisateursBean.flushUtilCli}" immediate="true"/>
+                        </shiro:hasPermission>
+                    </h:panelGroup>
+                </h:panelGroup>
+
+
+
             </h:form>
         </shiro:hasPermission>
         <shiro:lacksPermission name="Client:Creer">

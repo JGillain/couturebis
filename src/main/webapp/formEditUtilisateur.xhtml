@@ -99,14 +99,26 @@
 
             </p:panelGrid>
 
-            <p:commandButton icon="pi pi-check-circle" value="#{I18N['application.button.validate']}" action="#{utilisateursBean.newUtil}"/>
+            <h:panelGroup layout="block" styleClass="button-bar">
+                <!-- Left aligned buttons -->
+                <h:panelGroup styleClass="left-buttons">
+                    <p:commandButton icon="pi pi-check-circle" value="#{I18N['application.button.validate']}" action="#{utilisateursBean.newUtil}"/>
+                </h:panelGroup>
 
-            <c:if test= "#{utilisateurBean.utilisateur.roles.denomination ne 'Client'}">
-            <p:commandButton icon="pi pi-home" value="#{I18N['application.button.return']}" action="#{utilisateursBean.flushUtil}" immediate="true"/>
-            </c:if>
-            <c:if test= "#{utilisateurBean.utilisateur.roles.denomination eq 'Client'}">
-            <p:commandButton icon="pi pi-home" value="#{I18N['application.button.return']}" action="#{utilisateursBean.flushUtilCli}" immediate="true"/>
-            </c:if>
+                <!-- Right aligned button -->
+                <h:panelGroup styleClass="right-buttons">
+                    <c:if test= "#{utilisateurBean.utilisateur.roles.denomination ne 'Client'}">
+                        <p:commandButton icon="pi pi-home" value="#{I18N['application.button.return']}" action="#{utilisateursBean.flushUtil}" immediate="true"/>
+                    </c:if>
+                    <c:if test= "#{utilisateurBean.utilisateur.roles.denomination eq 'Client'}">
+                        <p:commandButton icon="pi pi-home" value="#{I18N['application.button.return']}" action="#{utilisateursBean.flushUtilCli}" immediate="true"/>
+                    </c:if>
+                </h:panelGroup>
+            </h:panelGroup>
+
+
+
+
         </h:form>
     </ui:define>
 </ui:composition>
