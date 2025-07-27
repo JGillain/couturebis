@@ -10,16 +10,8 @@
 <ui:composition>
 	<div id="header">
 		<ui:insert name="header">
-
-			<p:panelGrid columns="1">
-				<h:form>
-					<p:commandButton icon="pi pi-sign-out" value="#{I18N['application.button.deconnexion']}" action="#{loginBean.deconnexion}"
-									 class="lienMenu"/>
-				</h:form>
-
-			</p:panelGrid>
-			<shiro:authenticated>
-				<p:panelGrid columns="5">
+			<h:panelGroup layout="block" style="display: flex; justify-content: space-between; gap: 2rem;">
+				<p:panelGrid styleClass="left-grid" columns="5">
 					<h:form>
 						<p:menubar>
 							<p:submenu label="Gestion des Réservations" icon="pi pi-calendar pi-fw">
@@ -71,7 +63,14 @@
 						</p:menubar>
 					</h:form>
 				</p:panelGrid>
-			</shiro:authenticated>
+
+				<p:panelGrid styleClass="right-grid" columns="1">
+					<h:form>
+						<p:commandButton icon="pi pi-sign-out" value="#{I18N['application.button.deconnexion']}" action="#{loginBean.deconnexion}"
+										 class="lienMenu"/>
+					</h:form>
+				</p:panelGrid>
+			</h:panelGroup>
 		</ui:insert>
 	</div>
 </ui:composition>
