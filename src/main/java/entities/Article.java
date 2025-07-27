@@ -17,6 +17,7 @@ import java.util.Objects;
                 @NamedQuery(name = "Article.findInactive", query = "SELECT A FROM Article A WHERE A.actif=FALSE"),
                 @NamedQuery(name = "Article.searchTri", query="SELECT A FROM Article A WHERE A.nom=:nom ORDER BY A.nom ASC"),//A verifier
                 @NamedQuery(name = "Article.findByFabricant", query = "SELECT A FROM Article A WHERE A.fabricantIdFabricant=:fab"),
+                @NamedQuery(name = "Article.findByNumserie", query = "SELECT A FROM Article A WHERE A.numSerie=:numserie"),
                 @NamedQuery(name = "Article.search", query="SELECT A FROM Article A WHERE A.nom=:nom"),
 
         })
@@ -45,16 +46,38 @@ public class Article implements Serializable {
     private String numSerie;
 
     @NotNull
-    @Column(name = "CodeBarre", nullable = false)
-    private Integer codeBarre;
-
-    @NotNull
     @ManyToOne
     @JoinColumn(name = "FabricantIdFabricant", nullable = false)
     private Fabricant fabricantIdFabricant;
 
     @OneToMany(mappedBy = "articleIdArticle")
     private Collection<ExemplaireArticle> exemplaireArticles;
+
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "CategorieIdCategorie", nullable = false)
+    private Categorie categorieIdCategorie;
+
+    @NotNull
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "CodeBarreIdCB", nullable = false)
+    private CodeBarre codeBarreIdCB;
+
+    public CodeBarre getCodeBarreIdCB() {
+        return codeBarreIdCB;
+    }
+
+    public void setCodeBarreIdCB(CodeBarre codeBarreIdCB) {
+        this.codeBarreIdCB = codeBarreIdCB;
+    }
+
+    public Categorie getCategorieIdCategorie() {
+        return categorieIdCategorie;
+    }
+
+    public void setCategorieIdCategorie(Categorie categorieIdCategorie) {
+        this.categorieIdCategorie = categorieIdCategorie;
+    }
 
     public Integer getId() {
         return id;
@@ -96,14 +119,6 @@ public class Article implements Serializable {
         this.numSerie = numSerie;
     }
 
-    public Integer getCodeBarre() {
-        return codeBarre;
-    }
-
-    public void setCodeBarre(Integer codeBarre) {
-        this.codeBarre = codeBarre;
-    }
-
     public Collection<ExemplaireArticle> getExemplaireArticles() {
         return exemplaireArticles;
     }
@@ -126,11 +141,11 @@ public class Article implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Article article = (Article) o;
-        return Objects.equals(id, article.id) && Objects.equals(nom, article.nom) && Objects.equals(actif, article.actif) && Objects.equals(prix, article.prix) && Objects.equals(numSerie, article.numSerie) && Objects.equals(codeBarre, article.codeBarre);
+        return Objects.equals(id, article.id) && Objects.equals(nom, article.nom) && Objects.equals(actif, article.actif) && Objects.equals(prix, article.prix) && Objects.equals(numSerie, article.numSerie);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, nom, actif, prix, numSerie, codeBarre);
+        return Objects.hash(id, nom, actif, prix, numSerie);
     }
 }

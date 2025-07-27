@@ -57,7 +57,7 @@ public class UtilisateurBean implements Serializable {
             numMembre = "0";
         }
         else {
-            numMembre=service.findlastMembre().get(0).getNumMembre();
+            numMembre="0";
         }
         service.close();
 
@@ -309,7 +309,7 @@ public class UtilisateurBean implements Serializable {
         return "/tableUtilisateursCli.xhtml?faces-redirect=true";
     }
   */
-    //Méthode qui va créer un nouveau membre en commencant par le nombre 400000000
+    //Méthode qui va créer un nouveau membre en commencant par le nombre 400000000 (déprécié)
     public String createNumMembre()
     {
         if (numMembre.equals("0")){

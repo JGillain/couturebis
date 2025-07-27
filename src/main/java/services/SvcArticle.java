@@ -22,7 +22,9 @@ public class SvcArticle extends Service<Article> implements Serializable {
     // Méthode qui permet de sauver un article et de le mettre en DB
     @Override
     public Article save(Article article) {
-        if (article.getId() == 0) {
+        if (article.getId() == null) {
+            em.persist(article);
+        } else if (article.getId() == 0) {
             em.persist(article);
         } else {
             article = em.merge(article);

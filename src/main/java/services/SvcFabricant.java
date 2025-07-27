@@ -24,7 +24,7 @@ public class SvcFabricant extends Service<Fabricant> implements Serializable {
         return finder.findByNamedQuery("Fabricant.findAll",null);
     }
     public List<Fabricant> findAllActiveFabricants() {
-        return finder.findByNamedQuery("Fabricant.",null);
+        return finder.findByNamedQuery("Fabricant.findAllActif",null);
     }
 
     public List<Fabricant> findOneFabricant(Fabricant f) {

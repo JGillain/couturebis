@@ -47,7 +47,7 @@
                         <!-- column header -->
                         <f:facet name="header">#{I18N['Articles.label.codeBarre']}</f:facet>
                         <!-- row record -->
-                        <p:outputLabel value ="#{art.codeBarre}"/>
+                        <p:outputLabel styleClass="barcode" value ="#{art.codeBarreIdCB.codeBarre}"/>
                     </p:column>
                     <p:column>
                     <!-- column header -->
@@ -57,13 +57,13 @@
                 </p:column>
 
                     <p:column>
-                        <p:commandButton  icon="pi pi-book" value="exemplaires associés" action="tableExemplaireLivres">
+                        <p:commandButton  icon="pi pi-book" value="exemplaires associés" action="tableArticle.xhtml?faces-redirect=true">
                             <!--todo remettre les valeurs quand form fini -->
                             <f:setPropertyActionListener target="" value="" />
                         </p:commandButton>
                     </p:column>
                     <p:column>
-                        <p:commandButton icon="pi pi-pencil" value="Modifier" action="formEditLivre">
+                        <p:commandButton icon="pi pi-pencil" value="Modifier" action="formEditArticle.xhtml?faces-redirect=true">
                             <f:setPropertyActionListener target="#{articleBean.article}" value="#{art}" />
                         </p:commandButton>
                     </p:column>

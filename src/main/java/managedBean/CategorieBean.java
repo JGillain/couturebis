@@ -1,8 +1,8 @@
 package managedBean;
 
-import entities.Fabricant;
+import entities.Categorie;
 import org.apache.log4j.Logger;
-import services.SvcFabricant;
+import services.SvcCategorie;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.SessionScoped;
@@ -16,27 +16,27 @@ import java.util.List;
 
 @Named
 @SessionScoped
-public class FabricantBean implements Serializable {
+public class CategorieBean implements Serializable {
     // Déclaration des variables globales
     private static final long serialVersionUID = 1L;
-    private Fabricant fabricant;
-    private static final Logger log = Logger.getLogger(FabricantBean.class);
+    private Categorie categorie;
+    private static final Logger log = Logger.getLogger(CategorieBean.class);
 
     @PostConstruct
     public void init()
     {
-        log.debug("FabricantBean init");
-        fabricant = new Fabricant();
+        log.debug("CategorieBean init");
+        categorie = new Categorie();
     }
 
     // Méthode qui permet l'appel de save() qui créée une nouvelle adresse et envoi un message si jamais
     // l'adresse se trouve déjà en base de donnée et nous renvoi sur la table des auteurs
-    public String newFabricant()
+    public String newCategorie()
     {
         log.debug("test 1 ");
-        log.debug(fabricant.getId());
-        log.debug(fabricant.getNom());
-        if(verifFabricantExist(fabricant))
+        log.debug(categorie.getId());
+        log.debug(categorie.getNom());
+        if(verifCategorieExist(categorie))
         {
             save();
         }
@@ -46,21 +46,21 @@ public class FabricantBean implements Serializable {
             fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"La donnée est déjà existante en DB",null));
             init();
         }
-        return "/tableFabricant.xhtml?faces-redirect=true";
+        return "/tableCategorie.xhtml?faces-redirect=true";
 
     }
 
     // Méthode qui permet la sauvegarde d'une adresse en base de donnée
     public void save()
     {
-        SvcFabricant service = new SvcFabricant();
+        SvcCategorie service = new SvcCategorie();
         EntityTransaction transaction = service.getTransaction();
         transaction.begin();
         try {
             log.debug("test 2");
-            log.debug(fabricant.getId());
-            log.debug(fabricant.getNom());
-            service.save(fabricant);
+            log.debug(categorie.getId());
+            log.debug(categorie.getNom());
+            service.save(categorie);
             transaction.commit();
             FacesContext fc = FacesContext.getCurrentInstance();
             fc.getExternalContext().getFlash().setKeepMessages(true);
@@ -81,18 +81,18 @@ public class FabricantBean implements Serializable {
     }
 
     // Méthode qui vérifie qu'une adresse déjà ou pas dans la base de donnée
-    public boolean verifFabricantExist(Fabricant fa)
+    public boolean verifCategorieExist(Categorie Ca)
     {
-        SvcFabricant serviceF = new SvcFabricant();
-        if(serviceF.findOneFabricant(fa).size() > 0)
+        SvcCategorie serviceC = new SvcCategorie();
+        if(serviceC.findOneCategorie(Ca).size() > 0)
         {
             log.debug('1');
-            serviceF.close();
+            serviceC.close();
             return false;
         }
         else {
             log.debug('2');
-            serviceF.close();
+            serviceC.close();
             return true;
         }
 
@@ -100,7 +100,7 @@ public class FabricantBean implements Serializable {
     /*
      * Méthode qui permet de vider les variables et de revenir sur le table des Adresses .
      * */
-    public String flushFab()
+    public String flushCat()
     {
         init();
         return "/tableFabricant?faces-redirect=true";
@@ -111,36 +111,28 @@ public class FabricantBean implements Serializable {
      * Méthode qui permet via le service de retourner
      * la liste des adresses
      */
-    public List<Fabricant> getReadAll()
+    public List<Categorie> getReadAll()
     {
-        SvcFabricant service = new SvcFabricant();
-        List<Fabricant> listFa = new ArrayList<Fabricant>();
-        listFa= service.findAllFabricants();
+        SvcCategorie service = new SvcCategorie();
+        List<Categorie> listCa = new ArrayList<Categorie>();
+        listCa = service.findAllCategorie();
 
         service.close();
-        return listFa;
+        return listCa;
     }
-    public List<Fabricant> getReadAllActif()
-    {
-        SvcFabricant service = new SvcFabricant();
-        List<Fabricant> listFa = new ArrayList<Fabricant>();
-        listFa= service.findAllActiveFabricants();
 
-        service.close();
-        return listFa;
-    }
 
 
 //-------------------------------Getter & Setter--------------------------------------------
 
-    public Fabricant getFabricant() {
+    public Categorie getCategorie() {
         log.debug("getFabricant call");
-        return fabricant;
+        return categorie;
     }
 
-    public void setFabricant(Fabricant fabricant) {
+    public void setCategorie(Categorie categorie) {
         log.debug("setFabricant call");
-        this.fabricant = fabricant;
+        this.categorie = categorie;
     }
 
 }

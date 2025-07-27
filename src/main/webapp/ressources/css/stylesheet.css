@@ -231,10 +231,10 @@ body {
 
 @font-face {
     font-family: 'BarcodeFont';
-    src: url("#{resource['fonts/LibreBarcode128-Regular.ttf']}") format('truetype');
+    src: url("../fonts/LibreBarcodeEAN13Text-Regular.ttf") format('truetype');
 }
 
 .barcode {
-    font-family: 'BarcodeFont', sans-serif;
-    font-size: 30px; /* Adjust size */
+    font-family: 'BarcodeFont', sans-serif !important;
+    font-size: 45px !important; /* Adjust size */
 }

@@ -1,11 +1,11 @@
 package managedBean;
 
-import entities.Article;
-import entities.ExemplaireArticle;
-import entities.Fabricant;
+import entities.*;
 import org.apache.log4j.Logger;
 import services.SvcArticle;
+import services.SvcCodeBarre;
 import services.SvcExemplaireArticle;
+import services.SvcFabricant;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.SessionScoped;
@@ -24,6 +24,7 @@ public class ArticleBean implements Serializable {
     private static final long serialVersionUID = 1L;
     private Article article;
     private Fabricant fabricant;
+    private Categorie categorie;
     private List<Article> listart = new ArrayList<Article>();
     private List<Article> searchResults = new ArrayList<Article>();
     private static final Logger log = Logger.getLogger(ArticleBean.class);
@@ -33,11 +34,61 @@ public class ArticleBean implements Serializable {
         log.debug("ArticleBean init");
         article = new Article();
         fabricant = new Fabricant();
+        categorie = new Categorie();
         listart = getReadAll();
 
+
     }
+
+    public void save() {
+        SvcArticle service = new SvcArticle();
+        SvcCodeBarre svcCB = new SvcCodeBarre();
+        svcCB.setEm(service.getEm());
+        CodeBarreBean codeBarreBean = new CodeBarreBean();
+        log.debug("save init");
+        log.debug(svcCB.getEm().toString());
+        log.debug(service.getEm().toString());
+
+        EntityTransaction tx = service.getTransaction();
+        tx.begin();
+        try {
+            // génération du codebarre
+            String code = codeBarreBean.createCB(false); // false = pas client
+            CodeBarre cb = new CodeBarre();
+            log.debug(code);
+            cb.setCodeBarre(code);
+
+            // Save CodeBarre
+            svcCB.save(cb);
+
+            // liaison du cb a l'article
+            article.setCodeBarreIdCB(cb);
+
+            // liaison de fabricant et categorie a l'article
+            article.setFabricantIdFabricant(fabricant); // from UI
+            article.setCategorieIdCategorie(categorie); // from UI
+
+            service.save(article);
+
+            tx.commit();
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_INFO, "Article enregistré avec succès", null));
+
+        } catch (Exception ex) {
+            if (tx.isActive()) tx.rollback();
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Échec de l'enregistrement", null));
+            ex.printStackTrace();
+        } finally {
+            service.close();
+        }
+    }
+
     public String readByFabricants(Fabricant fabricant) {
         return("/tableFabricant.xhtml?faces-redirect=true");
+    }
+    public String readByCategories(Categorie categorie) {
+        return("/tableCategorie.xhtml?faces-redirect=true");
     }
     public String activdesactivArt() {
         SvcArticle service = new SvcArticle();
@@ -74,6 +125,7 @@ public class ArticleBean implements Serializable {
         }
         return("/tableArticle.xhtml?faces-redirect=true");
     }
+
     public String searchArticle()
     {
 
@@ -159,6 +211,14 @@ public class ArticleBean implements Serializable {
 
     public void setFabricant(Fabricant fabricant) {
         this.fabricant = fabricant;
+    }
+
+    public Categorie getCategorie() {
+        return categorie;
+    }
+
+    public void setCategorie(Categorie categorie) {
+        this.categorie = categorie;
     }
 
     public List<Article> getListart() {

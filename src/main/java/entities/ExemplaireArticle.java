@@ -18,11 +18,6 @@ public class ExemplaireArticle implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Size(max = 45)
-    @NotNull
-    @Column(name = "CodeBarre", nullable = false, length = 45)
-    private String codeBarre;
-
     @NotNull
     @Lob
     @Column(name = "Etat", nullable = false)
@@ -64,20 +59,25 @@ public class ExemplaireArticle implements Serializable {
     @JoinColumn(name = "MagasinIdMagasin", nullable = false)
     private Magasin magasinIdMagasin;
 
+    @NotNull
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "codeBarreIdCB", nullable = false)
+    private CodeBarre codeBarreIdCB;
+
+    public CodeBarre getCodeBarreIdCB() {
+        return codeBarreIdCB;
+    }
+
+    public void setCodeBarreIdCB(CodeBarre codeBarreIdCB) {
+        this.codeBarreIdCB = codeBarreIdCB;
+    }
+
     public Integer getId() {
         return id;
     }
 
     public void setId(Integer id) {
         this.id = id;
-    }
-
-    public String getCodeBarre() {
-        return codeBarre;
-    }
-
-    public void setCodeBarre(String codeBarre) {
-        this.codeBarre = codeBarre;
     }
 
     public ExemplaireArticleEtatEnum getEtat() {
@@ -157,11 +157,11 @@ public class ExemplaireArticle implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ExemplaireArticle that = (ExemplaireArticle) o;
-        return Objects.equals(id, that.id) && Objects.equals(codeBarre, that.codeBarre) && etat == that.etat && Objects.equals(actif, that.actif) && Objects.equals(commentaireEtat, that.commentaireEtat) && Objects.equals(loue, that.loue) && Objects.equals(reserve, that.reserve) && Objects.equals(transfert, that.transfert) && statut == that.statut && Objects.equals(articleIdArticle, that.articleIdArticle) && Objects.equals(magasinIdMagasin, that.magasinIdMagasin);
+        return Objects.equals(id, that.id) && etat == that.etat && Objects.equals(actif, that.actif) && Objects.equals(commentaireEtat, that.commentaireEtat) && Objects.equals(loue, that.loue) && Objects.equals(reserve, that.reserve) && Objects.equals(transfert, that.transfert) && statut == that.statut && Objects.equals(articleIdArticle, that.articleIdArticle) && Objects.equals(magasinIdMagasin, that.magasinIdMagasin);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, codeBarre, etat, actif, commentaireEtat, loue, reserve, transfert, statut, articleIdArticle, magasinIdMagasin);
+        return Objects.hash(id, etat, actif, commentaireEtat, loue, reserve, transfert, statut, articleIdArticle, magasinIdMagasin);
     }
 }

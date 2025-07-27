@@ -51,15 +51,18 @@
                 <h:message for="adresseNumero" styleClass="errorMessage"/>
 
                 <p:outputLabel value = "#{I18N['localite.label.Cp']}"/>
-                <p:selectOneMenu value = "#{adresseBean.adresse.localiteIdLocalite}" id="adressLoca"
-                converter="localiteConverter">
+                <p:selectOneMenu value = "#{adresseBean.adresse.localiteIdLocalite}"
+                                 id="adressLoca"
+                                 filter="true"
+                                 panelStyle="max-height: 200px; overflow-y: auto;"
+                                 converter="localiteConverter">
                     <f:selectItems value = "#{localiteBean.readAll}" var="loca"
                                    itemLabel="#{loca.cp} - #{loca.ville}" itemValue="#{loca}"/>
                 </p:selectOneMenu>
 
             </p:panelGrid>
 
-            <p:commandButton icon="pi pi-check-circle" value="#{I18N['application.button.validate']}" action="#{adresseBean.newAdress}" process="@all" update="@all" partialSubmit="false" ignoreAutoUpdate="true"/>
+            <p:commandButton icon="pi pi-check-circle" value="#{I18N['application.button.validate']}" action="#{adresseBean.newAdress}" ajax="false"/>
             <p:commandButton icon="pi pi-home" value="#{I18N['application.button.return']}" action="#{adresseBean.flushAdd}" immediate="true"/>
         </h:form>
         </shiro:hasAnyRoles>

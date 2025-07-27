@@ -11,7 +11,7 @@ import java.util.Objects;
 @NamedQueries
         ({
                 @NamedQuery(name = "Fabricant.findAll", query = "SELECT F FROM Fabricant F"),
-                @NamedQuery(name = "Fabricant.findAllActive", query = "SELECT F FROM Fabricant F where F."),
+                @NamedQuery(name = "Fabricant.findAllActif", query = "SELECT F FROM Fabricant F where F.actif=true"),
                 @NamedQuery(name = "Fabricant.findOne", query = "SELECT F FROM Fabricant F WHERE F.nom=:nom"),
         })
 public class Fabricant implements Serializable {
@@ -25,6 +25,11 @@ public class Fabricant implements Serializable {
     @NotNull
     @Column(name = "Nom", nullable = false)
     private String nom;
+
+    @NotNull
+    @Column(name = "Actif", nullable = false)
+    private Boolean actif = false;
+
 
     public Integer getId() {
         return id;
@@ -42,16 +47,24 @@ public class Fabricant implements Serializable {
         this.nom = nom;
     }
 
+    public Boolean getActif() {
+        return actif;
+    }
+
+    public void setActif(Boolean actif) {
+        this.actif = actif;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Fabricant fabricant = (Fabricant) o;
-        return Objects.equals(id, fabricant.id) && Objects.equals(nom, fabricant.nom);
+        return Objects.equals(id, fabricant.id) && Objects.equals(nom, fabricant.nom) && Objects.equals(actif, fabricant.actif);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, nom);
+        return Objects.hash(id, nom, actif);
     }
 }

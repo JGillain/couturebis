@@ -13,6 +13,8 @@
         <class>entities.Facture</class>
         <class>entities.FactureDetail</class>
         <class>entities.Jour</class>
+        <class>entities.Categorie</class>
+        <class>entities.CodeBarre</class>
         <class>entities.Localite</class>
         <class>entities.Magasin</class>
         <class>entities.Pays</class>

@@ -15,7 +15,7 @@
         <h:form>
         <h2 style="text-align:center">#{I18N['Articles.form.questionconfirm']}</h2>
         <p:commandButton icon="pi pi-check-circle" value="#{I18N['commune.label.oui']}" action="#{articleBean.activdesactivArt()}"/>
-        <p:commandButton value="#{I18N['commune.label.non']}" action="#{articleBean.f}" immediate="true"/>
+        <p:commandButton value="#{I18N['commune.label.non']}" action="#{articleBean.flushArt()}" immediate="true"/>
         </h:form>
     </ui:define>
 </ui:composition>
