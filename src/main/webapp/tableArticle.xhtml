@@ -67,13 +67,24 @@
                 </p:dataTable>
             </p:panel>
 
-            <p:commandButton icon="pi pi-plus" value="#{I18N['application.button.new']}" action="formNewArticle" />
+            <h:panelGroup layout="block" styleClass="button-bar">
+                <!-- Left aligned buttons -->
+                <h:panelGroup styleClass="left-buttons">
+                    <p:commandButton icon="pi pi-plus" value="#{I18N['application.button.new']}" action="formNewArticle" />
+                </h:panelGroup>
 
-            <p:commandButton icon="pi pi-search" value="#{I18N['application.button.find']}" action="formSearchArticle"/>
-            <p:commandButton icon="pi pi-search-plus" value="#{I18N['application.button.artActiv']}" action="#{articleBean.getReadActiv}" update="tableArticle"/>
-            <p:commandButton icon="pi pi-search-minus" value="#{I18N['application.button.artInactiv']}" action="#{articleBean.getReadInactiv}" update="tableArticle"/>
+                <!-- Center aligned buttons -->
+                <h:panelGroup styleClass="center-buttons">
+                    <p:commandButton icon="pi pi-search" value="#{I18N['application.button.find']}" action="formSearchArticle"/>
+                    <p:commandButton icon="pi pi-search-plus" value="#{I18N['application.button.artActiv']}" action="#{articleBean.getReadActiv}" update="tableArticle"/>
+                    <p:commandButton icon="pi pi-search-minus" value="#{I18N['application.button.artInactiv']}" action="#{articleBean.getReadInactiv}" update="tableArticle"/>
+                </h:panelGroup>
 
-            <p:commandButton icon="pi pi-home" value="#{I18N['application.button.returnbienvenue']}" action="#{articleBean.flushBienv}"/>
+                <!-- Right aligned button -->
+                <h:panelGroup styleClass="right-buttons">
+                    <p:commandButton icon="pi pi-home" value="#{I18N['application.button.returnbienvenue']}" action="#{articleBean.flushBienv}"/>
+                </h:panelGroup>
+            </h:panelGroup>
 
         </h:form>
 

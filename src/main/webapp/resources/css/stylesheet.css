@@ -253,3 +253,24 @@ body {
     white-space: nowrap !important;
     padding: 5px 10px !important;
 }
+
+.button-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.5rem;
+}
+
+.left-buttons,
+.center-buttons,
+.right-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.center-buttons {
+    justify-content: center;
+    flex: 1;
+    text-align: center;
+}
