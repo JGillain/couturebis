@@ -238,3 +238,18 @@ body {
     font-family: 'BarcodeFont', sans-serif !important;
     font-size: 45px !important; /* Adjust size */
 }
+/* Corrige l'affichage horizontal du menu déroulant des selectOneMenu */
+.ui-selectonemenu-panel .ui-selectonemenu-items {
+    display: flex !important;
+    flex-direction: column !important;
+    flex-wrap: nowrap !important;
+    max-height: 200px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+}
+
+/* Corrige aussi les listes filtrées */
+.ui-selectonemenu-panel .ui-selectonemenu-item {
+    white-space: nowrap !important;
+    padding: 5px 10px !important;
+}

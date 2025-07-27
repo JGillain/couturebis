@@ -51,12 +51,12 @@
                 <h:message for="adresseNumero" styleClass="errorMessage"/>
 
                 <p:outputLabel value = "#{I18N['localite.label.Cp']}"/>
-                <p:selectOneMenu value = "#{adresseBean.adresse.localiteIdLocalite}"
+                <p:selectOneMenu value="#{adresseBean.adresse.localiteIdLocalite}"
                                  id="adressLoca"
                                  filter="true"
-                                 panelStyle="max-height: 200px; overflow-y: auto;"
+                                 panelStyleClass="scrollable-menu"
                                  converter="localiteConverter">
-                    <f:selectItems value = "#{localiteBean.readAll}" var="loca"
+                    <f:selectItems value="#{localiteBean.readAll}" var="loca"
                                    itemLabel="#{loca.cp} - #{loca.ville}" itemValue="#{loca}"/>
                 </p:selectOneMenu>
 
