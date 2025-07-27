@@ -9,8 +9,7 @@
 	
 <h:head>
 	<title><ui:insert name="title">#{I18N['application.defaultpage.titre']}</ui:insert></title>
-	<link href="#{request.contextPath}/ressources/css/stylesheet.css"
-		rel="stylesheet" type="text/css" />
+	<h:outputStylesheet library="css" name="stylesheet.css" />
 </h:head>
 <h:body>
 	<p:panel id="container">
