@@ -54,7 +54,6 @@
                 <p:selectOneMenu value="#{adresseBean.adresse.localiteIdLocalite}"
                                  id="adressLoca"
                                  filter="true"
-                                 panelStyleClass="scrollable-menu"
                                  converter="localiteConverter">
                     <f:selectItems value="#{localiteBean.readAll}" var="loca"
                                    itemLabel="#{loca.cp} - #{loca.ville}" itemValue="#{loca}"/>
