@@ -22,50 +22,50 @@
 				<p:panelGrid columns="5">
 					<h:form>
 						<p:menubar>
-							<p:submenu label="Gestion des tarifs" icon="pi pi-fw pi-file">
-								<p:menuitem value="Voir les tarifs" icon="pi pi-fw pi-external-link" action="tableTarifs.xhtml?faces-redirect=true"/>
+							<p:submenu label="Gestion des tarifs" icon="pi pi-euro pi-fw">
+								<p:menuitem value="Voir les tarifs" icon="pi pi-list pi-fw" action="tableTarifs.xhtml?faces-redirect=true"/>
 								<p:menuitem value="Nouvelle grille tarifaire" icon="pi pi-fw pi-plus" action="formNewTarif.xhtml?faces-redirect=true"/>
 							</p:submenu>
-							<p:submenu label="Gestion des personnes" icon="pi pi-fw pi-file">
-								<p:submenu label="Voir les" icon="pi pi-fw pi-external-link">
-									<p:menuitem value="Clients" action="tableUtilisateursCli.xhtml?faces-redirect=true"/>
-									<p:menuitem value="Utilisateurs" action="tableUtilisateurs.xhtml?faces-redirect=true"/>
+							<p:submenu label="Gestion des personnes" icon="pi pi-users pi-fw">
+								<p:submenu label="Voir les" icon="pi pi-eye pi-fw">
+									<p:menuitem icon="pi pi-user pi-fw" value="Clients" action="tableUtilisateursCli.xhtml?faces-redirect=true"/>
+									<p:menuitem icon="pi pi-users pi-fw" value="Utilisateurs" action="tableUtilisateurs.xhtml?faces-redirect=true"/>
 								</p:submenu>
 								<p:submenu label="Ajouter" icon="pi pi-fw pi-plus">
-									<p:menuitem value="Client" action="formNewUtilisateurCli.xhtml?faces-redirect=true"/>
-									<p:menuitem value="Utilisateur" action="formNewUtilisateur.xhtml?faces-redirect=true"/>
+									<p:menuitem icon="pi pi-user pi-fw" value="Client" action="formNewUtilisateurCli.xhtml?faces-redirect=true"/>
+									<p:menuitem icon="pi pi-users pi-fw" value="Utilisateur" action="formNewUtilisateur.xhtml?faces-redirect=true"/>
 								</p:submenu>
 							</p:submenu>
-							<p:submenu label="Gestion magasin" icon="pi pi-fw pi-file">
-								<p:submenu label="Voir les" icon="pi pi-fw pi-external-link">
-									<p:submenu label="articles">
-										<p:menuitem value="références" action="tableArticle.xhtml?faces-redirect=true"/>
-										<p:menuitem value="exemplaires" action="tableExArticleActif.xhtml?faces-redirect=true"/>
+							<p:submenu label="Gestion magasin" icon="pi pi-briefcase pi-fw">
+								<p:submenu label="Voir les" icon="pi pi-eye pi-fw">
+									<p:submenu icon="pi pi-shopping-cart pi-fw" label="Articles">
+										<p:menuitem icon="pi pi-tag pi-fw" value="Références" action="tableArticle.xhtml?faces-redirect=true"/>
+										<p:menuitem icon="pi pi-clone pi-fw" value="Exemplaires" action="tableExArticleActif.xhtml?faces-redirect=true"/>
 									</p:submenu>
-									<p:menuitem value="Fabricants" action="tableFabricant.xhtml?faces-redirect=true"/>
-									<p:menuitem value="catégories" action="tableCategorie.xhtml?faces-redirect=true"/>
+									<p:menuitem icon="pi pi-tag pi-fw" value="Fabricants" action="tableFabricant.xhtml?faces-redirect=true"/>
+									<p:menuitem icon="pi pi-folder pi-fw" value="Catégories" action="tableCategorie.xhtml?faces-redirect=true"/>
 								</p:submenu>
 								<p:submenu label="Ajouter" icon="pi pi-fw pi-plus">
 									<p:submenu label="articles">
-										<p:menuitem value="référence" action="formNewArticle.xhtml?faces-redirect=true"/>
-										<p:menuitem value="exemplaire" action="formNewExArticle.xhtml?faces-redirect=true"/>
+										<p:menuitem icon="pi pi-tag pi-fw" value="Référence" action="formNewArticle.xhtml?faces-redirect=true"/>
+										<p:menuitem icon="pi pi-clone pi-fw" value="Exemplaire" action="formNewExArticle.xhtml?faces-redirect=true"/>
 									</p:submenu>
-									<p:menuitem value="fabricant" action="formNewFabricant.xhtml?faces-redirect=true"/>
-									<p:menuitem value="catégories" action="formNewCategorie.xhtml?faces-redirect=true"/>
+									<p:menuitem icon="pi pi-tag pi-fw" value="Fabricants" action="formNewFabricant.xhtml?faces-redirect=true"/>
+									<p:menuitem icon="pi pi-folder pi-fw" value="Catégories" action="formNewCategorie.xhtml?faces-redirect=true"/>
 								</p:submenu>
 							</p:submenu>
-							<p:submenu label="Gestion des adresses" icon="pi pi-fw pi-file">
-								<p:menuitem value="Table des Adresses" icon="pi pi-fw pi-external-link" action="tableAdresses.xhtml?faces-redirect=true"/>
-								<p:menuitem value="Nouvelle Adresses" icon="pi pi-fw pi-plus" action="formNewAdress.xhtml?faces-redirect=true" />
+							<p:submenu label="Gestion des adresses" icon="pi pi-map-marker pi-fw">
+								<p:menuitem value="Table des Adresses" icon="pi pi-home pi-fw" action="tableAdresses.xhtml?faces-redirect=true"/>
+								<p:menuitem value="Nouvelle Adresse" icon="pi pi-fw pi-plus" action="formNewAdress.xhtml?faces-redirect=true" />
 							</p:submenu>
 							<p:submenu label="Gestion des factures" icon="pi pi-fw pi-file">
-								<p:menuitem value="Tables des factures" icon="pi pi-fw pi-external-link" action="tableFactures.xhtml?faces-redirect=true"/>
-								<p:menuitem value="Retour d'article" icon="pi pi-fw pi-external-link" action="formEtatQuestion.xhtml?faces-redirect=true"/>
-								<p:menuitem value="Nouvelle Facture location" icon="pi pi-fw pi-plus" action="formNewFactLoca.xhtml?faces-redirect=true"/>
-								<p:menuitem value="Nouvelle Facture Vente" icon="pi pi-fw pi-plus" action="formNewFactVente.xhtml?faces-redirect=true"/>
+								<p:menuitem value="Tables des factures" icon="pi pi-file pi-fw" action="tableFactures.xhtml?faces-redirect=true"/>
+								<p:menuitem value="Retour d'article" icon="pi pi-refresh pi-fw" action="formEtatQuestion.xhtml?faces-redirect=true"/>
+								<p:menuitem value="Nouvelle Facture de location" icon="pi pi-fw pi-plus" action="formNewFactLoca.xhtml?faces-redirect=true"/>
+								<p:menuitem value="Nouvelle Facture de vente" icon="pi pi-fw pi-plus" action="formNewFactVente.xhtml?faces-redirect=true"/>
 							</p:submenu>
-							<p:submenu label="Gestion des Réservations" icon="pi pi-fw pi-file">
-								<p:menuitem value="Table des réservations" icon="pi pi-fw pi-external-link" action="tableAdresses.xhtml?faces-redirect=true"/>
+							<p:submenu label="Gestion des Réservations" icon="pi pi-calendar pi-fw">
+								<p:menuitem value="Table des réservations" icon="pi pi-calendar pi-fw" action="tableAdresses.xhtml?faces-redirect=true"/>
 								<p:menuitem value="Nouvelle réservation" icon="pi pi-fw pi-plus" action="formNewAdress.xhtml?faces-redirect=true" />
 							</p:submenu>
 						</p:menubar>
