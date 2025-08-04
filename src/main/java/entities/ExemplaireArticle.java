@@ -11,6 +11,14 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "exemplaire_article")
+@NamedQueries
+        ({
+                @NamedQuery(name = "ExArticle.findAllTri", query="SELECT EA FROM ExemplaireArticle EA ORDER BY EA.articleIdArticle.nom ASC"),
+                @NamedQuery(name = "ExArticle.findActive", query = "SELECT EA FROM ExemplaireArticle EA WHERE EA.actif=TRUE"),
+                @NamedQuery(name = "ExArticle.findInactive", query = "SELECT EA FROM ExemplaireArticle EA WHERE EA.actif=FALSE"),
+                @NamedQuery(name = "ExArticle.searchTri", query="SELECT EA FROM ExemplaireArticle EA WHERE EA.articleIdArticle.nom=:nom ORDER BY EA.articleIdArticle.nom ASC"),//A verifier
+                @NamedQuery(name = "ExArticle.search", query="SELECT EA FROM ExemplaireArticle EA WHERE EA.articleIdArticle.nom=:nom"),
+        })
 public class ExemplaireArticle implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -45,7 +53,7 @@ public class ExemplaireArticle implements Serializable {
     private Boolean transfert = false;
 
     @NotNull
-    @Lob
+    @Enumerated(EnumType.STRING)
     @Column(name = "statut", nullable = false)
     private ExemplaireArticleStatutEnum statut;
 
@@ -60,7 +68,7 @@ public class ExemplaireArticle implements Serializable {
     private Magasin magasinIdMagasin;
 
     @NotNull
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "codeBarreIdCB", nullable = false)
     private CodeBarre codeBarreIdCB;
 

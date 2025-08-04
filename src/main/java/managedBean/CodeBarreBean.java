@@ -11,6 +11,7 @@ import javax.inject.Named;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -27,13 +28,13 @@ public class CodeBarreBean implements Serializable {
         CB = new CodeBarre();
     }
 
-    public String createCB(boolean client)
+    public List<String> createCB(boolean client, int count)
     {
         log.info("CodeBarreBean createCB");
 
         long start = client ? 900_000_000_000L : 901_000_000_000L;
         long end   = client ? 900_999_999_999L : 999_999_999_999L;
-
+        List<String> list = new ArrayList<String>();
         SvcCodeBarre svc = new SvcCodeBarre();
         List<CodeBarre> results = svc.findBarcodeInRange(start+"0", end+"9");
 
@@ -52,15 +53,22 @@ public class CodeBarreBean implements Serializable {
             }
         }
 
+
         long next = (currentMax == null) ? start : currentMax + 1;
 
-        if (next > end) {
-            throw new IllegalStateException("limite de code barre atteinte");
+        for(int i=0;i<count;i=i+1) {
+
+            if (next > end) {
+                throw new IllegalStateException("limite de code barre atteinte");
+            }
+
+            String base = String.format("%012d", next);
+            int checkDigit = calculateCheckDigit(base);
+            list.add(base+checkDigit);
+            next = next+1L;
         }
 
-        String base = String.format("%012d", next);
-        int checkDigit = calculateCheckDigit(base);
-        return base + checkDigit;
+        return list;
     }
     private int calculateCheckDigit(String data) {
         int sum = 0;

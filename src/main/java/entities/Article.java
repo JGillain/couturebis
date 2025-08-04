@@ -19,7 +19,6 @@ import java.util.Objects;
                 @NamedQuery(name = "Article.findByFabricant", query = "SELECT A FROM Article A WHERE A.fabricantIdFabricant=:fab"),
                 @NamedQuery(name = "Article.findByNumserie", query = "SELECT A FROM Article A WHERE A.numSerie=:numserie"),
                 @NamedQuery(name = "Article.search", query="SELECT A FROM Article A WHERE A.nom=:nom"),
-
         })
 public class Article implements Serializable {
     private static final long serialVersionUID = 1L;

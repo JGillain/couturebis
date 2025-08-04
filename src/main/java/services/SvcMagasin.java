@@ -1,10 +1,12 @@
 package services;
 
+import entities.Localite;
 import entities.Magasin;
 import org.apache.log4j.Logger;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class SvcMagasin extends Service<Magasin> implements Serializable {
@@ -27,5 +29,10 @@ public class SvcMagasin extends Service<Magasin> implements Serializable {
         }
 
         return magasin;
+    }
+
+    //Méthode qui permet via une requete de retourner la liste entière des magasins
+    public List<Magasin> findAllMagasin() {
+        return finder.findByNamedQuery("Magasin.findAll", null);
     }
 }

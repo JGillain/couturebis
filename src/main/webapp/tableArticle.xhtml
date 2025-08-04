@@ -49,7 +49,7 @@
                     </p:column>
 
                     <p:column>
-                        <p:commandButton  icon="pi pi-pencil" value="Modifier" action="formEditArticle">
+                        <p:commandButton  icon="pi pi-pencil" value="Modifier" action="formEditArticle.xhtml?faces-redirect=true">
                             <f:setPropertyActionListener target="#{articleBean.article}" value="#{art}" />
                         </p:commandButton>
                     </p:column>

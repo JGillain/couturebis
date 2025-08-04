@@ -41,29 +41,32 @@ public class ArticleBean implements Serializable {
     }
 
     public void save() {
-        SvcArticle service = new SvcArticle();
-        SvcCodeBarre svcCB = new SvcCodeBarre();
-        svcCB.setEm(service.getEm());
-        CodeBarreBean codeBarreBean = new CodeBarreBean();
         log.debug("save init");
-        log.debug(svcCB.getEm().toString());
-        log.debug(service.getEm().toString());
 
+        SvcArticle service = new SvcArticle();
         EntityTransaction tx = service.getTransaction();
         tx.begin();
         try {
-            // génération du codebarre
-            String code = codeBarreBean.createCB(false); // false = pas client
-            CodeBarre cb = new CodeBarre();
-            log.debug(code);
-            cb.setCodeBarre(code);
+            // génération du codebarre si nesessaire
+            if(article.getId() == null) {
+                SvcCodeBarre svcCB = new SvcCodeBarre();
+                svcCB.setEm(service.getEm());
+                CodeBarreBean codeBarreBean = new CodeBarreBean();
+                List<String> code = codeBarreBean.createCB(false,1); // false = pas client
+                CodeBarre cb = new CodeBarre();
+                log.debug(code);
+                if(!code.isEmpty()) {
+                    cb.setCodeBarre(code.get(0));
+                }
+                else {
+                    throw new IllegalStateException("erreur avec la génération du code barre");
+                }
+                // Save CodeBarre
+                svcCB.save(cb);
 
-            // Save CodeBarre
-            svcCB.save(cb);
-
-            // liaison du cb a l'article
-            article.setCodeBarreIdCB(cb);
-
+                // liaison du cb a l'article
+                article.setCodeBarreIdCB(cb);
+            }
             // liaison de fabricant et categorie a l'article
             article.setFabricantIdFabricant(fabricant); // from UI
             article.setCategorieIdCategorie(categorie); // from UI
