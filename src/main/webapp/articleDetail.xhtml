@@ -17,43 +17,43 @@
             <p:panel layout="block" id="content">
                 <p:growl id="growl" showDetail="true" sticky="true" />
                 <h2 style="text-align:center">#{I18N['application.article.title']}</h2>
-                <p:dataTable value="#{articleBean.readArticle}" var="art" id="tableArticles"
+                <p:dataTable value="#{articleBean.readArticle}" var="ex" id="tableArticles"
                              Class="table" headerClass="table-header" rowClasses="table-odd-row,table-even-row">
                     <p:column>
                         <!-- column header -->
                         <f:facet name="header">#{I18N['Articles.label.denomination']}</f:facet>
                         <!-- row record -->
-                        <p:outputLabel value ="#{art.nom}"/>
+                        <p:outputLabel value ="#{ex.nom}"/>
                     </p:column>
                     <p:column>
                         <!-- column header -->
                         <f:facet name="header">#{I18N['Articles.label.numSerie']}</f:facet>
                         <!-- row record -->
-                        <p:outputLabel value ="#{art.numSerie}"/>
+                        <p:outputLabel value ="#{ex.numSerie}"/>
                     </p:column>
                     <p:column>
                         <!-- column header -->
                         <f:facet name="header">#{I18N['commune.label.actif']}</f:facet>
                         <!-- row record -->
-                        <p:outputLabel value ="#{art.actif}"/>
+                        <p:outputLabel value ="#{ex.actif}"/>
                     </p:column>
                     <p:column>
                         <!-- column header -->
                         <f:facet name="header">#{I18N['Articles.label.Fabricant']}</f:facet>
                         <!-- row record -->
-                        <p:outputLabel value ="#{art.fabricantIdFabricant.nom}"/>
+                        <p:outputLabel value ="#{ex.fabricantIdFabricant.nom}"/>
                     </p:column>
                     <p:column>
                         <!-- column header -->
                         <f:facet name="header">#{I18N['Articles.label.codeBarre']}</f:facet>
                         <!-- row record -->
-                        <p:outputLabel styleClass="barcode" value ="#{art.codeBarreIdCB.codeBarre}"/>
+                        <p:outputLabel styleClass="barcode" value ="#{ex.codeBarreIdCB.codeBarre}"/>
                     </p:column>
                     <p:column>
                     <!-- column header -->
                     <f:facet name="header">#{I18N['Articles.label.Prix']}</f:facet>
                     <!-- row record -->
-                    <p:outputLabel value ="#{art.prix}"/>
+                    <p:outputLabel value ="#{ex.prix}"/>
                 </p:column>
 
                     <p:column>
@@ -64,15 +64,15 @@
                     </p:column>
                     <p:column>
                         <p:commandButton icon="pi pi-pencil" value="Modifier" action="formEditArticle.xhtml?faces-redirect=true">
-                            <f:setPropertyActionListener target="#{articleBean.article}" value="#{art}" />
+                            <f:setPropertyActionListener target="#{articleBean.article}" value="#{ex}" />
                         </p:commandButton>
                     </p:column>
                     <p:column>
-                        <p:commandButton rendered="#{art.actif}" icon="pi pi-power-off" value ="Désactiver" action="formConfirmationArticle.xhtml?faces-redirect=true">
-                            <f:setPropertyActionListener target="#{articleBean.article}" value="#{art}" />
+                        <p:commandButton rendered="#{ex.actif}" icon="pi pi-power-off" value ="Désactiver" action="formConfirmationArticle.xhtml?faces-redirect=true">
+                            <f:setPropertyActionListener target="#{articleBean.article}" value="#{ex}" />
                         </p:commandButton>
-                        <p:commandButton rendered="#{!art.actif}" icon="pi pi-check" value ="Activer" action="#{articleBean.activdesactivArt}">
-                            <f:setPropertyActionListener target="#{articleBean.article}" value="#{art}" />
+                        <p:commandButton rendered="#{!ex.actif}" icon="pi pi-check" value ="Activer" action="#{articleBean.activdesactivArt}">
+                            <f:setPropertyActionListener target="#{articleBean.article}" value="#{ex}" />
                         </p:commandButton>
                     </p:column>
                 </p:dataTable>

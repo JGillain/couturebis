@@ -1,6 +1,6 @@
 package converter;
 
-import entities.Adresse;
+import entities.Article;
 import org.apache.log4j.Logger;
 import services.SvcArticle;
 
@@ -27,7 +27,7 @@ public class ArticleConverter implements Converter {
     @Override
     public String getAsString(FacesContext facesContext, UIComponent uiComponent, Object o) {
         if (o != null) {
-            return String.valueOf(((Adresse) o).getId());
+            return String.valueOf(((Article) o).getId());
         }
         else
             return null;

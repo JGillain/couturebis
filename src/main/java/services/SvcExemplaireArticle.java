@@ -23,7 +23,9 @@ public class SvcExemplaireArticle extends Service<ExemplaireArticle> implements 
     // Méthode qui permet de sauver un exemplaire d'article et de le mettre en DB
     @Override
     public ExemplaireArticle save(ExemplaireArticle EA) {
-        if (EA.getId() == 0) {
+        if (EA.getId() == null) {
+            em.persist(EA);
+        } else if (EA.getId() == 0) {
             em.persist(EA);
         } else {
             EA = em.merge(EA);

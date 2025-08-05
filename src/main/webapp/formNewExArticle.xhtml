@@ -8,74 +8,55 @@
       xmlns:shiro="http://shiro.apache.org/tags"
       xmlns:p="http://primefaces.org/ui">
 <ui:composition template="Template/template.xhtml">
-    <ui:define name="title">#{I18N['Articles.form.nouveau.titre']}</ui:define>
+    <ui:define name="title">#{I18N['ExemplairesArticles.form.nouveau.titre']}</ui:define>
 
     <ui:define name="content">
         <p:growl id="growl" showDetail="true" sticky="true" />
-        <h:form id="formNewArticle" prependId="false">
+        <h:form id="formNewExArticle" prependId="false">
             <h:head>
-                <title>#{I18N['Articles.form.nouveau.titre']}</title>
+                <title>#{I18N['ExemplairesArticles.form.nouveau.titre']}</title>
             </h:head>
-            <h2 style="text-align:center">#{I18N['Articles.form.nouveau.titre']}</h2>
+            <h2 style="text-align:center">#{I18N['ExemplairesArticles.form.nouveau.titre']}</h2>
 
             <p:panelGrid id="newrecform" columns="3" columnClasses="col1Newrec,col2Newrec,col3Newrec">
-                <p:outputLabel value = "#{I18N['Articles.label.denomination']}"/>
-                <p:inputText id="articleNom"
-                             validatorMessage="La valeur doit être entre 1 et 100 caracteres"
-                             value="#{articleBean.article.nom}"
-                             required="true"
-                             requiredMessage="#{I18N['formulaire.message.required.nom']}"
-                             maxlength="100">
-                    <f:validateLength minimum="1" maximum="100"/>
-                </p:inputText>
-                <h:message for="articleNom" styleClass="errorMessage"/>
 
-                <p:outputLabel value ="#{I18N['Articles.label.Fabricant']}"/>
-                <p:selectOneMenu value = "#{articleBean.fabricant}" id="articleFabricant"
+                <p:outputLabel for="articleSelect" value="#{I18N['ExemplairesArticles.label.Article']}"/>
+                <p:selectOneMenu id="articleSelect"
+                                 value="#{exemplaireArticleBean.article}"
                                  required="true"
+                                 requiredMessage="#{I18N['formulaire.message.required.article']}"
                                  filter="true"
-                                 panelStyle="max-height: 200px; overflow-y: auto;"
-                                 converter="fabricantConverter"
-                                 requiredMessage="#{I18N['formulaire.message.required.fabricant']}">
-                    <f:selectItems value = "#{fabricantBean.readAllActif}" var="artfab" itemLabel="#{artfab.nom}" itemValue="#{artfab}"/>
+                                 panelStyle="max-height:220px; overflow-y:auto"
+
+                                 converter="articleConverter">
+                    <f:selectItems value="#{articleBean.readAll}" var="ex" itemLabel="#{ex.nom}" itemValue="#{ex}"/>
                 </p:selectOneMenu>
-                <h:message for="articleFabricant" styleClass="errorMessage"/>
+                <h:message for="articleSelect" styleClass="errorMessage"/>
 
-                <p:outputLabel value ="#{I18N['Articles.label.Categorie']}"/>
-                <p:selectOneMenu value = "#{articleBean.categorie}" id="articleCategorie"
-                                 required="true"
-                                 filter="true"
-                                 panelStyle="max-height: 200px; overflow-y: auto;"
-                                 converter="categorieConverter"
-                                 requiredMessage="#{I18N['formulaire.message.required.Categorie']}">
-                    <f:selectItems value = "#{categorieBean.readAll}" var="artcat" itemLabel="#{artcat.nom}" itemValue="#{artcat}"/>
-                </p:selectOneMenu>
-                <h:message for="articleCategorie" styleClass="errorMessage"/>
-
-
-
-                <p:outputLabel value = "#{I18N['Articles.label.numSerie']}"/>
-                <p:inputText id="articleNumSerie"
-                             value="#{articleBean.article.numSerie}"
-                             required="true"
-                             requiredMessage="#{I18N['formulaire.message.required.numero']}">
-                </p:inputText>
-                <h:message for="articleNumSerie" styleClass="errorMessage"/>
-
-                <p:outputLabel value="#{I18N['Articles.label.Prix']}"/>
-                <p:inputNumber id="articleprix"
-                             value="#{articleBean.article.prix}"
-                               symbol=" €"
-                               symbolPosition="s"
-                               decimalSeparator=","
-                               thousandSeparator="."
-                               required="true"
-                             requiredMessage="#{I18N['formulaire.message.required.prix']}">
+                <p:outputLabel for="quantite" value="#{I18N['ExemplairesArticles.label.Quantite']}"/>
+                <p:inputNumber id="quantite" value="#{exemplaireArticleBean.nombreExemplaire}" decimalPlaces="0" min="1" max="10000">
+                    <f:validateLongRange minimum="1"
+                                         minimumMessage="#{I18N['formulaire.message.validation.min1']}"/>
                 </p:inputNumber>
+                <h:message for="quantite" styleClass="errorMessage"/>
+
+                <p:outputLabel for="statut" value="#{I18N['ExemplairesArticles.label.Statut']}"/>
+                <p:selectOneMenu id="statut" value="#{exemplaireArticleBean.flagVente}" required="true">
+                    <f:selectItem itemLabel="#{I18N['ExemplairesArticles.statut.location']}" itemValue="False"/>
+                    <f:selectItem itemLabel="#{I18N['ExemplairesArticles.statut.vente']}" itemValue="True"/>
+                </p:selectOneMenu>
+                <h:message for="statut" styleClass="errorMessage"/>
+
 
             </p:panelGrid>
-            <p:commandButton icon="pi pi-check-circle" value="#{I18N['application.button.validate']}" action="#{articleBean.save}" ajax="false"/>
-            <p:commandButton icon="pi pi-home" value="#{I18N['application.button.return']}" action="#{articleBean.flushArt}" immediate="true"/>
+            <p:commandButton icon="pi pi-check-circle"
+                                           value="#{I18N['application.button.validate']}"
+                                           action="#{exemplaireArticleBean.saveBatch()}"
+                                           ajax="false"/>
+            <p:commandButton icon="pi pi-home"
+                             value="#{I18N['application.button.return']}"
+                             action="#{exemplaireArticleBean.flushExArt()}"
+                             immediate="true"/>
         </h:form>
     </ui:define>
 </ui:composition>
