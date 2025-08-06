@@ -70,6 +70,11 @@ ul li:hover {
     box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
 }
 
+body .ui-selectonemenu, body .ui-panelgrid .ui-panelgrid-cell, body .ui-panel .ui-panel-content, body .ui-menu
+{
+    border: none!important;
+}
+
 /* -------------------- Buttons -------------------- */
 .button-design {
     display: inline-block;
@@ -197,11 +202,8 @@ body {
 }
 
 /* -------------------- Input Fields (p:inputText, p:selectOneMenu) -------------------- */
-.ui-inputfield, .ui-selectonemenu {
+.ui-inputfield {
     border: 2px solid #f39c12 !important;
-    border-radius: 5px !important;
-    padding: 10px !important;
-    font-size: 16px !important;
 }
 
 .ui-inputfield:focus, .ui-selectonemenu:focus {
