@@ -274,3 +274,23 @@ body {
     flex: 1;
     text-align: center;
 }
+
+.dot-red, .dot-orange, .dot-green {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    margin: auto;
+}
+
+.dot-red {
+    background-color: red;
+}
+
+.dot-orange {
+    background-color: orange;
+}
+
+.dot-green {
+    background-color: green;
+}

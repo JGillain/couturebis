@@ -43,7 +43,12 @@
                     </p:column>
                     <p:column>
                         <f:facet name="header">test loca</f:facet>
-                        <p:outputLabel value ="#{articleBean.getStockLocation(art)}"/>
+                        <h:panelGroup layout="block"
+                                      styleClass="#{articleBean.getStockLocation(art) == 0
+                                  ? 'dot-red'
+                                  : (articleBean.getStockLocation(art) le 5
+                                      ? 'dot-orange'
+                                      : 'dot-green')}" />
                     </p:column>
                     <p:column>
                         <f:facet name="header">test vente</f:facet>
@@ -63,11 +68,11 @@
                     </p:column>
 
                     <p:column>
-                        <p:commandButton rendered="#{ex.actif}" icon="pi pi-power-off" value ="Désactiver" action="formConfirmationArticle">
+                        <p:commandButton rendered="#{art.actif}" icon="pi pi-power-off" value ="Désactiver" action="formConfirmationArticle">
                             <f:setPropertyActionListener target="#{articleBean.article}" value="#{art}" />
                         </p:commandButton>
 
-                        <p:commandButton rendered="#{!ex.actif}" icon="pi pi-check" value ="Activer" action="#{articleBean.activdesactivArt}">
+                        <p:commandButton rendered="#{!art.actif}" icon="pi pi-check" value ="Activer" action="#{articleBean.activdesactivArt}">
                             <f:setPropertyActionListener target="#{articleBean.article}" value="#{art}" />
                         </p:commandButton>
                     </p:column>

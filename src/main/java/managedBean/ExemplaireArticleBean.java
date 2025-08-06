@@ -140,7 +140,7 @@ public class ExemplaireArticleBean implements Serializable {
             init();
             service.close();
         }
-        return ("/tableArticle.xhtml?faces-redirect=true");
+        return ("/tableExArticle.xhtml?faces-redirect=true");
     }
 
 
