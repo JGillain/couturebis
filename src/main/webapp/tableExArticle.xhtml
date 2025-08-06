@@ -33,7 +33,7 @@
 
                     <p:column>
                         <f:facet name="header">#{I18N['ExemplairesArticles.label.CodeBarre']}</f:facet>
-                        <p:outputLabel value ="#{ex.codeBarreIdCB != null ? ex.codeBarreIdCB.codeBarre : ex.articleIdArticle.codeBarreIdCB.codeBarre}"/>
+                        <p:outputLabel styleClass="barcode" value ="#{ex.codeBarreIdCB != null ? ex.codeBarreIdCB.codeBarre : ex.articleIdArticle.codeBarreIdCB.codeBarre}"/>
                     </p:column>
 
                     <p:column>
