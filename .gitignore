@@ -36,3 +36,5 @@ build/
 
 ### Mac OS ###
 .DS_Store
+/Jar-lib/
+/apache-tomcat-9.0.38/
