@@ -43,4 +43,14 @@ public class SvcExemplaireArticle extends Service<ExemplaireArticle> implements 
     public List<ExemplaireArticle> findAllInactive() {
         return finder.findByNamedQuery("ExArticle.findInactive", null);
     }
+    public int countAvailableExArticlesRent(Article article) {
+        Map<String, Object> param = new HashMap<>();
+        param.put("article", article);
+        return finder.findByNamedQuery("ExArticle.AvailableExArticlesRent", param).size();
+    }
+    public int countAvailableExArticlesSales(Article article) {
+        Map<String, Object> param = new HashMap<>();
+        param.put("article", article);
+        return finder.findByNamedQuery("ExArticle.AvailableExArticlesSales", param).size();
+    }
 }

@@ -5,7 +5,6 @@ import org.apache.log4j.Logger;
 import services.SvcArticle;
 import services.SvcCodeBarre;
 import services.SvcExemplaireArticle;
-import services.SvcFabricant;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.SessionScoped;
@@ -129,9 +128,21 @@ public class ArticleBean implements Serializable {
         return("/tableArticle.xhtml?faces-redirect=true");
     }
 
+    public int getStockVente(Article article) {
+        SvcExemplaireArticle service = new SvcExemplaireArticle();
+        int stockVente = service.countAvailableExArticlesSales(article);
+        service.close();
+        return stockVente;
+    }
+    public int getStockLocation(Article article) {
+        SvcExemplaireArticle service = new SvcExemplaireArticle();
+        int stockLocation = service.countAvailableExArticlesRent(article);
+        service.close();
+        return stockLocation;
+    }
+
     public String searchArticle()
     {
-
         SvcArticle service = new SvcArticle();
 
         if(service.getbyName(article.getNom()).isEmpty())

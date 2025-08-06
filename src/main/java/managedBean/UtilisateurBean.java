@@ -309,23 +309,6 @@ public class UtilisateurBean implements Serializable {
         return "/tableUtilisateursCli.xhtml?faces-redirect=true";
     }
   */
-    //Méthode qui va créer un nouveau membre en commencant par le nombre 400000000 (déprécié)
-    public String createNumMembre()
-    {
-        if (numMembre.equals("0")){
-            numMembre="400000000";
-            return numMembre;
-        }
-        else{
-            numMembre=String.valueOf(Integer.parseInt(numMembre)+1);
-            if (!numMembre.equals("500000000")){
-                return numMembre;
-            }
-            else {
-                return "999999999";
-            }
-        }
-    }
 
 
     /*Méthode qui permet de désactiver un utilisateur et de le réactiver en verifiant si son rôle est actif ou pas.
