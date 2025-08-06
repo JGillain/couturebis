@@ -1,6 +1,7 @@
 package services;
 
 
+import entities.Article;
 import entities.ExemplaireArticle;
 import org.apache.log4j.Logger;
 
@@ -22,12 +23,24 @@ public class SvcExemplaireArticle extends Service<ExemplaireArticle> implements 
     // Méthode qui permet de sauver un exemplaire d'article et de le mettre en DB
     @Override
     public ExemplaireArticle save(ExemplaireArticle EA) {
-        if (EA.getId() == 0) {
+        if (EA.getId() == null) {
+            em.persist(EA);
+        } else if (EA.getId() == 0) {
             em.persist(EA);
         } else {
             EA = em.merge(EA);
         }
 
         return EA;
+    }
+
+    public List<ExemplaireArticle> findAllExArticles() {
+        return finder.findByNamedQuery("ExArticle.findAllTri", null);
+    }
+    public List<ExemplaireArticle> findAllActive() {
+        return finder.findByNamedQuery("ExArticle.findActive", null);
+    }
+    public List<ExemplaireArticle> findAllInactive() {
+        return finder.findByNamedQuery("ExArticle.findInactive", null);
     }
 }

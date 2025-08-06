@@ -11,6 +11,14 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "exemplaire_article")
+@NamedQueries
+        ({
+                @NamedQuery(name = "ExArticle.findAllTri", query="SELECT EA FROM ExemplaireArticle EA ORDER BY EA.articleIdArticle.nom ASC"),
+                @NamedQuery(name = "ExArticle.findActive", query = "SELECT EA FROM ExemplaireArticle EA WHERE EA.actif=TRUE"),
+                @NamedQuery(name = "ExArticle.findInactive", query = "SELECT EA FROM ExemplaireArticle EA WHERE EA.actif=FALSE"),
+                @NamedQuery(name = "ExArticle.searchTri", query="SELECT EA FROM ExemplaireArticle EA WHERE EA.articleIdArticle.nom=:nom ORDER BY EA.articleIdArticle.nom ASC"),//A verifier
+                @NamedQuery(name = "ExArticle.search", query="SELECT EA FROM ExemplaireArticle EA WHERE EA.articleIdArticle.nom=:nom"),
+        })
 public class ExemplaireArticle implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -19,18 +27,18 @@ public class ExemplaireArticle implements Serializable {
     private Integer id;
 
     @NotNull
-    @Lob
+    @Enumerated(EnumType.STRING)
     @Column(name = "Etat", nullable = false)
-    private ExemplaireArticleEtatEnum etat;
+    private ExemplaireArticleEtatEnum etat = ExemplaireArticleEtatEnum.Bon;
 
     @NotNull
     @Column(name = "Actif", nullable = false)
-    private Boolean actif = false;
+    private Boolean actif = true;
 
     @Size(max = 500)
     @NotNull
     @Column(name = "CommentaireEtat", nullable = false, length = 500)
-    private String commentaireEtat;
+    private String commentaireEtat="";
 
     @NotNull
     @Column(name = "Loue", nullable = false)
@@ -45,7 +53,7 @@ public class ExemplaireArticle implements Serializable {
     private Boolean transfert = false;
 
     @NotNull
-    @Lob
+    @Enumerated(EnumType.STRING)
     @Column(name = "statut", nullable = false)
     private ExemplaireArticleStatutEnum statut;
 
@@ -59,9 +67,8 @@ public class ExemplaireArticle implements Serializable {
     @JoinColumn(name = "MagasinIdMagasin", nullable = false)
     private Magasin magasinIdMagasin;
 
-    @NotNull
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "codeBarreIdCB", nullable = false)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "codeBarreIdCB", nullable = true)
     private CodeBarre codeBarreIdCB;
 
     public CodeBarre getCodeBarreIdCB() {
@@ -164,4 +171,5 @@ public class ExemplaireArticle implements Serializable {
     public int hashCode() {
         return Objects.hash(id, etat, actif, commentaireEtat, loue, reserve, transfert, statut, articleIdArticle, magasinIdMagasin);
     }
+
 }

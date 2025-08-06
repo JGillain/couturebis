@@ -1,0 +1,64 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f = "http://java.sun.com/jsf/core"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:shiro="http://shiro.apache.org/tags"
+      xmlns:p="http://primefaces.org/ui">
+<ui:composition template="Template/template.xhtml">
+    <ui:define name="title">#{I18N['ExemplairesArticles.form.nouveau.titre']}</ui:define>
+
+    <ui:define name="content">
+        <p:growl id="growl" showDetail="true" sticky="true" />
+        <h:form id="formNewExArticle" prependId="false">
+            <h:head>
+                <title>#{I18N['ExemplairesArticles.form.nouveau.titre']}</title>
+            </h:head>
+            <h2 style="text-align:center">#{I18N['ExemplairesArticles.form.nouveau.titre']}</h2>
+
+            <p:panelGrid id="newrecform" columns="3" columnClasses="col1Newrec,col2Newrec,col3Newrec">
+
+                <p:outputLabel for="articleSelect" value="#{I18N['ExemplairesArticles.label.Article']}"/>
+                <p:selectOneMenu id="articleSelect"
+                                 value="#{exemplaireArticleBean.article}"
+                                 required="true"
+                                 requiredMessage="#{I18N['formulaire.message.required.article']}"
+                                 filter="true"
+                                 panelStyle="max-height:220px; overflow-y:auto"
+
+                                 converter="articleConverter">
+                    <f:selectItems value="#{articleBean.readAll}" var="ex" itemLabel="#{ex.nom}" itemValue="#{ex}"/>
+                </p:selectOneMenu>
+                <h:message for="articleSelect" styleClass="errorMessage"/>
+
+                <p:outputLabel for="quantite" value="#{I18N['ExemplairesArticles.label.Quantite']}"/>
+                <p:inputNumber id="quantite" value="#{exemplaireArticleBean.nombreExemplaire}" decimalPlaces="0" min="1" max="10000">
+                    <f:validateLongRange minimum="1"
+                                         minimumMessage="#{I18N['formulaire.message.validation.min1']}"/>
+                </p:inputNumber>
+                <h:message for="quantite" styleClass="errorMessage"/>
+
+                <p:outputLabel for="statut" value="#{I18N['ExemplairesArticles.label.Statut']}"/>
+                <p:selectOneMenu id="statut" value="#{exemplaireArticleBean.flagVente}" required="true">
+                    <f:selectItem itemLabel="#{I18N['ExemplairesArticles.statut.location']}" itemValue="False"/>
+                    <f:selectItem itemLabel="#{I18N['ExemplairesArticles.statut.vente']}" itemValue="True"/>
+                </p:selectOneMenu>
+                <h:message for="statut" styleClass="errorMessage"/>
+
+
+            </p:panelGrid>
+            <p:commandButton icon="pi pi-check-circle"
+                                           value="#{I18N['application.button.validate']}"
+                                           action="#{exemplaireArticleBean.saveBatch()}"
+                                           ajax="false"/>
+            <p:commandButton icon="pi pi-home"
+                             value="#{I18N['application.button.return']}"
+                             action="#{exemplaireArticleBean.flushExArt()}"
+                             immediate="true"/>
+        </h:form>
+    </ui:define>
+</ui:composition>
+
+</html>

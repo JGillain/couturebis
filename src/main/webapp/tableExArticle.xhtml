@@ -1,0 +1,97 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:shiro="http://shiro.apache.org/tags"
+      xmlns:p="http://primefaces.org/ui">
+<!--TODO to adapt-->
+
+<ui:composition template="Template/template.xhtml">
+
+    <ui:define name="title">#{I18N['application.exempl.title']}</ui:define>
+    <ui:define name="content">
+
+        <h:form prependId="false">
+
+            <p:panel layout="block" id="content">
+
+                <p:growl id="growl" showDetail="true" sticky="true" />
+                <h2 style="text-align:center">#{I18N['application.article.title']}</h2>
+
+                <p:dataTable value="#{exemplaireArticleBean.listexart}" var="ex" id="tableExArticle"
+                             Class="table" headerClass="table-header" rowClasses="table-odd-row,table-even-row" rowStyleClass="#{ex.actif ? '' : 'highlight-row'}">
+
+                    <p:column>
+
+                        <f:facet name="header">#{I18N['Articles.label.denomination']}</f:facet>
+
+                        <p:outputLabel value ="#{ex.articleIdArticle.nom}"/>
+                    </p:column>
+
+                    <p:column>
+                        <f:facet name="header">#{I18N['ExemplairesArticles.label.CodeBarre']}</f:facet>
+                        <p:outputLabel styleClass="barcode" value ="#{ex.codeBarreIdCB != null ? ex.codeBarreIdCB.codeBarre : ex.articleIdArticle.codeBarreIdCB.codeBarre}"/>
+                    </p:column>
+
+                    <p:column>
+                        <f:facet name="header">#{I18N['ExemplairesArticles.label.liste.Status']}</f:facet>
+                        <p:outputLabel value ="#{ex.statut}"/>
+                    </p:column>
+
+                    <p:column>
+                        <f:facet name="header">#{I18N['ExemplairesArticles.label.liste.Etat']}</f:facet>
+                        <p:outputLabel value ="#{ex.statut == 'Vente' ? '---' : ex.etat}"/>
+                    </p:column>
+
+                    <p:column>
+                        <p:commandButton  icon="pi pi-plus" value="Details" action="articleDetail">
+                            <f:setPropertyActionListener target="#{exemplaireArticleBean.article}" value="#{ex}"/>
+                        </p:commandButton>
+                    </p:column>
+
+                    <p:column>
+                        <p:commandButton  icon="pi pi-pencil" value="Modifier" action="formEditArticle.xhtml?faces-redirect=true">
+                            <f:setPropertyActionListener target="#{articleBean.article}" value="#{ex}" />
+                        </p:commandButton>
+                    </p:column>
+
+                    <p:column>
+                        <p:commandButton rendered="#{ex.actif}" icon="pi pi-power-off" value ="Désactiver" action="#{exemplaireArticleBean.activdesactivExArt}">
+                            <f:setPropertyActionListener target="#{exemplaireArticleBean.EA}" value="#{ex}" />
+                        </p:commandButton>
+
+                        <p:commandButton rendered="#{!ex.actif}" icon="pi pi-check" value ="Activer" action="#{exemplaireArticleBean.activdesactivExArt}">
+                            <f:setPropertyActionListener target="#{exemplaireArticleBean.EA}" value="#{ex}" />
+                        </p:commandButton>
+                    </p:column>
+
+                </p:dataTable>
+            </p:panel>
+
+            <h:panelGroup layout="block" styleClass="button-bar">
+                <!-- Left aligned buttons -->
+                <h:panelGroup styleClass="left-buttons">
+                    <p:commandButton icon="pi pi-plus" value="#{I18N['application.button.new']}" action="formNewExArticle.xhtml?faces-redirect=true" />
+                </h:panelGroup>
+
+                <!-- Center aligned buttons -->
+                <h:panelGroup styleClass="center-buttons">
+                    <p:commandButton icon="pi pi-search" value="#{I18N['application.button.find']}" action="formSearchExArticle.xhtml?faces-redirect=true"/>
+                    <p:commandButton icon="pi pi-search-plus" value="#{I18N['application.button.artActiv']}" action="#{exemplaireArticleBean.getReadActiv}" update="tableExArticle"/>
+                    <p:commandButton icon="pi pi-search-minus" value="#{I18N['application.button.artInactiv']}" action="#{exemplaireArticleBean.getReadInactiv}" update="tableExArticle"/>
+                </h:panelGroup>
+
+                <!-- Right aligned button -->
+                <h:panelGroup styleClass="right-buttons">
+                    <p:commandButton icon="pi pi-home" value="#{I18N['application.button.returnbienvenue']}" action="#{exemplaireArticleBean.flushBienv}"/>
+                </h:panelGroup>
+            </h:panelGroup>
+
+        </h:form>
+
+    </ui:define>
+</ui:composition>
+</html>

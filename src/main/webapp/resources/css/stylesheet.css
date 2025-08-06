@@ -231,7 +231,7 @@ body {
 
 @font-face {
     font-family: 'BarcodeFont';
-    src: url("../fonts/LibreBarcodeEAN13Text-Regular.ttf") format('truetype');
+    src: url("#{resource['fonts/LibreBarcodeEAN13Text-Regular.ttf']}") format('truetype');
 }
 
 .barcode {
