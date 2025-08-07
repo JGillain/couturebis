@@ -325,8 +325,8 @@ public class UtilisateurBean implements Serializable {
             saveActif();
         }
 
-            init();
-            return "/tableUtilisateurs.xhtml?faces-redirect=true";
+        init();
+        return "/tableUtilisateurs.xhtml?faces-redirect=true";
 
     }
 

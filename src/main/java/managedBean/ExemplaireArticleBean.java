@@ -143,6 +143,12 @@ public class ExemplaireArticleBean implements Serializable {
         return ("/tableExArticle.xhtml?faces-redirect=true");
     }
 
+    public String getExArticleByArticle() {
+        SvcExemplaireArticle service = new SvcExemplaireArticle();
+        listexart = service.findByArticle(article);
+        service.close();
+        return "/tableExArticle.xhtml?faces-redirect=true";
+    }
 
     /*
      * Méthode qui permet via le service de retourner la liste de tous les exemplaire articles actifs
@@ -164,6 +170,7 @@ public class ExemplaireArticleBean implements Serializable {
 
         service.close();
     }
+
 
     public String flushBienv() {
         init();

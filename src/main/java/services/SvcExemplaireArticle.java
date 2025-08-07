@@ -53,4 +53,14 @@ public class SvcExemplaireArticle extends Service<ExemplaireArticle> implements 
         param.put("article", article);
         return finder.findByNamedQuery("ExArticle.AvailableExArticlesSales", param).size();
     }
+    public List<ExemplaireArticle> findByArticle(Article article) {
+        Map<String, Object> param = new HashMap<>();
+        param.put("article", article);
+        return finder.findByNamedQuery("ExArticle.findByArticle", param);
+    }
+    public List<ExemplaireArticle> search (String nom) {
+        Map<String, Object> param = new HashMap<>();
+        param.put("nom", nom);
+        return finder.findByNamedQuery("ExArticle.findByArticle", param);
+    }
 }
