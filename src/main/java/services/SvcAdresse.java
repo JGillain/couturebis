@@ -19,6 +19,21 @@ public class SvcAdresse extends Service<Adresse> implements Serializable {
     public SvcAdresse()
     {
         super();
+        log.info("SvcAdresse called");
+    }
+
+    // Méthode qui permet de sauver une adresse et de la mettre en DB
+    @Override
+    public Adresse save(Adresse adresse) {
+        if (adresse.getId() == null) {
+            em.persist(adresse);
+        } else if (adresse.getId()==0) {
+            em.persist(adresse);
+        } else {
+            adresse = em.merge(adresse);
+        }
+
+        return adresse;
     }
 
     //Méthode qui permet via une requete de retourner la liste entière des adresses
@@ -37,20 +52,4 @@ public class SvcAdresse extends Service<Adresse> implements Serializable {
         param.put("rue", ad.getRue());
         return finder.findByNamedQuery("Adresses.findOne",param);
     }
-
-    // Méthode qui permet de sauver une adresse et de la mettre en DB
-    @Override
-    public Adresse save(Adresse adresse) {
-        if (adresse.getId() == null) {
-            em.persist(adresse);
-        } else if (adresse.getId()==0) {
-            em.persist(adresse);
-        } else {
-            adresse = em.merge(adresse);
-        }
-
-        return adresse;
-    }
-
-
 }

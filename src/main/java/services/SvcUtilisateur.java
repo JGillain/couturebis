@@ -1,5 +1,6 @@
 package services;
 
+import entities.Adresse;
 import entities.Utilisateur;
 import org.apache.log4j.Logger;
 
@@ -10,18 +11,21 @@ import java.util.Map;
 
 public class SvcUtilisateur extends Service<Utilisateur> implements Serializable {
     //Déclaration des variables
-    private static final Logger log = Logger.getLogger(SvcArticle.class);
+    private static final Logger log = Logger.getLogger(SvcUtilisateur.class);
     private static final long serialVersionUID = 1L;
     Map<String, Object> params = new HashMap<String, Object>();
 
     public SvcUtilisateur() {
         super();
+        log.info("SvcUtilisateur called");
     }
 
     // Méthode qui permet de sauver un utilisateur et de le mettre en DB
     @Override
     public Utilisateur save(Utilisateur utilisateur) {
-        if (utilisateur.getId() == 0) {
+        if (utilisateur.getId() == null) {
+            em.persist(utilisateur);
+        } else if (utilisateur.getId() == 0) {
             em.persist(utilisateur);
         } else {
             utilisateur = em.merge(utilisateur);
@@ -37,7 +41,23 @@ public class SvcUtilisateur extends Service<Utilisateur> implements Serializable
         param.put("prenom", util.getPrenom());
         param.put("sexe", util.getSexe());
         param.put("courriel", util.getCourriel());
-        return finder.findByNamedQuery("Utilisateurs.findOne",param);
+        return finder.findByNamedQuery("Utilisateur.findOne",param);
+    }
+
+    public List<Utilisateur> findDuplicate(Utilisateur u, Adresse addr){
+        Map<String, Object> param = new HashMap<>();
+        param.put("nom", u.getNom());
+        param.put("addr", addr);
+        param.put("prenom", u.getPrenom());
+        param.put("selfId", u.getId());
+        return finder.findByNamedQuery("Utilisateur.FindDuplicateUtilisateur",param);
+    }
+
+    public List<Utilisateur> findByCourrielExceptSelf(String courriel, Integer id){
+        Map<String, Object> param = new HashMap<>();
+        param.put("courriel", courriel);
+        param.put("selfId", id);
+        return finder.findByNamedQuery("Utilisateur.FindDuplicateEmail",param);
     }
 
     //Méthode qui permet via une requete de retourner la liste entière des utilisateurs
@@ -65,14 +85,6 @@ public class SvcUtilisateur extends Service<Utilisateur> implements Serializable
     public List<Utilisateur> findAllUtilisateursCliInactiv() {
         return finder.findByNamedQuery("Utilisateur.findCliInactiv", null);
     }
-
-    //Méthode qui permet via une requete de retourner une avec le dernier numero d'utilisateur (client)
-    public List<Utilisateur> findlastMembre()
-    {
-        return finder.findByNamedQuery("Utilisateur.findLastMembre",null);
-    }
-
-
 
     public List<Utilisateur> getByName(String nom) {
         Map<String, String> param = new HashMap<>();

@@ -10,6 +10,7 @@ import java.util.Objects;
 @Table(name = "role")
 @NamedQueries({
         @NamedQuery(name = "Role.findRoleById", query="SELECT r FROM Role r WHERE r.id=:id"),
+        @NamedQuery(name = "Role.findRoleByNom", query="SELECT r FROM Role r WHERE r.denomination=:nom"),
         @NamedQuery(name = "Role.findAllUtil", query="SELECT r FROM Role r WHERE r.denomination <>'Client' AND r.denomination <>'Administrateur'")
 })
 

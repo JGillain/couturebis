@@ -10,18 +10,21 @@ import java.util.Map;
 
 public class SvcTarif extends Service<Tarif> implements Serializable {
     //Déclaration des variables
-    private static final Logger log = Logger.getLogger(SvcArticle.class);
+    private static final Logger log = Logger.getLogger(SvcTarif.class);
     private static final long serialVersionUID = 1L;
     Map<String, Object> params = new HashMap<String, Object>();
 
     public SvcTarif() {
         super();
+        log.info("SvcTarif called");
     }
 
     // Méthode qui permet de sauver un tarif et de le mettre en DB
     @Override
     public Tarif save(Tarif tarif) {
-        if (tarif.getId() == 0) {
+        if (tarif.getId() == null) {
+            em.persist(tarif);
+        } else if (tarif.getId() == 0) {
             em.persist(tarif);
         } else {
             tarif = em.merge(tarif);

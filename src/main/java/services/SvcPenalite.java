@@ -9,18 +9,21 @@ import java.util.Map;
 
 public class SvcPenalite extends Service<Penalite> implements Serializable {
     //Déclaration des variables
-    private static final Logger log = Logger.getLogger(SvcArticle.class);
+    private static final Logger log = Logger.getLogger(SvcPenalite.class);
     private static final long serialVersionUID = 1L;
     Map<String, Object> params = new HashMap<String, Object>();
 
     public SvcPenalite() {
         super();
+        log.info("SvcPenalite called");
     }
 
     // Méthode qui permet de sauver une penalite et de la mettre en DB
     @Override
     public Penalite save(Penalite penalite) {
-        if (penalite.getId() == 0) {
+        if (penalite.getId() == null) {
+            em.persist(penalite);
+        } else if (penalite.getId() == 0) {
             em.persist(penalite);
         } else {
             penalite = em.merge(penalite);

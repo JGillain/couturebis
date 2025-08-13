@@ -4,20 +4,21 @@ import entities.*;
 
 import javax.annotation.PostConstruct;
 import org.apache.log4j.Logger;
+import org.primefaces.PrimeFaces;
 import security.SecurityManager;
-import services.SvcRole;
-import services.SvcUtilisateur;
-import services.SvcUtilisateurAdresse;
-import services.SvcUtilisateurRole;
+import services.*;
 
+import javax.el.MethodExpression;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityTransaction;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Named
 @SessionScoped
@@ -30,7 +31,6 @@ public class UtilisateurBean implements Serializable {
     private List<Utilisateur> listUtil = new ArrayList<>();
     private List<Utilisateur> listCli = new ArrayList<>();
     private List<Utilisateur> searchResults;
-    private String numMembre;
     private Adresse adresses;
     private Role role;
     private UtilisateurAdresse UA;
@@ -38,9 +38,23 @@ public class UtilisateurBean implements Serializable {
     private String mdpNouveau;
     private String mdpNouveau2;
 
+    @Inject
+    private LoginBean loginBean;
+
     public UtilisateurBean() {
         super();
     }
+// TODO(sec): blocking role changes for 'administrateur'
+//
+// TODO(sec): prevent self-demotion (manager -> utilisateur)
+// TODO(sec): prevent demotion of last active manager
+//
+// TODO(sec): verify current user (admin or self) before sensitive actions (e.g., changePassword)
+//
+// TODO(sec): re-check user.actif before mutating operations
+//
+// TODO(sec): ensure barcode gen only for CLIENT (already done)
+// TODO(sec): hide admin-only UI with <shiro:hasAnyRoles name="1,2">
 
     @PostConstruct
     public void init() {
@@ -52,25 +66,51 @@ public class UtilisateurBean implements Serializable {
         UR = new UtilisateurRole();
         adresses = new Adresse();
         role = new Role();
-        SvcUtilisateur service = new SvcUtilisateur();
-        if (service.findlastMembre().size()==0){
-            numMembre = "0";
-        }
-        else {
-            numMembre="0";
-        }
-        service.close();
+    }
 
+    public void flushBasic(){
+        log.debug("flushBasic called");
+        utilisateur = new Utilisateur();
+        UA = new UtilisateurAdresse();
+        UR = new UtilisateurRole();
+        adresses = new Adresse();
+        role = new Role();
+        mdpNouveau="";
+        mdpNouveau2="";
+    }
 
+    public boolean estClient(){
+        log.info("estClient() called");
+        log.debug(utilisateur.getUtilisateurRole().stream()
+                .map(UtilisateurRole::getRoleIdRole)
+                .anyMatch(r -> "CLIENT".equalsIgnoreCase(r.getDenomination())));
+        return utilisateur.getUtilisateurRole().stream()
+                .map(UtilisateurRole::getRoleIdRole)
+                .anyMatch(r -> "CLIENT".equalsIgnoreCase(r.getDenomination()));
     }
 
     public String redirectModifUtil(){
         for (UtilisateurAdresse ua: utilisateur.getUtilisateurAdresse()) {
             if(ua.getActif()){
                 adresses=ua.getAdresseIdAdresse();
+                break;
+            }
+        }
+        for (UtilisateurRole ur: utilisateur.getUtilisateurRole()) {
+            if(ur.getActif() && !ur.getRoleIdRole().getDenomination().equalsIgnoreCase("CLIENT")){
+                role=ur.getRoleIdRole();
+                break;
             }
         }
         return "/formEditUtilisateur.xhtml?faces-redirect=true";
+    }
+    public String redirectModifUtilCli(){
+        for (UtilisateurAdresse ua: utilisateur.getUtilisateurAdresse()) {
+            if(ua.getActif()){
+                adresses=ua.getAdresseIdAdresse();
+            }
+        }
+        return "/formEditUtilisateurCli.xhtml?faces-redirect=true";
     }
 
     public void saveActif() {
@@ -98,222 +138,344 @@ public class UtilisateurBean implements Serializable {
         SvcUtilisateur service = new SvcUtilisateur();
         SvcUtilisateurAdresse serviceUA = new SvcUtilisateurAdresse();
         SvcUtilisateurRole serviceUR = new SvcUtilisateurRole();
+        SvcCodeBarre serviceCB = null;
+
+        // Partage de l'EntityManager pour opérer dans la même transaction
         serviceUA.setEm(service.getEm());
+        serviceUR.setEm(service.getEm());
+
+        // Détection "auto-édition" (l'utilisateur connecté modifie sa propre fiche)
+        boolean isSelf = (loginBean != null && loginBean.getUtilisateurAuth() != null && utilisateur != null
+                && java.util.Objects.equals(loginBean.getUtilisateurAuth().getId(), utilisateur.getId()));
+
+        // Rôle demandé dans le formulaire (peut être null selon le formulaire)
+
+        String urDen = (UR != null && UR.getRoleIdRole() != null)
+                ? UR.getRoleIdRole().getDenomination()
+                : null;
+
         EntityTransaction transaction = service.getTransaction();
         transaction.begin();
         try {
+            // Génération du code-barres si le user est (ou devient) CLIENT et n'en a pas encore
+            if ((estClient() || "CLIENT".equalsIgnoreCase(urDen)) && utilisateur.getCodeBarreIdCB() == null) {
+                log.debug("entrée génération code-barres");
+                serviceCB = new SvcCodeBarre();
+                serviceCB.setEm(service.getEm());
+                List<String> code = new CodeBarreBean().createCB(true, 1); // true = CLIENT
+                if (code.isEmpty()) {
+                    throw new IllegalStateException("erreur lors de la génération du code-barres");
+                }
+                CodeBarre cb = new CodeBarre();
+                cb.setCodeBarre(code.get(0));
+                serviceCB.save(cb);
+                utilisateur.setCodeBarreIdCB(cb);
+            }
+
+            // Persistance de l'entité Utilisateur
             service.save(utilisateur);
 
-            if(utilisateur.getId()!=0) {
+            // ---------------- GESTION DES RÔLES (UR peut être null) ----------------
+            if (UR != null) {
+                // Savoir si le lien de rôle UR est déjà dans la collection (évite les doublons)
+                boolean attached = utilisateur.getUtilisateurRole().contains(UR);
+
+                if ("MANAGER".equalsIgnoreCase(urDen)) {
+                    // Promotion vers MANAGER : activer UR et désactiver les rôles 'UTILISATEUR' actifs
+                    UR.setActif(true);
+                    if (!attached) utilisateur.getUtilisateurRole().add(UR);
+
+                    for (UtilisateurRole r : utilisateur.getUtilisateurRole()) {
+                        if (r != UR
+                                && Boolean.TRUE.equals(r.getActif())
+                                && "UTILISATEUR".equalsIgnoreCase(r.getRoleIdRole().getDenomination())) {
+                            r.setActif(false);
+                            serviceUR.save(r);
+                        }
+                    }
+                    serviceUR.save(UR);
+
+                } else if ("UTILISATEUR".equalsIgnoreCase(urDen)) {
+                    // Demande de passer 'UTILISATEUR'
+                    boolean hasActiveManager = utilisateur.getUtilisateurRole().stream()
+                            .anyMatch(r -> r != UR
+                                    && Boolean.TRUE.equals(r.getActif())
+                                    && "MANAGER".equalsIgnoreCase(r.getRoleIdRole().getDenomination()));
+
+                    if (hasActiveManager) {
+                        if (isSelf) {
+                            // Interdire l'auto-rétrogradation : ne pas activer UR
+                            UR.setActif(false);
+                            if (attached) serviceUR.save(UR);
+                            FacesContext.getCurrentInstance().addMessage(null,
+                                    new FacesMessage(FacesMessage.SEVERITY_WARN, "Vous ne pouvez pas vous rétrograder vous-même.", null));
+                        } else {
+                            // Rétrograder un autre utilisateur : désactiver MANAGER et activer UTILISATEUR
+                            for (UtilisateurRole r : utilisateur.getUtilisateurRole()) {
+                                if (Boolean.TRUE.equals(r.getActif())
+                                        && "MANAGER".equalsIgnoreCase(r.getRoleIdRole().getDenomination())) {
+                                    r.setActif(false);
+                                    serviceUR.save(r);
+                                }
+                            }
+                            UR.setActif(true);
+                            if (!attached) utilisateur.getUtilisateurRole().add(UR);
+                            serviceUR.save(UR);
+                        }
+                    } else {
+                        // Aucun MANAGER actif : simplement (ré)activer UTILISATEUR
+                        UR.setActif(true);
+                        if (!attached) utilisateur.getUtilisateurRole().add(UR);
+                        serviceUR.save(UR);
+                    }
+
+                } else if (urDen != null) {
+                    // Autres rôles passés par le formulaire : activer et sauvegarder
+                    UR.setActif(true);
+                    if (!attached) utilisateur.getUtilisateurRole().add(UR);
+                    serviceUR.save(UR);
+                }
+            }
+            // ---------------- FIN GESTION DES RÔLES ----------------
+
+            // Garantir une seule adresse active (UA = celle choisie)
+            if (utilisateur.getId() != null) {
                 for (UtilisateurAdresse utiladress : utilisateur.getUtilisateurAdresse()) {
-                    if (!utiladress.equals(UA) && utiladress.getActif()) {
+                    if (!utiladress.equals(UA) && Boolean.TRUE.equals(utiladress.getActif())) {
                         utiladress.setActif(false);
                         serviceUA.save(utiladress);
                     }
                 }
-                for (UtilisateurRole utilrole : utilisateur.getUtilisateurRole()) {
-                    if (!utilrole.equals(UR) && utilrole.getActif()) {
-                        utilrole.setActif(false);
-                        serviceUR.save(utilrole);
-                    }
-                }
             }
-            serviceUR.save(UR);
-            serviceUA.save(UA);
+            if (UA != null) {
+                UA.setActif(true);
+                serviceUA.save(UA);
+            }
+
             transaction.commit();
             FacesContext fc = FacesContext.getCurrentInstance();
             fc.getExternalContext().getFlash().setKeepMessages(true);
-            fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"L'operation a reussie",null));
-        } finally {
-            if (transaction.isActive()) {
-                transaction.rollback();
-                FacesContext fc = FacesContext.getCurrentInstance();
-                fc.getExternalContext().getFlash().setKeepMessages(true);
-                fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"L'operation n'a pas reussie",null));
-            }
+            fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "L'opération a réussi", null));
 
-            service.close();
-        }
+        } catch (Exception e) {
+            if (transaction.isActive()) transaction.rollback();
+            Throwable root = e; while (root.getCause() != null) root = root.getCause();
+            log.error("saveUtilisateur a échoué → " + root.getClass().getSimpleName() + ": " + root.getMessage(), e);
 
-    }
-    public String modifMdp()
-    {
-        SvcUtilisateur serviceU = new SvcUtilisateur();
-        EntityTransaction transaction = serviceU.getTransaction();
-        log.debug("utilisateur objet : " + utilisateur);
-        log.debug("utilisateur findbyLogin : " + serviceU.findByLogin(utilisateur.getLogin()).get(0).getMdp());
-        log.debug("utilisateur getmdp : " + utilisateur.getMdp());
-
-        try
-        {
-            if(!mdpNouveau.equals(mdpNouveau2))
-            {
-                FacesContext fc = FacesContext.getCurrentInstance();
-                fc.getExternalContext().getFlash().setKeepMessages(true);
-                fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Le nouveau mot de passe et la confirmation ne correspondent pas", null));
-            }
-            else
-            {
-                if (utilisateur.getMdp().equals(serviceU.findByLogin(utilisateur.getLogin()).get(0).getMdp())) {
-                    if (SecurityManager.PasswordMatch(mdpNouveau, utilisateur.getMdp())) {
-                        FacesContext fc = FacesContext.getCurrentInstance();
-                        fc.getExternalContext().getFlash().setKeepMessages(true);
-                        fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "le mot de passe est le même que précédemment", null));
-                    } else {
-
-                        transaction.begin();
-                        utilisateur.setMdp(mdpNouveau);
-                        serviceU.save(utilisateur);
-                        transaction.commit();
-                        FacesContext fc = FacesContext.getCurrentInstance();
-                        fc.getExternalContext().getFlash().setKeepMessages(true);
-                        fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "L'operation a reussie", null));
-
-                    }
-
-                }
-            }
-        }
-        catch (NullPointerException npe)
-        {
             FacesContext fc = FacesContext.getCurrentInstance();
             fc.getExternalContext().getFlash().setKeepMessages(true);
-            fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Une erreur est survenue(erreur 101), veuillez contacter le support technique", null));
+            fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "L'opération n'a pas réussi", null));
+
+        } finally {
+            service.close();
         }
-        finally {
-            if (transaction.isActive()) {
-                transaction.rollback();
-                FacesContext fc = FacesContext.getCurrentInstance();
-                fc.getExternalContext().getFlash().setKeepMessages(true);
-                fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "L'operation n'a pas reussie", null));
+    }
+
+    public String modifMdp() {
+        log.debug("modifMdp() called"); // visibilité côté serveur
+
+        SvcUtilisateur serviceU = new SvcUtilisateur();
+        EntityTransaction transaction = serviceU.getTransaction();
+        try {
+            // filet de sécurité si jamais le validateur n’a pas tourné
+            if (mdpNouveau == null || mdpNouveau2 == null || !mdpNouveau.equals(mdpNouveau2)) {
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_WARN,
+                                "Le nouveau mot de passe et la confirmation ne correspondent pas.", null));
+                FacesContext.getCurrentInstance().validationFailed();
+                return null; // rester sur la page
             }
+
+            // refuser un mot de passe identique à l’ancien
+            if (SecurityManager.PasswordMatch(mdpNouveau, utilisateur.getMdp())) {
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_WARN,
+                                "Le nouveau mot de passe est identique à l'ancien.", null));
+                FacesContext.getCurrentInstance().validationFailed();
+                return null;
+            }
+
+            transaction.begin();
+            utilisateur.setMdp(SecurityManager.encryptPassword(mdpNouveau)); // hash
+            serviceU.save(utilisateur);
+            transaction.commit();
+
+            // reset champs
+            mdpNouveau = null;
+            mdpNouveau2 = null;
+
+            // message succès
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_INFO, "Mot de passe changé.", null));
+
+            // >>> fermer le dialog côté serveur (pas d’oncomplete côté client)
+            PrimeFaces.current().executeScript("PF('dlg1').hide();");
+
+            // (facultatif) forcer le rafraîchissement du growl
+            // PrimeFaces.current().ajax().update(":growl");
+
+            return null; // rester sur la vue (AJAX)
+        } catch (Exception e) {
+            if (transaction.isActive()) transaction.rollback();
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Échec de la modification du mot de passe.", null));
+            FacesContext.getCurrentInstance().validationFailed();
+            return null;
+        } finally {
             serviceU.close();
         }
-
-        init();
-        return "/tableUtilisateurs.xhtml?faces-redirect=true";
     }
 
     public String newUtil() {
-        boolean flag = false;
-        SvcUtilisateurAdresse serviceUA = new SvcUtilisateurAdresse();
-        SvcUtilisateurRole serviceUR = new SvcUtilisateurRole();
-        utilisateur.setNom(utilisateur.getNom().substring(0,1).toUpperCase() + utilisateur.getNom().substring(1));
-        utilisateur.setPrenom(utilisateur.getPrenom().substring(0,1).toUpperCase() + utilisateur.getPrenom().substring(1));
+        SvcUtilisateur        svcU  = new SvcUtilisateur();
+        SvcUtilisateurAdresse svcUA = new SvcUtilisateurAdresse();
+        SvcUtilisateurRole    svcUR = new SvcUtilisateurRole();
 
+        try {
+            // Normalisation du nom
+            utilisateur.setNom(cap(utilisateur.getNom()));
+            utilisateur.setPrenom(cap(utilisateur.getPrenom()));
+            // chiffrage du mot de passe
+            utilisateur.setMdp(SecurityManager.encryptPassword(utilisateur.getMdp()));
+            // Duplicate checks
+            boolean dupIdentity = !svcU.findDuplicate(utilisateur, adresses).isEmpty();
+            boolean dupEmail = utilisateur.getCourriel() != null
+                    && !svcU.findByCourrielExceptSelf(utilisateur.getCourriel(), utilisateur.getId()).isEmpty();
 
-        //log.debug((SecurityManager.encryptPassword(utilisateur.getMdp())));
-
-        //PasswordMatcher matcher = new PasswordMatcher();
-        //log.debug(matcher.getPasswordService().passwordsMatch(utilisateur.getMdp(),SecurityManager.encryptPassword(utilisateur.getMdp())));
-
-        log.debug("utilisateur objet : " + utilisateur);
-        if (utilisateur.getId()!=0) {
-            for (UtilisateurAdresse ua : utilisateur.getUtilisateurAdresse()) {
-                if (ua.getAdresseIdAdresse().equals(adresses)) {
-                    flag = true;
-                    UA = ua;
-                    break;
-                }
+            if (dupIdentity || dupEmail) {
+                FacesContext fc = FacesContext.getCurrentInstance();
+                fc.addMessage(null, new FacesMessage(
+                        FacesMessage.SEVERITY_WARN,
+                        dupEmail ? "L’e-mail est déjà utilisé." : "Un utilisateur identique existe déjà.",
+                        null));
+                return null; //affiche erreur sans quitter la page
             }
-        }
-        if (!flag){
-            UA = serviceUA.createUtilisateurAdresse(utilisateur, adresses);
-            UR = serviceUR.createUtilisateurRole(utilisateur, role);
-        }
-        if(verifUtilExist(utilisateur)) {
-            UA.setActif(true);
+
+            // 3) UA: reutilise si meme adresse, sinon cree nouveau. garde seulement l'adresse renseignee comme active
+            UA = null;
+            if (utilisateur.getId() != null && utilisateur.getId() != 0
+                    && utilisateur.getUtilisateurAdresse() != null) {
+                UA = utilisateur.getUtilisateurAdresse().stream()
+                        .filter(ua -> ua.getAdresseIdAdresse()!=null && adresses!=null
+                                && Objects.equals(ua.getAdresseIdAdresse().getId(), adresses.getId()))
+                        .findFirst().orElse(null);
+            }
+            if (UA == null) {
+                UA = svcUA.createUtilisateurAdresse(utilisateur, adresses);
+            }
+            UA.setActif(true); // others will be turned off in saveUtilisateur()
+
+            // 4) UR: selected employment role (EMPLOYE or MANAGER)
+            if (role == null || role.getId() == null) {
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_WARN, "Choisissez un rôle (Employé ou Manager).", null));
+                return null;
+            }
+            UR = null;
+            if (utilisateur.getUtilisateurRole() != null) {
+                UR = utilisateur.getUtilisateurRole().stream()
+                        .filter(r -> r.getRoleIdRole()!=null
+                                && Objects.equals(r.getRoleIdRole().getId(), role.getId()))
+                        .findFirst().orElse(null);
+            }
+            if (UR == null) {
+                UR = svcUR.createUtilisateurRole(utilisateur, role);
+            }
+            UR.setActif(true); // MANAGER>EMPLOYE rule handled in saveUtilisateur()
+
+            // 5) Persist (hierarchy, one active address, barcode only if client, etc.)
             saveUtilisateur();
-        }else {
 
-            FacesContext fc = FacesContext.getCurrentInstance();
-            fc.getExternalContext().getFlash().setKeepMessages(true);
-            fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"L'utilisateur existe déjà tel quel en DB; opération échouée",null));
-        }
-
+            // 6) Reset & redirect
             init();
             return "/tableUtilisateurs.xhtml?faces-redirect=true";
 
-    }
-
-
-    //todo : test the function to check if user exist in the case of changed roles
-
-    public boolean verifUtilExist(Utilisateur util)
-    {
-        SvcUtilisateur serviceU = new SvcUtilisateur();
-        boolean flag= false;
-        if (util.getId()!=0) {
-            for (UtilisateurAdresse ua : util.getUtilisateurAdresse()) {
-                if (ua.getAdresseIdAdresse().equals(adresses) && ua.getActif()) {
-                    flag = true;
-                    break;
-                }
-            }
-            if (serviceU.findOneUtilisateur(util).size() > 0 && flag) {
-                serviceU.close();
-                return false;
-            } else {
-                serviceU.close();
-                return true;
-            }
-        }
-        else {
-            if (serviceU.findOneUtilisateur(util).size() > 0) {
-                serviceU.close();
-                return false;
-            } else {
-                serviceU.close();
-                return true;
-            }
+        } finally {
+            try { svcUR.close(); } catch (Exception ignore) {}
+            try { svcUA.close(); } catch (Exception ignore) {}
+            try { svcU.close(); }  catch (Exception ignore) {}
         }
     }
 
-    //todo : correct function for creating new client
-/*
     public String newUtilCli() {
-        boolean flag = false;
-        SvcUtilisateurAdresse serviceUA = new SvcUtilisateurAdresse();
-        SvcRole serviceR = new SvcRole();
-        utilisateur.setNom(utilisateur.getNom().substring(0,1).toUpperCase() + utilisateur.getNom().substring(1));
-        utilisateur.setPrenom(utilisateur.getPrenom().substring(0,1).toUpperCase() + utilisateur.getPrenom().substring(1));
-        utilisateur.setRoles(serviceR.findRole("Client").get(0));
-        utilisateur.setNumMembre(createNumMembre());
-        if (utilisateur.getIdUtilisateurs()!=0) {
-            for (UtilisateursAdresses ua : utilisateur.getUtilisateursAdresses()) {
-                if (ua.getAdresse().equals(adresses)) {
-                    flag = true;
-                    UA = ua;
-                    break;
-                }
+        // Services
+        SvcUtilisateur         svcU   = new SvcUtilisateur();
+        SvcUtilisateurAdresse  svcUA  = new SvcUtilisateurAdresse();
+        SvcUtilisateurRole     svcUR  = new SvcUtilisateurRole();
+        SvcRole                svcRole= new SvcRole();
+
+        try {
+            // 1) Normalize names (null/short-safe)
+            utilisateur.setNom(cap(utilisateur.getNom()));
+            utilisateur.setPrenom(cap(utilisateur.getPrenom()));
+
+            // 2) Duplicate checks (ALL via named queries)
+            boolean dupIdentity = !svcU.findDuplicate(utilisateur, adresses).isEmpty();
+            boolean dupEmail = utilisateur.getCourriel() != null
+                    && !svcU.findByCourrielExceptSelf(utilisateur.getCourriel(), utilisateur.getId()).isEmpty();
+
+            if (dupIdentity || dupEmail) {
+                FacesContext fc = FacesContext.getCurrentInstance();
+                // keepMessages only needed if you redirect; we’ll stay on page -> not required
+                fc.addMessage(null, new FacesMessage(
+                        FacesMessage.SEVERITY_WARN,
+                        dupEmail ? "L’e-mail est déjà utilisé." : "Un client identique existe déjà.",
+                        null));
+                return null; // stay on the form
             }
-        }
-        if (!flag){
-            UA = serviceUA.createUtilisateursAdresses(utilisateur, adresses);
-        }
-        if(!verifUtilExist(utilisateur)) {
-            FacesContext fc = FacesContext.getCurrentInstance();
-            fc.getExternalContext().getFlash().setKeepMessages(true);
-            fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Le client existe déjà tel quel en DB; opération échouée",null));
-        }
-        else if(utilisateur.getNumMembre().equals("999999999")){
-            FacesContext fc = FacesContext.getCurrentInstance();
-            fc.getExternalContext().getFlash().setKeepMessages(true);
-            fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Le nombre de client maximal a été atteint; opération échouée",null));
-        }
-        else {
-            UA.setActif(true);
+
+            // 3) Prepare UA (address link): reuse if present, else create
+            UA = null;
+            if (utilisateur.getId() != null && utilisateur.getId() != 0
+                    && utilisateur.getUtilisateurAdresse() != null) {
+                UA = utilisateur.getUtilisateurAdresse().stream()
+                        .filter(ua -> ua.getAdresseIdAdresse() != null && adresses != null
+                                && Objects.equals(ua.getAdresseIdAdresse().getId(), adresses.getId()))
+                        .findFirst().orElse(null);
+            }
+            if (UA == null) {
+                UA = svcUA.createUtilisateurAdresse(utilisateur, adresses); // your helper that builds the link object
+            }
+            UA.setActif(true); // will become the single active address in saveUtilisateur()
+
+            // 4) Prepare UR (CLIENT role): reuse if present, else create
+            Role clientRole = svcRole.findByNom("Client").get(0); // uses your named-query style
+            UR = null;
+            if (utilisateur.getUtilisateurRole() != null) {
+                UR = utilisateur.getUtilisateurRole().stream()
+                        .filter(r -> r.getRoleIdRole() != null
+                                && Objects.equals(r.getRoleIdRole().getId(), clientRole.getId()))
+                        .findFirst().orElse(null);
+            }
+            if (UR == null) {
+                UR = svcUR.createUtilisateurRole(utilisateur, clientRole);
+            }
+            UR.setActif(true); // stackable; saveUtilisateur() will handle hierarchy rules
+
+            // 5) Persist everything (barcode, one active address, role rules, etc.)
             saveUtilisateur();
+
+            // 6) Reset and go back to list
+            init();
+            return "/tableUtilisateursCli.xhtml?faces-redirect=true";
+
+        } finally {
+            // Close services that own EMs in your setup
+            try { svcU.close(); }   catch (Exception ignore) {}
+            try { svcUA.close(); }  catch (Exception ignore) {}
+            try { svcUR.close(); }  catch (Exception ignore) {}
+            try { svcRole.close(); }catch (Exception ignore) {}
         }
-        init();
-        return "/tableUtilisateursCli.xhtml?faces-redirect=true";
     }
-  */
+     // methode pour mise en majuscule
+    private static String cap(String s) {
+        if (s == null || s.isEmpty()) return s;
+        if (s.length() == 1) return s.toUpperCase();
+        return s.substring(0,1).toUpperCase() + s.substring(1);
+    }
 
+    /*Méthode qui permet de désactiver un utilisateur et de le réactiver en verifiant si son rôle est actif ou pas.*/
 
-    /*Méthode qui permet de désactiver un utilisateur et de le réactiver en verifiant si son rôle est actif ou pas.
-    * Si on desactiver/active un client il nous renverra sur la table des clients sinon il nous renverra sur la table des utilisateurs*/
-    // todo : correct the function that activate or deactivate user
 
     public String activdesactivUtil() {
         if (utilisateur.getActif()) {
@@ -329,10 +491,25 @@ public class UtilisateurBean implements Serializable {
         return "/tableUtilisateurs.xhtml?faces-redirect=true";
 
     }
+    /*Méthode qui permet de désactiver un client et de le réactiver en verifiant si son rôle est actif ou pas.*/
+    public String activdesactivUtilCli() {
+        if (utilisateur.getActif()) {
+            utilisateur.setActif(false);
+            saveActif();
+        }
+        else {
+            utilisateur.setActif(true);
+            saveActif();
+        }
+
+        init();
+        return "/tableUtilisateursCli.xhtml?faces-redirect=true";
+
+    }
 
 
     // Méthode qui permet en fonction de la donnée de l'utilisateur de rechercher un nom parmi les utilisateurs(Client) et nous renvoi sur le formulaire de recherche des utilisateurs(Client)
-    //todo : correct the function that search client
+    //todo : test the function that search client
 
     public String searchUtilisateur() {
 
@@ -349,8 +526,23 @@ public class UtilisateurBean implements Serializable {
         return "/formSearchUtilisateur?faces-redirect=true";
     }
 
+    public String searchUtilisateurCli() {
 
-    //Méthode qui permet de vider les variables et de revenir sur le table des utilisateurs
+        SvcUtilisateur service = new SvcUtilisateur();
+
+        if (service.getByName(utilisateur.getNom()).isEmpty()) {
+            FacesContext fc = FacesContext.getCurrentInstance();
+            fc.addMessage("utilRech", new FacesMessage("l'utilisateur n'a pas été trouvé"));
+            return null;
+        } else {
+            searchResults = service.getByName(utilisateur.getNom());
+        }
+
+        return "/formSearchUtilisateurCli?faces-redirect=true";
+    }
+
+
+    //Méthode qui permet de vider les variables et de revenir sur la table des utilisateurs
     public String flushUtil() {
         init();
         if (searchResults != null) {
@@ -358,7 +550,8 @@ public class UtilisateurBean implements Serializable {
         }
         return "/tableUtilisateurs?faces-redirect=true";
     }
-    //Méthode qui permet de vider les variables et de revenir sur le table des utilisateurs(Client)
+
+    //Méthode qui permet de vider les variables et de revenir sur la table des utilisateurs(Client)
     public String flushUtilCli() {
         init();
         if (searchResults != null) {
@@ -366,16 +559,17 @@ public class UtilisateurBean implements Serializable {
         }
         return "/tableUtilisateursCli?faces-redirect=true";
     }
+
     //Méthode qui permet de vider les variables et de revenir sur la page de bienvenue
     public String flushBienv()
     {
         init();
         return "/bienvenue?faces-redirect=true";
     }
+
     /*
      * Méthode qui permet via le service de retourner la liste de tous les utilisateurs actifs
      */
-    //todo : correct the function that give the list of active users
 
     public List<Utilisateur> getReadUtilActiv()
     {
@@ -390,7 +584,6 @@ public class UtilisateurBean implements Serializable {
     /*
      * Méthode qui permet via le service de retourner la liste de tous les utilisateurs inactifs
      */
-    //todo : correct the function that gives the list of inactive users
 
     public List<Utilisateur> getReadUtilInactiv()
     {
@@ -404,7 +597,6 @@ public class UtilisateurBean implements Serializable {
     /*
      * Méthode qui permet via le service de retourner la liste de tous les utilisateurs(Client) inactifs
      */
-    // todo : correct the function that gives the list of unactive client
 
     public List<Utilisateur> getReadCliInactiv()
     {
@@ -420,7 +612,6 @@ public class UtilisateurBean implements Serializable {
     /*
      * Méthode qui permet via le service de retourner la liste de tous les utilisateurs(Client) actifs
      */
-    //todo : correct the function that give the list of active client
 
     public List<Utilisateur> getReadCliActiv()
     {
@@ -436,7 +627,6 @@ public class UtilisateurBean implements Serializable {
     /*
      * Méthode qui permet via le service de retourner la liste de tous les utilisateurs
      */
-    // todo : correct the funtion that give the list of all the users
 
     public List<Utilisateur> getReadAllUtil()
     {
@@ -452,7 +642,6 @@ public class UtilisateurBean implements Serializable {
     /*
      * Méthode qui permet via le service de retourner la liste de tous les utilisateurs(Client)
      */
-    //todo : correct the function that give the list of all the clients
 
     public List<Utilisateur> getReadAllCli()
     {
@@ -488,14 +677,6 @@ public class UtilisateurBean implements Serializable {
 
     public void setListUtil(List<Utilisateur> listUtil) {
         this.listUtil = listUtil;
-    }
-
-    public String getNumMembre() {
-        return numMembre;
-    }
-
-    public void setNumMembre(String numMembre) {
-        this.numMembre = numMembre;
     }
 
     public Adresse getAdresses() {

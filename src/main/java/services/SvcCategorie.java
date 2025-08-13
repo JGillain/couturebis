@@ -18,25 +18,12 @@ public class SvcCategorie extends Service<Categorie> implements Serializable {
 
     public SvcCategorie() {
         super();
-    }
-
-    public List<Categorie> findAllCategorie() {
-        return finder.findByNamedQuery("Categorie.findAll",null);
-    }
-
-
-    public List<Categorie> findOneCategorie(Categorie c) {
-        Map<String, Object> param = new HashMap<>();
-        param.put("nom", c.getNom());
-        return finder.findByNamedQuery("Categorie.findOne",param);
+        log.info("SvcCategorie called");
     }
 
     // Méthode qui permet de sauver une categorie et de le mettre en DB
     @Override
     public Categorie save(Categorie categorie) {
-        log.debug("save Categorie");
-        log.debug(categorie.getId());
-        log.debug(categorie.getNom());
         if (categorie.getId() == null) {
             em.persist(categorie);}
         else if (categorie.getId() == 0) {
@@ -47,4 +34,15 @@ public class SvcCategorie extends Service<Categorie> implements Serializable {
 
         return categorie;
     }
+
+    public List<Categorie> findAllCategorie() {
+        return finder.findByNamedQuery("Categorie.findAll",null);
+    }
+
+    public List<Categorie> findOneCategorie(Categorie c) {
+        Map<String, Object> param = new HashMap<>();
+        param.put("nom", c.getNom());
+        return finder.findByNamedQuery("Categorie.findOne",param);
+    }
+
 }

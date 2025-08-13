@@ -12,7 +12,7 @@
     <ui:define name="content">
             <h:form prependId="false">
                 <p:panel layout="block" id="content">
-                    <p:growl id="growl" showDetail="true" sticky="true" />
+                    <p:growl id="growl" globalOnly="true" showDetail="true" life="4000"/>
                     <h2 style="text-align:center">#{I18N['application.utilisateur.title']}</h2>
                     <p:dataTable value="#{utilisateurBean.listUtil}" var="ut" id="tableUtilisateurs"
                                  Class="table" headerClass="table-header" rowClasses="table-odd-row,table-even-row">
@@ -45,8 +45,9 @@
                                     <p:outputLabel rendered="#{utad.actif}" value ="#{utad.adresseIdAdresse.rue}, #{utad.adresseIdAdresse.numero}#{utad.adresseIdAdresse.boite} #{utad.adresseIdAdresse.localiteIdLocalite.cp} #{utad.adresseIdAdresse.localiteIdLocalite.ville}"/>
                             </ui:repeat>
                         </p:column>
+
                         <p:column>
-                            <p:commandButton rendered="#{( (loginBean.utilisateurAuth eq ut))}"
+                            <p:commandButton rendered="#{loginBean.managerOrDev or (loginBean.utilisateurAuth.id eq ut.id)}"
                                              icon="pi pi-pencil" value="Modifier" action="#{utilisateurBean.redirectModifUtil}">
                                 <f:setPropertyActionListener target="#{utilisateurBean.utilisateur}" value="#{ut}" />
                             </p:commandButton>
@@ -62,13 +63,8 @@
                         </p:column>
                         <shiro:hasAnyRoles name="1,2">
                            <p:column>
-                               <p:commandButton
-                                                 icon="pi pi-power-off" value ="Desactiver" action="#{utilisateurBean.activdesactivUtil}">
+                               <p:commandButton icon="pi pi-power-off" value ="#{ut.actif ? 'Désactiver' : 'Activer'}" rendered="#{!(loginBean.utilisateurAuth.id eq ut.id)}"  action="#{utilisateurBean.activdesactivUtil}">
                                    <f:setPropertyActionListener target="#{utilisateurBean.utilisateur}" value="#{ut}" />
-                               </p:commandButton>
-                               <p:commandButton
-                                                     icon="pi pi-check" value ="Activer" action="#{utilisateurBean.activdesactivUtil}">
-                                    <f:setPropertyActionListener target="#{utilisateurBean.utilisateur}" value="#{ut}" />
                                </p:commandButton>
                            </p:column>
                        </shiro:hasAnyRoles>
@@ -96,27 +92,48 @@
 
 
         <!--TODO : evitez la faille de sécurité pour si l'utilisateur ferme la fenetre avec la croix-->
-        <p:dialog header="Basic Dialog" widgetVar="dlg1" minHeight="40">
-
-            <h:form id="formModifMdp" prependId = "false">
-                <p:panelGrid columns="2" StyleClass="formConfig">
-                    <h:outputText value="Veuillez changer votre mot de passe" />
-                    <p:password id="mdp" value="#{utilisateurBean.mdpNouveau}" update="msg" maxlength="40">
+        <p:dialog header="changer mot de passe" widgetVar="dlg1" minHeight="40" onHide="remoteFlush()">
+            <h:form id="formModifMdp" prependId="false">
+                <p:remoteCommand name="remoteFlush"
+                                 process="@this"
+                                 actionListener="#{utilisateurBean.flushBasic}"
+                                 update="formModifMdp">
+                    <p:resetInput target="@form"/>
+                </p:remoteCommand>
+                <p:panelGrid columns="3" StyleClass="formConfig">
+                    <h:outputText value="Veuillez introduire le nouveau mot de passe" />
+                    <p:password id="mdp"
+                                value="#{utilisateurBean.mdpNouveau}"
+                                required="true"
+                                requiredMessage="Ce champ est obligatoire."
+                                label="Mot de passe"
+                                maxlength="40">
                         <f:validateLength minimum="8" maximum="40"/>
                     </p:password>
+                    <p:message id="mdpMsg" for="mdp"/>
+
                     <h:outputText value="Confirmer le nouveau mot de passe" />
-                    <p:password id="confmdp" value="#{utilisateurBean.mdpNouveau2}" update="msg" maxlength="40"
-                    validator="checkMdpValidator">
+                    <p:password id="confmdp"
+                                value="#{utilisateurBean.mdpNouveau2}"
+                                required="true"
+                                requiredMessage="Ce champ est obligatoire."
+                                label="Confirmation du mot de passe"
+                                validator="checkMdpValidator"
+                                maxlength="40">
                         <f:validateLength minimum="8" maximum="40"/>
                     </p:password>
+                    <p:message id="confMsg" for="confmdp"/>
                 </p:panelGrid>
-                <p:commandButton value="Modifier" action="#{utilisateurBean.modifMdp}"
-                                 onclick="PF('popup').hide();">
-                </p:commandButton>
 
-                <p:commandButton value="Annuler" action="#{utilisateurBean.init}" onclick="PF('popup').hide();" />
+                <p:commandButton value="Modifier"
+                                 action="#{utilisateurBean.modifMdp}"
+                                 process="@form"
+                                 update="formModifMdp :growl"/>   <!-- on enlève oncomplete, on met à jour la forme + growl -->
+
+                <p:commandButton value="Annuler" type="button" onclick="PF('dlg1').hide();"/>
             </h:form>
         </p:dialog>
+
     </ui:define>
 </ui:composition>
 

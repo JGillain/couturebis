@@ -13,7 +13,6 @@
 
     <ui:define name="content">
         <p:growl id="growl" showDetail="true" sticky="true" />
-        <shiro:hasPermission name="Client:Creer">
             <h:form id="form" prependId="false">
                 <h:head>
                 <title>#{I18N['utilisateurcli.form.nouveau.titre']}</title>
@@ -23,7 +22,7 @@
 
                     <p:outputLabel value = "#{I18N['utilisateur.label.Nom']}"/>
                     <p:inputText id="utilisateurNom"
-                                 value="#{utilisateursBean.utilisateur.nom}"
+                                 value="#{utilisateurBean.utilisateur.nom}"
                                  validatorMessage="La valeur doit être compris entre 1 et 100 caracteres"
                                  required="true"
                                  requiredMessage="#{I18N['formulaire.message.required.nom']}"
@@ -31,49 +30,48 @@
                                  maxlength="100">
                         <f:validateLength minimum="1" maximum="100"/>
                     </p:inputText>
-                    <!--<h:message for="utilisateurNom" styleClass="errorMessage"/>-->
+                    <h:message for="utilisateurNom" styleClass="errorMessage"/>
 
                     <p:outputLabel value = "#{I18N['utilisateur.label.Prenom']}"/>
                     <p:inputText id="utilisateurPrenom"
-                                 value="#{utilisateursBean.utilisateur.prenom}"
+                                 value="#{utilisateurBean.utilisateur.prenom}"
                                  required="true"
                                  requiredMessage="#{I18N['formulaire.message.required.prenom']}"
                                  validator="nomPrenomValidator"
                                  maxlength="100">
                         <f:validateLength minimum="1" maximum="100"/>
                     </p:inputText>
-                    <!--<h:message for="utilisateurPrenom" styleClass="errorMessage"/>-->
+                    <h:message for="utilisateurPrenom" styleClass="errorMessage"/>
 
                     <p:outputLabel value = "#{I18N['utilisateur.label.Sexe']}"/>
-                    <p:selectOneRadio id="sexe" value="#{utilisateursBean.utilisateur.sexe}"
+                    <p:selectOneRadio id="sexe" value="#{utilisateurBean.utilisateur.sexe}"
                                       required="true"
                                       requiredMessage="#{I18N['formulaire.message.required.sexe']}">
-                        <f:selectItems value="#{utilisateursEnumBean.sexeEnum}" />
+                        <f:selectItems value="#{utilisateurEnumBean.sexeEnum}" />
                     </p:selectOneRadio>
-                    <!--<h:message for="sexe" styleClass="errorMessage"/>-->
+                    <h:message for="sexe" styleClass="errorMessage"/>
 
                     <p:outputLabel value = "#{I18N['utilisateur.label.Courriel']}"/>
                     <p:inputText id="utilisateurCourriel"
-                                 value="#{utilisateursBean.utilisateur.courriel}"
+                                 value="#{utilisateurBean.utilisateur.courriel}"
                                  required="true"
                                  requiredMessage="#{I18N['formulaire.message.required.courriel']}"
                                  validator = "emailValidator"
                                  maxlength="100">
                         <f:validateLength minimum="3" maximum="100"/>
                     </p:inputText>
-                    <!--<h:message for="utilisateurCourriel" styleClass="errorMessage"/>-->
+                    <h:message for="utilisateurCourriel" styleClass="errorMessage"/>
 
                     <p:outputLabel value = "#{I18N['adresse.label.Rue']}"/>
-                    <p:selectOneMenu value = "#{utilisateursBean.adresses}" id="utiladress" required="true"
+                    <p:selectOneMenu value = "#{utilisateurBean.adresses}" id="utiladress" required="true"
                                      requiredMessage="#{I18N['formulaire.message.required.adresse']}"
                                      converter="adressConverter">
-                        <f:selectItems value = "#{adressesBean.readAll}" var="ad"
-                                       itemLabel="#{ad.rue} #{ad.numero} #{ad.boite} #{ad.localites.cp}"
+                        <f:selectItems value = "#{adresseBean.readAll}" var="ad"
+                                       itemLabel="#{ad.rue} #{ad.numero} #{ad.boite} #{ad.localiteIdLocalite.cp} #{ad.localiteIdLocalite.ville}"
                                        itemValue="#{ad}"/>
                     </p:selectOneMenu>
-                    <!--<h:message for="utiladress" styleClass="errorMessage"/>-->
+                    <h:message for="utiladress" styleClass="errorMessage"/>
 
-                    <!-- A rajouter l'adresse-->
 
 
                 </p:panelGrid>
@@ -81,24 +79,23 @@
                 <h:panelGroup layout="block" styleClass="button-bar">
                     <!-- Left aligned buttons -->
                     <h:panelGroup styleClass="left-buttons">
-                        <p:commandButton icon="pi pi-check-circle" value="#{I18N['application.button.validate']}" action="#{utilisateursBean.newUtilCli}"/>
+                        <p:commandButton icon="pi pi-check-circle" value="#{I18N['application.button.validate']}" action="#{utilisateurBean.newUtilCli}" ajax="false"/>
                     </h:panelGroup>
 
                     <!-- Right aligned button -->
                     <h:panelGroup styleClass="right-buttons">
-                        <shiro:hasPermission name="Autre:Connexion">
-                            <p:commandButton icon="pi pi-home" value="#{I18N['application.button.return']}" action="#{utilisateursBean.flushUtilCli}" immediate="true"/>
-                        </shiro:hasPermission>
+
+                            <p:commandButton icon="pi pi-home" value="#{I18N['application.button.return']}" action="#{utilisateurBean.flushUtilCli}" immediate="true"/>
+
                     </h:panelGroup>
                 </h:panelGroup>
 
 
 
             </h:form>
-        </shiro:hasPermission>
-        <shiro:lacksPermission name="Client:Creer">
+
             <p:outputLabel value="#{I18N['application.page.accessrefuse']}"/>
-        </shiro:lacksPermission>
+
     </ui:define>
 </ui:composition>
 

@@ -6,6 +6,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 
@@ -14,6 +15,8 @@ import java.util.Objects;
 @NamedQueries
         ({
                 @NamedQuery(name = "Utilisateur.findAll", query = "SELECT u FROM Utilisateur u"),
+                @NamedQuery(name  = "Utilisateur.FindDuplicateUtilisateur", query = "SELECT u FROM Utilisateur u JOIN u.utilisateurAdresse ua WHERE ua.actif=TRUE AND ua.adresseIdAdresse=:addr AND UPPER(u.nom)=UPPER(:nom) AND UPPER(u.prenom)=UPPER(:prenom) AND (:selfId IS NULL OR u.id <> :selfId)"),
+                @NamedQuery(name  = "Utilisateur.FindDuplicateEmail", query = "SELECT u FROM Utilisateur u WHERE UPPER(u.courriel) = UPPER(:courriel) AND ( :selfId IS NULL OR u.id <> :selfId )"),
                 @NamedQuery(name = "Utilisateur.findOne", query = "SELECT u FROM Utilisateur u WHERE  u.nom=:nom AND u.prenom=:prenom AND u.courriel=:courriel AND u.sexe=:sexe"),
                 @NamedQuery(name = "Utilisateur.findAllUtil",query = "SELECT DISTINCT  u FROM Utilisateur u , UtilisateurRole ur WHERE u.id=ur.utilisateurIdUtilisateur.id and ur.roleIdRole.id <> 4"),
                 @NamedQuery(name = "Utilisateur.findActiv", query = "SELECT u FROM Utilisateur u , UtilisateurRole ur WHERE u.actif=TRUE AND u.login IS NOT NULL"),
@@ -66,16 +69,16 @@ public class Utilisateur implements Serializable {
     private Boolean actif = true;
 
     @OneToMany(mappedBy = "utilisateurIdUtilisateur")
-    private Collection<Facture> factures;
+    private Collection<Facture> factures = new ArrayList<>();
 
     @OneToMany(mappedBy = "utilisateurIdUtilisateur")
-    private Collection<UtilisateurAdresse> utilisateurAdresse;
+    private Collection<UtilisateurAdresse> utilisateurAdresse= new ArrayList<>();
 
     @OneToMany(mappedBy = "utilisateurIdUtilisateur")
-    private Collection<UtilisateurMagasin> utilisateurMagasin;
+    private Collection<UtilisateurMagasin> utilisateurMagasin= new ArrayList<>();
 
     @OneToMany(mappedBy = "utilisateurIdUtilisateur")
-    private Collection<UtilisateurRole> utilisateurRole;
+    private Collection<UtilisateurRole> utilisateurRole= new ArrayList<>();
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "codeBarreIdCB")

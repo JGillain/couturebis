@@ -18,27 +18,12 @@ public class SvcFabricant extends Service<Fabricant> implements Serializable {
 
     public SvcFabricant() {
         super();
-    }
-
-    public List<Fabricant> findAllFabricants() {
-        return finder.findByNamedQuery("Fabricant.findAll",null);
-    }
-    public List<Fabricant> findAllActiveFabricants() {
-        return finder.findByNamedQuery("Fabricant.findAllActif",null);
-    }
-
-    public List<Fabricant> findOneFabricant(Fabricant f) {
-        Map<String, Object> param = new HashMap<>();
-        param.put("nom", f.getNom());
-        return finder.findByNamedQuery("Fabricant.findOne",param);
+        log.info("SvcFabricant called");
     }
 
     // Méthode qui permet de sauver un fabricant et de le mettre en DB
     @Override
     public Fabricant save(Fabricant fabricant) {
-        log.debug("save Fabricant");
-        log.debug(fabricant.getId());
-        log.debug(fabricant.getNom());
         if (fabricant.getId() == null) {
             em.persist(fabricant);}
         else if (fabricant.getId() == 0) {
@@ -49,4 +34,20 @@ public class SvcFabricant extends Service<Fabricant> implements Serializable {
 
         return fabricant;
     }
+
+    public List<Fabricant> findAllFabricants() {
+        return finder.findByNamedQuery("Fabricant.findAll",null);
+    }
+
+    public List<Fabricant> findAllActiveFabricants() {
+        return finder.findByNamedQuery("Fabricant.findAllActif",null);
+    }
+
+    public List<Fabricant> findOneFabricant(Fabricant f) {
+        Map<String, Object> param = new HashMap<>();
+        param.put("nom", f.getNom());
+        return finder.findByNamedQuery("Fabricant.findOne",param);
+    }
+
+
 }

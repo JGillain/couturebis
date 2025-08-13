@@ -11,12 +11,13 @@ import java.util.Map;
 
 public class SvcCodeBarre extends Service<CodeBarre> implements Serializable {
     //Déclaration des variables
-    private static final Logger log = Logger.getLogger(SvcArticle.class);
+    private static final Logger log = Logger.getLogger(SvcCodeBarre.class);
     private static final long serialVersionUID = 1L;
     Map<String, Object> params = new HashMap<String, Object>();
 
     public SvcCodeBarre() {
         super();
+        log.info("SvcCodeBarre called");
     }
 
     // Méthode qui permet de sauver un code barre et de la mettre en DB

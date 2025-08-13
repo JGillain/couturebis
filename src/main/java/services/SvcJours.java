@@ -15,12 +15,15 @@ public class SvcJours extends Service<Jour> implements Serializable {
 
     public SvcJours() {
         super();
+        log.info("SvcJours called");
     }
 
     // Méthode qui permet de sauver un jour et de le mettre en DB
     @Override
     public Jour save(Jour jours) {
-        if (jours.getId() == 0) {
+        if (jours.getId() == null) {
+            em.persist(jours);
+        } else if (jours.getId() == 0) {
             em.persist(jours);
         } else {
             jours = em.merge(jours);

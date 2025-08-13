@@ -9,18 +9,21 @@ import java.util.Map;
 
 public class SvcReservation extends Service<Reservation> implements Serializable {
     //Déclaration des variables
-    private static final Logger log = Logger.getLogger(SvcArticle.class);
+    private static final Logger log = Logger.getLogger(SvcReservation.class);
     private static final long serialVersionUID = 1L;
     Map<String, Object> params = new HashMap<String, Object>();
 
     public SvcReservation() {
         super();
+        log.info("SvcReservation called");
     }
 
     // Méthode qui permet de sauver une reservation et de la mettre en DB
     @Override
     public Reservation save(Reservation reservation) {
-        if (reservation.getId() == 0) {
+        if (reservation.getId() == null) {
+            em.persist(reservation);
+        } else if (reservation.getId() == 0) {
             em.persist(reservation);
         } else {
             reservation = em.merge(reservation);

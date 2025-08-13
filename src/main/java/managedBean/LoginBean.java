@@ -26,28 +26,21 @@ public class LoginBean implements Serializable {
     /*Déclaration des variables*/
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(LoginBean.class);
-    @PersistenceUnit  (unitName = "couture")
     private String login;
     private String mdp;
     Utilisateur utilisateurAuth = new Utilisateur();
 
     //---------------------------------------------------------
+
     /*
      * Méthode qui permet l'authentification de l'utilisateur,
      * on vérifie que l'utilisateur existe dans la base de données, mais également qu'il a la permission de se connecter
-     *
-     *
-     * */
+     */
     public void auth()
     {
-
-        log.debug("---------------------------------debut--------------------------");
-        FacesMessage m = new FacesMessage("Login ou/et mot de passe incorrect");
         SvcUtilisateur serviceU= new SvcUtilisateur();
         SvcUtilisateurRole serviceURole= new SvcUtilisateurRole();
         SvcRole serviceRole= new SvcRole();
-        RoleBean RB = new RoleBean();
-
         try {
             log.debug(login + " + " + mdp);
             log.debug("1");
@@ -113,6 +106,17 @@ public class LoginBean implements Serializable {
 
 
     }
+
+    public boolean hasAnyRoleId(Integer... ids) {
+        if (utilisateurAuth == null || utilisateurAuth.getUtilisateurRole() == null) return false;
+        java.util.Set<Integer> wanted = new java.util.HashSet<>(java.util.Arrays.asList(ids));
+        return utilisateurAuth.getUtilisateurRole().stream()
+                .anyMatch(ur -> ur != null && ur.getRoleIdRole() != null
+                        && Boolean.TRUE.equals(ur.getActif())
+                        && wanted.contains(ur.getRoleIdRole().getId()));
+    }
+
+    public boolean isManagerOrDev() { return hasAnyRoleId(1, 2); }
 
     /*Cette méthode permet la deconnexion de l'utilisateur*/
     public String deconnexion() throws IOException {

@@ -61,17 +61,6 @@
                 </p:inputText>
                 <h:message for="utilisateurCourriel" styleClass="errorMessage"/>
 
-                <shiro:hasAnyRoles name="1,2">
-                <p:outputLabel value = "#{I18N['role.label.Denomination']}" />
-                <p:selectOneMenu value = "#{utilisateurBean.role}" id="roles" required="true" requiredMessage="#{I18N['formulaire.message.required.role']}"
-                                 converter="roleConverter" disabled="#{loginBean.utilisateurAuth.id eq utilisateurBean.utilisateur.id}">
-                        <f:selectItems value = "#{roleBean.readUtil}" var="ro"
-                                       itemLabel="#{ro.denomination}"
-                                       itemValue="#{ro}"/>
-                </p:selectOneMenu>
-                <h:message for="roles" styleClass="errorMessage"/>
-                </shiro:hasAnyRoles>
-
                 <p:outputLabel value = "#{I18N['adresse.label.Rue']}"/>
                 <p:selectOneMenu value = "#{utilisateurBean.adresses}" id="utiladress" required="true"
                                  requiredMessage="#{I18N['formulaire.message.required.adresse']}"
@@ -88,12 +77,12 @@
             <h:panelGroup layout="block" styleClass="button-bar">
                 <!-- Left aligned buttons -->
                 <h:panelGroup styleClass="left-buttons">
-                    <p:commandButton icon="pi pi-check-circle" value="#{I18N['application.button.validate']}" action="#{utilisateurBean.newUtil}" ajax="false"/>
+                    <p:commandButton icon="pi pi-check-circle" value="#{I18N['application.button.validate']}" action="#{utilisateurBean.newUtilCli()}" ajax="false" />
                 </h:panelGroup>
 
                 <!-- Right aligned button -->
                 <h:panelGroup styleClass="right-buttons">
-                    <p:commandButton icon="pi pi-home" value="#{I18N['application.button.return']}" action="#{utilisateurBean.flushUtil}" immediate="true"/>
+                    <p:commandButton icon="pi pi-home" value="#{I18N['application.button.return']}" action="#{utilisateurBean.flushUtilCli}" immediate="true"/>
                 </h:panelGroup>
             </h:panelGroup>
 
