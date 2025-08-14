@@ -10,36 +10,42 @@ import javax.faces.validator.Validator;
 import javax.faces.validator.ValidatorException;
 
 @FacesValidator("checkMdpValidator")
-public class CheckMdpValidator implements Validator {
-    private static final Logger log = Logger.getLogger(CheckMdpValidator.class);
+    public class CheckMdpValidator implements Validator<Object> {
+        private static final Logger log = Logger.getLogger(CheckMdpValidator.class);
 
-    @Override
-    public void validate(FacesContext context, UIComponent uic, Object confmdp) throws ValidatorException {
-        // TODO Auto-generated method stub
+        @Override
+        public void validate(FacesContext ctx,
+                             UIComponent comp,
+                             Object value) throws ValidatorException {
+            // valeur du champ "confirmation"
+            String confirm = value != null ? value.toString() : null;
 
-        // récupère le mot de passe de confirmation
-        String confirmPassword = (String)confmdp;
-        log.debug("confirmPassword: "+confirmPassword);
+            // récupérer le champ "mdp" (même formulaire)
+            UIInput pwdComp =
+                    (UIInput) comp.findComponent("mdp");
 
-        // récupère le 1er mot de passe tapé
-        UIInput uiInputPassword = (UIInput) uic.findComponent("mdp");
-        String password = uiInputPassword.getLocalValue() == null ? "..."
-                : uiInputPassword.getLocalValue().toString();
-        String passwordId = uiInputPassword.getClientId();
-        log.debug("newPassword: "+password);
+            // si introuvable ou déjà invalide (required/length), on ne compare pas
+            if (pwdComp == null || !pwdComp.isValid()) return;
 
+            // lire la valeur du mot de passe (convertie en priorité)
+            String pwd = pwdComp.getValue() != null
+                    ? pwdComp.getValue().toString()
+                    : (pwdComp.getSubmittedValue() != null ? pwdComp.getSubmittedValue().toString() : null);
 
-        //on compare les deux mots de passe tapé afin de vérifier qu'il correspondent bien.
-        if (!password.equals(confirmPassword)) {
-            FacesMessage msg = new FacesMessage("Les mots de passe ne correspondent pas!!!");
-            msg.setSeverity(FacesMessage.SEVERITY_ERROR);
-            context.addMessage(passwordId, msg);
-            context.renderResponse();
+            // laisser les validateurs gérer les vides
+            if (pwd == null || confirm == null) return;
+
+            // pas égal → échec de validation
+            if (!pwd.equals(confirm)) {
+                throw new ValidatorException(
+                        new FacesMessage(
+                                FacesMessage.SEVERITY_ERROR,
+                                "Les mots de passe ne correspondent pas.", null));
+            }
+        }
+
+        //------------------------------------------------------------------------------------------------
+        public static Logger getLog() {
+            return log;
         }
     }
-    //------------------------------------------------------------------------------------------------
-    public static Logger getLog() {
-        return log;
-    }
-
-}
