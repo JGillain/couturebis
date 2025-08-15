@@ -5,7 +5,9 @@ import entities.Tarif;
 import org.apache.log4j.Logger;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class SvcTarif extends Service<Tarif> implements Serializable {
@@ -31,5 +33,22 @@ public class SvcTarif extends Service<Tarif> implements Serializable {
         }
 
         return tarif;
+    }
+
+    public List<Tarif> findOneTarifByDenom(Tarif tar)
+    {
+        Map<String, Object> param = new HashMap<>();
+        param.put("denomination", tar.getDenomination());
+        return finder.findByNamedQuery("Tarif.findOneByDenom",param);
+    }
+    public List<Tarif> findOneTarifByDateDebut(Tarif tar)
+    {
+        Map<String, Object> param = new HashMap<>();
+        param.put("date", tar.getDateDebut());
+        return finder.findByNamedQuery("Tarif.findOneByDateDebut",param);
+    }
+
+    public List<Tarif> findAllTarifs() {
+        return finder.findByNamedQuery("Tarif.findAll", null);
     }
 }

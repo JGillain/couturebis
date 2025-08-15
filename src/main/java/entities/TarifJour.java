@@ -8,6 +8,12 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "tarif_jour")
+@NamedQueries
+        ({
+                @NamedQuery(name = "TarifJour.findAll", query = "SELECT tj FROM TarifJour tj"),
+                // Todo : a tester
+                @NamedQuery(name = "TarifJour.findByJour", query = "SELECT tj FROM TarifJour tj WHERE tj.dateDebut<=:dateDebut AND tj.dateFin>=:dateFin AND tj.jourIdJour.nbrJour<=:jour AND tj.tarifIdTarif=:tarif ORDER BY tj.dateDebut DESC, tj.jourIdJour.nbrJour DESC "),
+        })
 public class TarifJour implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id

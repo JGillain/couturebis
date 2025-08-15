@@ -5,6 +5,7 @@ import org.apache.log4j.Logger;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class SvcPenalite extends Service<Penalite> implements Serializable {
@@ -30,5 +31,33 @@ public class SvcPenalite extends Service<Penalite> implements Serializable {
         }
 
         return penalite;
+    }
+
+    public Penalite addPena(String d)
+    {
+
+        if(findByName(d).size() == 1)
+        {
+            return findByName(d).get(0);
+        }
+        else
+        {
+            Penalite penalite = new Penalite();
+            penalite.setDenomination(d);
+            save(penalite);
+            return penalite;
+        }
+    }
+
+    //Méthode qui permet via une requete de retourner la liste entière des pénalités
+    public List<Penalite> findAllPenalite() {
+        return finder.findByNamedQuery("Penalite.findAll", null);
+    }
+
+    public List<Penalite> findByName(String denom) {
+        Map<String, String> param = new HashMap<>();
+        param.put("denomination", denom);
+
+        return finder.findByNamedQuery("Penalite.findByName", param);
     }
 }

@@ -8,6 +8,11 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "penalite")
+@NamedQueries
+        ({
+                @NamedQuery(name = "Penalite.findAllTri", query = "SELECT p FROM Penalite p ORDER BY p.denomination ASC"),
+                @NamedQuery(name = "Penalite.findByName", query = "SELECT p FROM Penalite p WHERE p.denomination=:denomination"),
+        })
 public class Penalite implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id

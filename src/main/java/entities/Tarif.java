@@ -4,11 +4,18 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Objects;
 
 @Entity
 @Table(name = "tarif")
+@NamedQueries
+        ({
+                @NamedQuery(name = "Tarif.findAll", query = "SELECT t FROM Tarif t"),
+                @NamedQuery(name = "Tarif.findOneByDenom", query ="SELECT t FROM Tarif t WHERE t.denomination=:denomination"),
+                @NamedQuery(name = "Tarif.findOneByDateDebut", query ="SELECT t FROM Tarif t WHERE t.dateDebut=:date")
+        })
 public class Tarif implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -29,6 +36,12 @@ public class Tarif implements Serializable {
     @ManyToOne
     @JoinColumn(name = "MagasinIdMagasin", nullable = false)
     private Magasin magasinIdMagasin;
+
+    @OneToMany
+    private Collection<TarifPenalite> tarifPenalite;
+
+    @OneToMany
+    private Collection<TarifJour> tarifJour;
 
     public Integer getId() {
         return id;
@@ -60,6 +73,22 @@ public class Tarif implements Serializable {
 
     public void setMagasinIdMagasin(Magasin magasinIdMagasin) {
         this.magasinIdMagasin = magasinIdMagasin;
+    }
+
+    public Collection<TarifPenalite> getTarifPenalite() {
+        return tarifPenalite;
+    }
+
+    public void setTarifPenalite(Collection<TarifPenalite> tarifPenalite) {
+        this.tarifPenalite = tarifPenalite;
+    }
+
+    public Collection<TarifJour> getTarifJour() {
+        return tarifJour;
+    }
+
+    public void setTarifJour(Collection<TarifJour> tarifJour) {
+        this.tarifJour = tarifJour;
     }
 
     @Override
