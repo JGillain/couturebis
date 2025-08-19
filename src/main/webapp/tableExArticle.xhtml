@@ -78,10 +78,10 @@
             <h:outputScript target="body">
                 function setActifFilter(val){
                     var tbl = PF('exTbl');
-                    tbl.clearFilters();                                           // first ajax
+                    tbl.clearFilters();
                     $(PrimeFaces.escapeClientId('tableExArticle:actifCol:filter'))
-                            .val(val);                                                // write true/false
-                    tbl.filter();                                              // fire the AJAX
+                            .val(val);
+                    tbl.filter();
                 }
             </h:outputScript>
             <h:panelGroup layout="block" styleClass="button-bar">

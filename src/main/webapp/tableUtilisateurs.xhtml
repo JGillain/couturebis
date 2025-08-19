@@ -90,8 +90,6 @@
                 </h:panelGroup>
             </h:form>
 
-
-        <!--TODO : evitez la faille de sécurité pour si l'utilisateur ferme la fenetre avec la croix-->
         <p:dialog header="changer mot de passe" widgetVar="dlg1" minHeight="40" onHide="remoteFlush()">
             <h:form id="formModifMdp" prependId="false">
                 <p:remoteCommand name="remoteFlush"
@@ -128,7 +126,7 @@
                 <p:commandButton value="Modifier"
                                  action="#{utilisateurBean.modifMdp}"
                                  process="@form"
-                                 update="formModifMdp :growl"/>   <!-- on enlève oncomplete, on met à jour la forme + growl -->
+                                 update="formModifMdp :growl"/>
 
                 <p:commandButton value="Annuler" type="button" onclick="PF('dlg1').hide();"/>
             </h:form>
