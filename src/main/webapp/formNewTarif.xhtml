@@ -88,8 +88,8 @@
                     </p:column>
                 </p:dataTable>
 
-                <p:commandButton value="#{I18N['tarifjour.label.add']}" action="#{tarifBean.addNewJourRow}" update="tarifJour"/>
-                <p:commandButton value="#{I18N['tarifjour.label.del']}" action="#{tarifBean.delJourRow}" update="tarifJour"/>
+                <p:commandButton icon="pi pi-plus" value="#{I18N['tarifjour.label.add']}" action="#{tarifBean.addNewJourRow}" update="tarifJour"/>
+                <p:commandButton icon="pi pi-minus" value="#{I18N['tarifjour.label.del']}" action="#{tarifBean.delJourRow}" update="tarifJour"/>
 
                 <p:dataTable value="#{tarifBean.grillePena}" var="P" id="tarifP">
                     <p:column>
@@ -148,8 +148,8 @@
                 <br/>
                 <h:panelGroup layout="block" styleClass="button-bar">
                     <h:panelGroup styleClass="left-buttons">
-                    <p:commandButton icon="pi pi-check-circle" value="Add" action="#{tarifBean.addNewPenaRow}" update="tarifP"/>
-                    <p:commandButton value="#{I18N['application.button.supprime']}" action="#{tarifBean.delPenaRow}" update="tarifP"/>
+                    <p:commandButton icon="pi pi-plus" value="#{I18N['application.button.ajouterretard']}" action="#{tarifBean.addNewPenaRow}" update="tarifP"/>
+                    <p:commandButton icon="pi pi-minus" value="#{I18N['application.button.supprimeretard']}" action="#{tarifBean.delPenaRow}" update="tarifP"/>
                     </h:panelGroup>
 
                     <h:panelGroup styleClass="right-buttons">
