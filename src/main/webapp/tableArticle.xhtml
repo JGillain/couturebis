@@ -21,7 +21,7 @@
                 <p:growl id="growl" showDetail="true" sticky="true" />
                 <h2 style="text-align:center">#{I18N['application.article.title']}</h2>
 
-                <p:dataTable value="#{articleBean.listart}" var="art" id="tableArticle"
+                <p:dataTable value="#{articleBean.listart}" var="art" id="tableArticle" widgetVar="arTbl"
                              Class="table" headerClass="table-header" rowClasses="table-odd-row,table-even-row" rowStyleClass="#{art.actif ? '' : 'highlight-row'}">
 
                     <p:column>
@@ -79,10 +79,21 @@
                             <f:setPropertyActionListener target="#{articleBean.article}" value="#{art}" />
                         </p:commandButton>
                     </p:column>
-
+                    <p:column id="actifCol"
+                              filterBy="#{art.actif}"
+                              filterMatchMode="exact"
+                              style="display:none"/>
                 </p:dataTable>
             </p:panel>
-
+            <h:outputScript target="body">
+                function setActifFilter(val){
+                    var tbl = PF('arTbl');
+                    tbl.clearFilters();
+                    $(PrimeFaces.escapeClientId('tableArticle:actifCol:filter'))
+                            .val(val);
+                    tbl.filter();
+                }
+            </h:outputScript>
             <h:panelGroup layout="block" styleClass="button-bar">
                 <!-- Left aligned buttons -->
                 <h:panelGroup styleClass="left-buttons">
@@ -92,8 +103,8 @@
                 <!-- Center aligned buttons -->
                 <h:panelGroup styleClass="center-buttons">
                     <p:commandButton icon="pi pi-search" value="#{I18N['application.button.find']}" action="formSearchArticle.xhtml?faces-redirect=true"/>
-                    <p:commandButton icon="pi pi-search-plus" value="#{I18N['application.button.artActiv']}" action="#{articleBean.getReadActiv}" update="tableArticle"/>
-                    <p:commandButton icon="pi pi-search-minus" value="#{I18N['application.button.artInactiv']}" action="#{articleBean.getReadInactiv}" update="tableArticle"/>
+                    <p:commandButton icon="pi pi-search-plus" value="#{I18N['application.button.artActiv']}" onclick="setActifFilter('true')"/>
+                    <p:commandButton icon="pi pi-search-minus" value="#{I18N['application.button.artInactiv']}" onclick="setActifFilter('false')"/>
                 </h:panelGroup>
 
                 <!-- Right aligned button -->

@@ -15,7 +15,7 @@
                 <p:panel layout="block" id="content">
                     <p:growl id="growl" showDetail="true" sticky="true" />
                     <h2 style="text-align:center">#{I18N['application.utilisateurCli.title']}</h2>
-                    <p:dataTable value="#{utilisateurBean.listCli}" var="ut" id="tableUtilisateurs"
+                    <p:dataTable value="#{utilisateurBean.listCli}" var="ut" id="tableUtilisateurs" widgetVar="utcliTbl"
                                  Class="table" headerClass="table-header" rowClasses="table-odd-row,table-even-row">
                         <p:column>
                             <!-- column header -->
@@ -76,21 +76,30 @@
                                         <f:setPropertyActionListener target="#{utilisateurBean.utilisateur}" value="#{ut}" />
                                     </p:commandButton>
                             </p:column>
+                        <p:column id="actifCol"
+                                  filterBy="#{ut.actif}"
+                                  filterMatchMode="exact"
+                                  style="display:none"/>
                     </p:dataTable>
                 </p:panel>
-
+                <h:outputScript target="body">
+                    function setActifFilter(val){
+                        var tbl = PF('utcliTbl');
+                        tbl.clearFilters();
+                        $(PrimeFaces.escapeClientId('tableUtilisateursCli:actifCol:filter'))
+                                .val(val);
+                        tbl.filter();
+                    }
+                </h:outputScript>
                     <p:commandButton icon="pi pi-plus" value="#{I18N['application.button.new']}" action="formNewUtilisateurCli.xhtml?faces-redirect=true" />
 
                 <p:commandButton icon="pi pi-search" value="#{I18N['application.button.find']}" action="formSearchUtilisateur.xhtml?faces-redirect=true"/>
-                <p:commandButton icon="pi pi-search-plus" value="#{I18N['application.button.utilActiv']}" action="#{utilisateurBean.getReadCliActiv}"/>
-                <p:commandButton icon="pi pi-search-minus" value="#{I18N['application.button.utilInactiv']}" action="#{utilisateurBean.getReadCliInactiv}"/>
+                <p:commandButton icon="pi pi-search-plus" value="#{I18N['application.button.utilActiv']}" onclick="setActifFilter('true')"/>
+                <p:commandButton icon="pi pi-search-minus" value="#{I18N['application.button.utilInactiv']}" onclick="setActifFilter('false')"/>
 
                     <p:commandButton icon="pi pi-home" value="#{I18N['application.button.returnbienvenue']}" action="#{utilisateurBean.flushBienv}"/>
 
             </h:form>
-        <shiro:lacksPermission name="Client:Lire">
-            <p:outputLabel value="#{I18N['application.page.accessrefuse']}"/>
-        </shiro:lacksPermission>
     </ui:define>
 </ui:composition>
 </html>
