@@ -43,6 +43,11 @@ public class TarifPenalite implements Serializable {
     @Column(name = "DateFin", nullable = false)
     private Date dateFin;
 
+    @NotNull
+    @ManyToOne
+    @JoinColumn(name = "ArticleIdArticle", nullable = false)
+    private Article articleIdArticle;
+
     public Integer getId() {
         return id;
     }
@@ -89,6 +94,14 @@ public class TarifPenalite implements Serializable {
 
     public void setDateFin(Date dateFin) {
         this.dateFin = dateFin;
+    }
+
+    public Article getArticleIdArticle() {
+        return articleIdArticle;
+    }
+
+    public void setArticleIdArticle(Article articleIdArticle) {
+        this.articleIdArticle = articleIdArticle;
     }
 
     @Override

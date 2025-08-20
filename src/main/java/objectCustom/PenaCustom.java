@@ -1,5 +1,7 @@
 package objectCustom;
 
+import entities.Article;
+
 import java.util.Date;
 
 public class PenaCustom {
@@ -7,13 +9,15 @@ public class PenaCustom {
     private String name;
     private Double prix;
     private Date dateDebut, dateFin;
+    private Article article;
 
 
-    public PenaCustom(String name, Double prix, Date dateDebut, Date dateFin) {
+    public PenaCustom(String name, Double prix, Date dateDebut, Date dateFin, Article article) {
         this.name = name;
         this.prix = prix;
         this.dateDebut = dateDebut;
         this.dateFin = dateFin;
+        this.article = article;
     }
 
     public PenaCustom() {
@@ -21,6 +25,7 @@ public class PenaCustom {
         this.prix = 0.0;
         this.dateDebut = new Date();
         this.dateFin = new Date();
+        this.article = new  Article();
     }
 
     public String getName() {
@@ -53,5 +58,13 @@ public class PenaCustom {
 
     public void setDateFin(Date dateFin) {
         this.dateFin = dateFin;
+    }
+
+    public Article getArticle() {
+        return article;
+    }
+
+    public void setArticle(Article article) {
+        this.article = article;
     }
 }

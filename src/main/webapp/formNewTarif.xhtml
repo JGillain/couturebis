@@ -12,7 +12,6 @@
 
     <ui:define name="content">
         <p:growl id="growl" showDetail="true" sticky="true" />
-        <shiro:hasPermission name="Tarifs:Creer">
             <h:form>
                 <h:head>
                     <title>#{I18N['tarif.form.nouveau.titre']}</title>
@@ -39,7 +38,17 @@
                         </f:facet>
                         <p:outputLabel value="#{I18N['tarif.label.detail']}" />
                     </p:column>
-
+                    <p:column>
+                        <f:facet name="header">
+                            <p:outputLabel value="#{I18N['tarifjour.label.article']}" />
+                        </f:facet>
+                        <p:selectOneMenu value="#{J.article}" converter="articleConverter">
+                            <f:selectItems value="#{tarifBean.articles}"
+                                           var="a"
+                                           itemValue="#{a}"
+                                           itemLabel="#{a.nom}" />
+                        </p:selectOneMenu>
+                    </p:column>
                     <p:column>
                         <f:facet name="header">
                             <p:outputLabel value="#{I18N['tarifjour.label.jour']}" />
@@ -89,7 +98,17 @@
                         </f:facet>
                         <p:outputLabel value="#{I18N['penalite.label.Grille']}" />
                     </p:column>
-
+                    <p:column>
+                        <f:facet name="header">
+                            <p:outputLabel value="#{I18N['tarifpenalite.label.article']}" />
+                        </f:facet>
+                        <p:selectOneMenu value="#{P.article}" converter="articleConverter">
+                            <f:selectItems value="#{tarifBean.articles}"
+                                           var="a"
+                                           itemValue="#{a}"
+                                           itemLabel="#{a.nom}" />
+                        </p:selectOneMenu>
+                    </p:column>
                     <p:column>
                         <f:facet name="header">
                             <p:outputLabel value="#{I18N['tarifpenalite.label.Nom']}"  />
@@ -130,13 +149,9 @@
                 <p:commandButton icon="pi pi-check-circle" value="Add" action="#{tarifBean.addNewPenaRow}"/>
                 <p:commandButton icon="pi pi-home" value="#{I18N['application.button.return']}" action="#{tarifBean.flushTarifs}" immediate="true"/>
                 <p:commandButton value="#{I18N['application.button.supprime']}" action="#{tarifBean.delPenaRow}"/>
-                <p:commandButton icon="pi pi-check-circle" value="#{I18N['application.button.sauvegarder']}" action="#{tarifBean.newTarif}" />
+                <p:commandButton icon="pi pi-check-circle" value="#{I18N['application.button.sauvegarder']}" action="#{tarifBean.newTarif}" ajax="false" />
 
             </h:form>
-        </shiro:hasPermission>
-        <shiro:lacksPermission name="Tarifs:Creer">
-            <p:outputLabel value="#{I18N['application.page.accessrefuse']}"/>
-        </shiro:lacksPermission>
     </ui:define>
 </ui:composition>
 

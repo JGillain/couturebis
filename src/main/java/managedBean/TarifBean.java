@@ -11,6 +11,7 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityTransaction;
 import java.io.Serializable;
@@ -28,8 +29,12 @@ public class TarifBean implements Serializable {
     private static final long serialVersionUID = 1L;
     private Tarif tarif;
 
+    @Inject
+    private MagasinBean magasinBean;
+
     private List<PenaCustom> grillePena = new ArrayList<>();
     private List<JourCustom> grilleJour = new ArrayList<>();
+    private List<Article> articles = new ArrayList<>();
 
     @PostConstruct
     public void init()
@@ -39,6 +44,10 @@ public class TarifBean implements Serializable {
         grillePena.clear();
         grillePena.add(new PenaCustom());
         grilleJour.add(new JourCustom());
+
+        SvcArticle service = new SvcArticle();
+        articles = service.findAllActive();
+        service.close();
     }
 
     public void save()
@@ -69,11 +78,11 @@ public class TarifBean implements Serializable {
             grilleJour.clear();
             if (tarif.getTarifPenalite().size()!=0){
                 for (TarifPenalite TP: tarif.getTarifPenalite()) {
-                    grillePena.add(new PenaCustom(TP.getPenaliteIdPenalite().getDenomination(), TP.getPrix(), TP.getDateDebut(),TP.getDateFin()));
+                    grillePena.add(new PenaCustom(TP.getPenaliteIdPenalite().getDenomination(), TP.getPrix(), TP.getDateDebut(),TP.getDateFin(), TP.getArticleIdArticle()));
                 }
             }
             for (TarifJour TJ:tarif.getTarifJour()){
-                grilleJour.add(new JourCustom(TJ.getJourIdJour().getNbrJour(), TJ.getPrix(),TJ.getDateDebut(),TJ.getDateFin()));
+                grilleJour.add(new JourCustom(TJ.getJourIdJour().getNbrJour(), TJ.getPrix(),TJ.getDateDebut(),TJ.getDateFin(),TJ.getArticleIdArticle()));
             }
             return "/formEditTarif.xhtml?faces-redirect=true";
         }
@@ -90,7 +99,7 @@ public class TarifBean implements Serializable {
     public String newTarif()
     {
 
-        //si tarif demom exist ou que dans jourcustom il ny as pas le 1 jour => erreur;
+        //si tarif denom exist ou que dans jourcustom il ny as pas le 1 jour => erreur;
         boolean flagJ=false;
         boolean flagD1=false;
         boolean flagD2=false;
@@ -98,8 +107,9 @@ public class TarifBean implements Serializable {
         boolean flagV1;
         SvcTarif service = new SvcTarif();
 
-        if(tarif.getId()!=0){
-            flagV1= (service.getById(tarif.getId()).getDenomination().equals(tarif.getDenomination())|| service.findOneTarifByDenom(tarif).size()==0);}
+        if(tarif.getId() != null && tarif.getId() != 0){
+            flagV1 = (service.getById(tarif.getId()).getDenomination().equals(tarif.getDenomination()) || service.findOneTarifByDenom(tarif).size() == 0);
+        }
         else {
             flagV1=service.findOneTarifByDenom(tarif).size()==0;
         }
@@ -111,7 +121,7 @@ public class TarifBean implements Serializable {
             if (j.getDateDebut().getTime()<tarif.getDateDebut().getTime()){
                 flagD1 = true;
             }
-            if (j.getDateFin().getTime()<tarif.getDateDebut().getTime()){
+            if (j.getDateFin().getTime()<tarif.getDateDebut().getTime() || j.getDateFin().getTime()<j.getDateDebut().getTime()){
                 flagD2 = true;
             }
         }
@@ -123,7 +133,7 @@ public class TarifBean implements Serializable {
                 flagD2 = true;
             }
         }
-        if(tarif.getId()!=0){
+        if(tarif.getId() != null && tarif.getId() != 0){
             flagD3=false;
         }
         else {flagD3=service.findOneTarifByDateDebut(tarif).size()!=0;}
@@ -146,9 +156,11 @@ public class TarifBean implements Serializable {
 
             transaction.begin();
             try {
-
+                if(tarif.getMagasinIdMagasin()==null){
+                    tarif.setMagasinIdMagasin(magasinBean.getMagasin());
+                }
                 tarif = service.save(tarif);
-                if(tarif.getId()!=0){
+                if(tarif.getId()!=null && tarif.getId() != 0){
                     for (TarifJour tarifsJours:tarif.getTarifJour())
                     {
                         serviceTJ.delete(tarifsJours.getId());
@@ -160,19 +172,31 @@ public class TarifBean implements Serializable {
                 }
                 for (PenaCustom p : grillePena) {
                     penalites = serviceP.addPena(p.getName());
-                    serviceTP.save(serviceTP.createTarifPenalite(tarif, penalites, ((int)((p.getPrix()*100)+0.5)/100.0), p.getDateDebut(), p.getDateFin()));
+                    serviceTP.save(serviceTP.createTarifPenalite(tarif, penalites, ((int)((p.getPrix()*100)+0.5)/100.0), p.getDateDebut(), p.getDateFin(), p.getArticle()));
                 }
                 for (JourCustom j : grilleJour) {
-
-
                     jours = serviceJ.addJours(j.getNbrJours());
                     log.debug("test1 "+j.getNbrJours());
                     log.debug("test2 "+jours.getNbrJour());
-                    serviceTJ.save(serviceTJ.createTarifJour(tarif, jours, ((int)((j.getPrix()*100)+0.5)/100.0), j.getDateDebut(), j.getDateFin()));
+                    serviceTJ.save(serviceTJ.createTarifJour(tarif, jours, ((int)((j.getPrix()*100)+0.5)/100.0), j.getDateDebut(), j.getDateFin(),  j.getArticle()));
                 }
                 transaction.commit();
                 return "/tableTarifs.xhtml?faces-redirect=true";
-            } finally {
+                }
+            catch (javax.validation.ConstraintViolationException e) {
+                for (javax.validation.ConstraintViolation<?> v : e.getConstraintViolations()) {
+                    String msg = String.format("%s.%s %s (invalid value: %s)",
+                            v.getRootBeanClass().getSimpleName(),
+                            v.getPropertyPath(),
+                            v.getMessage(),
+                            String.valueOf(v.getInvalidValue()));
+                    log.error("Validation error: "+ msg);
+                    FacesContext.getCurrentInstance().addMessage(null,
+                            new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation", msg));
+                }
+                return null; // stay on page
+            }
+            finally {
                 if (transaction.isActive()) {
                     transaction.rollback();
                     FacesContext fc = FacesContext.getCurrentInstance();
@@ -288,4 +312,9 @@ public class TarifBean implements Serializable {
     public void setGrilleJour(List<JourCustom> grilleJour) {
         this.grilleJour = grilleJour;
     }
+
+    public List<Article> getArticles() {
+        return articles;
+    }
+    public void setArticles(List<Article> articles) {this.articles = articles;}
 }

@@ -1,5 +1,6 @@
 package services;
 
+import entities.Article;
 import entities.Penalite;
 import entities.Tarif;
 import entities.TarifPenalite;
@@ -50,7 +51,7 @@ public class SvcTarifPenalite extends Service<TarifPenalite> implements Serializ
 
 
 
-    public TarifPenalite createTarifPenalite(Tarif t, Penalite pe, Double pr, Date db, Date df)
+    public TarifPenalite createTarifPenalite(Tarif t, Penalite pe, Double pr, Date db, Date df, Article a)
     {
         TarifPenalite tp = new TarifPenalite();
         tp.setPenaliteIdPenalite(pe);
@@ -58,7 +59,7 @@ public class SvcTarifPenalite extends Service<TarifPenalite> implements Serializ
         tp.setPrix(pr);
         tp.setDateDebut(db);
         tp.setDateFin(df);
-
+        tp.setArticleIdArticle(a);
         return tp;
     }
 }

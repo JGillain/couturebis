@@ -1,5 +1,7 @@
 package objectCustom;
 
+import entities.Article;
+
 import java.util.Date;
 
 public class JourCustom
@@ -8,12 +10,14 @@ public class JourCustom
     private int nbrJours;
     private Double prix;
     private Date dateDebut, dateFin;
+    private Article article;
 
-    public JourCustom(int nbrJours, Double prix, Date dateDebut, Date dateFin) {
+    public JourCustom(int nbrJours, Double prix, Date dateDebut, Date dateFin, Article article) {
         this.nbrJours = nbrJours;
         this.prix = prix;
         this.dateDebut = dateDebut;
         this.dateFin = dateFin;
+        this.article = article;
     }
 
     public JourCustom() {
@@ -21,6 +25,7 @@ public class JourCustom
         this.prix = 0.0;
         this.dateDebut = new Date();
         this.dateFin = new Date();
+        this.article = new Article();
     }
 
     public int getNbrJours() {
@@ -53,5 +58,13 @@ public class JourCustom
 
     public void setDateFin(Date dateFin) {
         this.dateFin = dateFin;
+    }
+
+    public Article getArticle() {
+        return article;
+    }
+
+    public void setArticle(Article article) {
+        this.article = article;
     }
 }

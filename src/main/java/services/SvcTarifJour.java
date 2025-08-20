@@ -1,5 +1,6 @@
 package services;
 
+import entities.Article;
 import entities.Jour;
 import entities.Tarif;
 import entities.TarifJour;
@@ -46,7 +47,7 @@ public class SvcTarifJour extends Service<TarifJour> implements Serializable {
         return finder.findByNamedQuery("TarifJour.findByJour", param);
     }
 
-    public TarifJour createTarifJour(Tarif t, Jour j, Double p, Date db, Date df)
+    public TarifJour createTarifJour(Tarif t, Jour j, Double p, Date db, Date df, Article a)
     {
         TarifJour tj = new TarifJour();
         tj.setJourIdJour(j);
@@ -54,6 +55,7 @@ public class SvcTarifJour extends Service<TarifJour> implements Serializable {
         tj.setPrix(p);
         tj.setDateDebut(db);
         tj.setDateFin(df);
+        tj.setArticleIdArticle(a);
         return tj;
     }
 
