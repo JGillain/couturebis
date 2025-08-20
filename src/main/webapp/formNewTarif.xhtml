@@ -12,7 +12,7 @@
 
     <ui:define name="content">
         <p:growl id="growl" showDetail="true" sticky="true" />
-            <h:form>
+            <h:form id="newTarif">
                 <h:head>
                     <title>#{I18N['tarif.form.nouveau.titre']}</title>
                 </h:head>
@@ -31,7 +31,7 @@
                 <p:inputText id="nomGrille" value="#{tarifBean.tarif.denomination}" required="true" requiredMessage="#{I18N['formulaire.message.required.denomination']}" maxlength="255"/>
 
 
-                <p:dataTable value="#{tarifBean.grilleJour}" var="J">
+                <p:dataTable id="tarifJour" value="#{tarifBean.grilleJour}" var="J">
                     <p:column>
                         <f:facet name="header">
                             <p:outputLabel value="#{I18N['tarif.label.detail']}" />
@@ -88,10 +88,10 @@
                     </p:column>
                 </p:dataTable>
 
-                <p:commandButton value="#{I18N['tarifjour.label.add']}" action="#{tarifBean.addNewJourRow}"/>
-                <p:commandButton value="#{I18N['tarifjour.label.del']}" action="#{tarifBean.delJourRow}"/>
+                <p:commandButton value="#{I18N['tarifjour.label.add']}" action="#{tarifBean.addNewJourRow}" update="tarifJour"/>
+                <p:commandButton value="#{I18N['tarifjour.label.del']}" action="#{tarifBean.delJourRow}" update="tarifJour"/>
 
-                <p:dataTable value="#{tarifBean.grillePena}" var="P">
+                <p:dataTable value="#{tarifBean.grillePena}" var="P" id="tarifP">
                     <p:column>
                         <f:facet name="header">
                             <p:outputLabel value="#{I18N['penalite.label.Grille']}" />
@@ -146,11 +146,17 @@
                 <p:outputLabel value="#{I18N['tarifpenalite.explication.retard']}" />
                 <br/>
                 <br/>
-                <p:commandButton icon="pi pi-check-circle" value="Add" action="#{tarifBean.addNewPenaRow}"/>
-                <p:commandButton icon="pi pi-home" value="#{I18N['application.button.return']}" action="#{tarifBean.flushTarifs}" immediate="true"/>
-                <p:commandButton value="#{I18N['application.button.supprime']}" action="#{tarifBean.delPenaRow}"/>
-                <p:commandButton icon="pi pi-check-circle" value="#{I18N['application.button.sauvegarder']}" action="#{tarifBean.newTarif}" ajax="false" />
+                <h:panelGroup layout="block" styleClass="button-bar">
+                    <h:panelGroup styleClass="left-buttons">
+                    <p:commandButton icon="pi pi-check-circle" value="Add" action="#{tarifBean.addNewPenaRow}" update="tarifP"/>
+                    <p:commandButton value="#{I18N['application.button.supprime']}" action="#{tarifBean.delPenaRow}" update="tarifP"/>
+                    </h:panelGroup>
 
+                    <h:panelGroup styleClass="right-buttons">
+                    <p:commandButton icon="pi pi-home" value="#{I18N['application.button.return']}" action="#{tarifBean.flushTarifs}" immediate="true"/>
+                    <p:commandButton icon="pi pi-check-circle" value="#{I18N['application.button.sauvegarder']}" action="#{tarifBean.newTarif}" ajax="false" />
+                    </h:panelGroup>
+                </h:panelGroup>
             </h:form>
     </ui:define>
 </ui:composition>

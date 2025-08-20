@@ -22,7 +22,7 @@
                 <p:growl id="growl" showDetail="true" sticky="true" />
                 <h2 style="text-align:center">#{I18N['application.fabricant.title']}</h2>
 
-                <p:dataTable value="#{fabricantBean.readAll}" var="fab" id="tableFabricants"
+                <p:dataTable value="#{fabricantBean.readAll}" var="fab" id="tableFabricant" widgetVar="fabTbl"
                              Class="table" headerClass="table-header" rowClasses="table-odd-row,table-even-row">
 
                     <p:column>
@@ -43,25 +43,36 @@
                             <f:setPropertyActionListener target="#{articleBean.fabricant}" value="#{fab}" />
                         </p:commandButton>
                     </p:column>
-
+                    <p:column id="actifCol"
+                              filterBy="#{fab.actif}"
+                              filterMatchMode="exact"
+                              style="display:none"/>
                 </p:dataTable>
 
             </p:panel>
-
+            <h:outputScript target="body">
+                function setActifFilter(val){
+                    var tbl = PF('fabTbl');
+                    tbl.clearFilters();
+                    $(PrimeFaces.escapeClientId('tableFabricant:actifCol:filter'))
+                            .val(val);
+                    tbl.filter();
+                }
+            </h:outputScript>
             <h:panelGroup layout="block" styleClass="button-bar">
                 <!-- Left aligned buttons -->
                 <h:panelGroup styleClass="left-buttons">
                     <p:commandButton icon="pi pi-plus" value="#{I18N['application.button.new']}" action="formNewFabricant.xhtml?faces-redirect=true" />
                 </h:panelGroup>
-
+                <h:panelGroup styleClass="center-buttons">
+                    <p:commandButton icon="pi pi-search-plus" value="#{I18N['application.button.fabricActiv']}" onclick="setActifFilter('true')"/>
+                    <p:commandButton icon="pi pi-search-minus" value="#{I18N['application.button.fabricInactiv']}" onclick="setActifFilter('false')"/>
+                </h:panelGroup>
                 <!-- Right aligned button -->
                 <h:panelGroup styleClass="right-buttons">
                     <p:commandButton icon="pi pi-home" value="#{I18N['application.button.returnbienvenue']}" action="bienvenue.xhtml?faces-redirect=true"/>
                 </h:panelGroup>
             </h:panelGroup>
-
-
-
 
         </h:form>
 
