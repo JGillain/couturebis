@@ -1,0 +1,88 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f = "http://java.sun.com/jsf/core"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:shiro="http://shiro.apache.org/tags"
+      xmlns:p="http://primefaces.org/ui">
+<ui:composition template="Template/template.xhtml">
+    <ui:define name="title">#{I18N['livre.form.nouveau.titre']}</ui:define>
+
+    <ui:define name="content">
+        <p:growl id="growl" showDetail="true" sticky="true" />
+        <shiro:hasPermission name="Factures:Creer">
+            <h:form id="form" prependId="false">
+                <h:head>
+                    <title>#{I18N['fact.form.nouveau.titre']}</title>
+                </h:head>
+                <h2 style="text-align:center">#{I18N['fact.form.nouveau.titre']}</h2>
+                <p:outputLabel value="bibliotheque"/>
+                <p:selectOneMenu value = "#{factureBean.magasin}" id="bibli" required="true" requiredMessage="#{I18N['formulaire.message.required.biblio']}"
+                                 converter="biblioConverter">
+                    <f:selectItems value = "#{bibliothequesBean.readAll}" var="bi"
+                                   itemLabel="#{bi.nom}"
+                                   itemValue="#{bi}"/>
+                </p:selectOneMenu>
+                <!--<h:message for="bibli" styleClass="errorMessage"/>-->
+
+                <p:outputLabel value="numéro de membre?" />
+                <p:inputText value="#{factureBean.numMembre}" id="numMembre"
+                             required="true"
+                             requiredMessage="#{I18N['formulaire.message.required.numero']}"
+                             maxlength="9"
+                validator="codeBarreCliValidator">
+                </p:inputText>
+                <!--<h:message for="numMembre" styleClass="errorMessage"/>-->
+
+
+                <p:dataTable value="#{factureBean.listLC}" var="LC">
+                    <p:column>
+                        <f:facet name="header">
+                            <p:outputLabel value="code barre" />
+                        </f:facet>
+                        <p:inputText value="#{LC.CB}"
+                                     id="CB"
+                                     required="true"
+                                     requiredMessage="#{I18N['formulaire.message.required.CB']}"
+                                     validator="codeBarreLivreValidator"/>
+                    </p:column>
+
+                    <p:column>
+                        <f:facet name="header">
+                            <p:outputLabel value="Nombre de jours" />
+                        </f:facet>
+                        <p:inputText value="#{LC.nbrJours}"
+                                     id="nbrj"
+                                     validatorMessage="Le nombre de jours minimum doit être de 1"
+                                     converterMessage="Le nombre doit etre un entier positif"
+                                     required="true"
+                                     requiredMessage="#{I18N['formulaire.message.required.nbrJ']}">
+                            <f:validateLongRange minimum="1"/>
+                        </p:inputText>
+                    </p:column>
+                    <p:column>
+                        <!--<h:message for="CB" styleClass="errorMessage"/>--> <p:outputLabel value=" " />
+                        <!--<h:message for="nbrj" styleClass="errorMessage"/>-->
+                    </p:column>
+
+
+                </p:dataTable>
+
+                <p:commandButton value="Add" action="#{factureBean.addNewListRow}" />
+                <p:commandButton value="Del" action="#{factureBean.delListRow}" />
+
+
+
+                <p:commandButton icon="pi pi-check-circle" value="#{I18N['application.button.validate']}" action="#{factureBean.newFactLoca}"/>
+                <p:commandButton icon="pi pi-home" value="#{I18N['application.button.return']}" action="tableFactures" immediate="true"/>
+            </h:form>
+        </shiro:hasPermission>
+        <shiro:lacksPermission name="Factures:Creer">
+            <p:outputLabel value="#{I18N['application.page.accessrefuse']}"/>
+        </shiro:lacksPermission>
+    </ui:define>
+</ui:composition>
+
+</html>

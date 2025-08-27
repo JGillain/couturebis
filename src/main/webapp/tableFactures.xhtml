@@ -7,16 +7,15 @@
       xmlns:c="http://java.sun.com/jsp/jstl/core"
       xmlns:shiro="http://shiro.apache.org/tags"
       xmlns:p="http://primefaces.org/ui">
-<!--TODO A refaire-->
+
 <ui:composition template="Template/template.xhtml">
-    <ui:define name="title">#{I18N['application.fact.title']}</ui:define>
+    <ui:define name="title">#{I18N['application.fact.location.title']}</ui:define>
     <ui:define name="content">
-        <shiro:hasPermission name="Factures:Lire">
         <h:form prependId="false">
             <p:panel layout="block" id="content">
                 <p:growl id="growl" showDetail="true" sticky="true" />
-                <h2 style="text-align:center">#{I18N['application.fact.title']}</h2>
-                <p:dataTable value="#{factureBean.readAll}" var="fa" id="tableFactures"
+                <h2 style="text-align:center">#{I18N['application.fact.location.title']}</h2>
+                <p:dataTable value="#{factureBean.readAllLocation}" var="fa" id="tableFactureLoca"
                              Class="table" headerClass="table-header" rowClasses="table-odd-row,table-even-row">
                     <p:column>
                         <!-- column header -->
@@ -40,18 +39,13 @@
                     </p:column>
                 </p:dataTable>
             </p:panel>
-            <shiro:hasPermission name="Factures:Creer">
+
             <p:commandButton value="#{I18N['application.button.new']}" action="formNewFact.xhtml?faces-redirect=true" />
-                <p:commandButton value="#{I18N['application.button.returnlivre']}" action="formEtatQuestion.xhtml?faces-redirect=true"/>
-            </shiro:hasPermission>
-            <shiro:hasPermission name="Autre:Connexion">
+            <p:commandButton value="#{I18N['application.button.returnarticle']}" action="formEtatQuestion.xhtml?faces-redirect=true"/>
+
             <p:commandButton icon="pi pi-home" value="#{I18N['application.button.returnbienvenue']}" action="bienvenue.xhtml?faces-redirect=true"/>
-            </shiro:hasPermission>
         </h:form>
-        </shiro:hasPermission>
-        <shiro:lacksPermission name="Factures:Lire">
-        <p:outputLabel value="#{I18N['application.page.accessrefuse']}"/>
-        </shiro:lacksPermission>
+
     </ui:define>
 </ui:composition>
 </html>

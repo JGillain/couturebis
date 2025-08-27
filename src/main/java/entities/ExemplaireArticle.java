@@ -19,6 +19,7 @@ import java.util.Objects;
                 @NamedQuery(name = "ExArticle.searchTri", query="SELECT EA FROM ExemplaireArticle EA WHERE EA.articleIdArticle.nom=:nom ORDER BY EA.articleIdArticle.nom ASC"),//A verifier
                 @NamedQuery(name = "ExArticle.search", query="SELECT EA FROM ExemplaireArticle EA WHERE EA.articleIdArticle.nom=:nom"),
                 @NamedQuery(name = "ExArticle.findByArticle", query="SELECT EA FROM ExemplaireArticle EA WHERE EA.articleIdArticle=:article"),
+                @NamedQuery(name = "ExArticle.findOneByCodeBarre", query="SELECT EA FROM ExemplaireArticle EA WHERE EA.codeBarreIdCB=:CB"),
                 @NamedQuery(name = "ExArticle.AvailableExArticlesRent", query="SELECT EA FROM ExemplaireArticle EA WHERE EA.articleIdArticle =:article AND EA.statut = enumeration.ExemplaireArticleStatutEnum.Location and EA.actif=true"),
                 @NamedQuery(name = "ExArticle.AvailableExArticlesSales", query="SELECT EA FROM ExemplaireArticle EA WHERE EA.articleIdArticle =:article AND EA.statut = enumeration.ExemplaireArticleStatutEnum.Vente and EA.actif=true and EA.loue=false and EA.reserve=false"),
         })

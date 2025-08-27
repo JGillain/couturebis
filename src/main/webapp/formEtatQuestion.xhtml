@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f = "http://java.sun.com/jsf/core"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:shiro="http://shiro.apache.org/tags"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="Template/template.xhtml">
+    <ui:define name="title">#{I18N['utilisateur.form.nouveau.titre']}</ui:define>
+
+    <ui:define name="content">
+        <p:growl id="growl" showDetail="true" sticky="true" />
+        <h:head>
+            <title>#{I18N['livre.form.question']}</title>
+        </h:head>
+        <h2 style="text-align:center">#{I18N['livre.form.question']}</h2>
+        <shiro:hasPermission name="Factures:Creer">
+        <h:form>
+            <p:outputLabel value="bibliotheque"/>
+            <p:selectOneMenu value = "#{factureBean.magasin}" id="bibli" required="true" requiredMessage="#{I18N['formulaire.message.required.biblio']}"
+                             converter="biblioConverter">
+                <f:selectItems value = "#{bibliothequesBean.readAll}" var="bi"
+                               itemLabel="#{bi.nom}"
+                               itemValue="#{bi}"/>
+            </p:selectOneMenu>
+            <h:message for="bibli" styleClass="errorMessage"/>
+
+            <p:outputLabel value = "#{I18N['exemplaireslivres.label.CodeBarre']}"/>
+            <p:inputText id="exemplLivresCB"
+                         value="#{factureBean.CB}"
+                         required="true"
+                         requiredMessage="#{I18N['formulaire.message.required.CB']}"
+                         maxlength="9"
+                         validator="codeBarreValidator">
+                <f:validateLength minimum="9" maximum="9"/>
+            </p:inputText>
+            <h:message for="exemplLivresCB" styleClass="errorMessage"/>
+            <br/>
+            <p:outputLabel value="#{I18N['livre.form.question']}"/>
+            <p:selectOneRadio value = "#{factureBean.choixetat}" required="true">
+                <f:selectItem itemValue = "#{true}" itemLabel = "#{I18N['commune.label.oui']}" />
+                <f:selectItem itemValue = "#{false}" itemLabel = "#{I18N['commune.label.non']}"/>
+            </p:selectOneRadio>
+            <p:commandButton icon="pi pi-check-circle" value="#{I18N['application.button.validate']}" action="#{factureBean.redirectChoix}"/>
+            <p:commandButton icon="pi pi-home" value="#{I18N['application.button.return']}" action="#{factureBean.flushFact}" immediate="true"/>
+        </h:form>
+        </shiro:hasPermission>
+        <shiro:lacksPermission name="Factures:Creer">
+            <p:outputLabel value="#{I18N['application.page.accessrefuse']}"/>
+        </shiro:lacksPermission>
+    </ui:define>
+</ui:composition>
+
+</html>

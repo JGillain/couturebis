@@ -1,6 +1,8 @@
 package entities;
 
+import enumeration.ExemplaireArticleStatutEnum;
 import enumeration.FactureEtatEnum;
+import enumeration.FactureTypeEnum;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -34,6 +36,11 @@ public class Facture implements Serializable {
     @Lob
     @Column(name = "Etat", nullable = false)
     private FactureEtatEnum etat;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "Type", nullable = false)
+    private FactureTypeEnum type;
 
     @Size(max = 255)
     @NotNull
@@ -88,6 +95,14 @@ public class Facture implements Serializable {
 
     public void setEtat(FactureEtatEnum etat) {
         this.etat = etat;
+    }
+
+    public FactureTypeEnum getType() {
+        return type;
+    }
+
+    public void setType(FactureTypeEnum type) {
+        this.type = type;
     }
 
     public String getLienPdf() {
