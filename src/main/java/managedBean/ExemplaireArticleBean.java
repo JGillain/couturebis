@@ -12,6 +12,7 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityTransaction;
 import javax.validation.constraints.Min;
@@ -32,6 +33,10 @@ public class ExemplaireArticleBean implements Serializable {
     private boolean flagVente;
     private List<ExemplaireArticle> listexart = new ArrayList<ExemplaireArticle>();
     private List<ExemplaireArticle> searchResults = new ArrayList<ExemplaireArticle>();
+    @Inject
+    private MagasinBean magasinBean;
+    @Inject
+    private CodeBarreBean codeBarreBean;
     private static final Logger log = Logger.getLogger(ExemplaireArticleBean.class);
 
     @PostConstruct
@@ -39,7 +44,7 @@ public class ExemplaireArticleBean implements Serializable {
         log.debug("ExemplaireArticleBean init");
         EA = new ExemplaireArticle();
         listexart = getReadAll();
-        magasin = getMagasin();
+        magasin = magasinBean.getMagasin();
     }
 
     public void saveBatch() {
@@ -74,8 +79,6 @@ public class ExemplaireArticleBean implements Serializable {
             /* initialisation liste code barres, ne sera utilisé que si mise en location*/
             List<String> code = Collections.emptyList();
             if (!flagVente){
-
-                CodeBarreBean codeBarreBean = new CodeBarreBean();
                 if (nombreExemplaire < 1 ){
                     throw new IllegalStateException("nombreExemplaire < 1");
                 }
@@ -150,28 +153,6 @@ public class ExemplaireArticleBean implements Serializable {
         return "/tableExArticle.xhtml?faces-redirect=true";
     }
 
-    /*
-     * Méthode qui permet via le service de retourner la liste de tous les exemplaire articles actifs
-     */
-    public void getReadActiv() {
-        SvcExemplaireArticle service = new SvcExemplaireArticle();
-        listexart = service.findAllActive();
-
-        service.close();
-
-    }
-
-    /*
-     * Méthode qui permet via le service de retourner la liste de tous les exemplaire articles inactifs
-     */
-    public void getReadInactiv() {
-        SvcExemplaireArticle service = new SvcExemplaireArticle();
-        listexart = service.findAllInactive();
-
-        service.close();
-    }
-
-
     public String flushBienv() {
         init();
         if (searchResults != null) {
@@ -193,13 +174,6 @@ public class ExemplaireArticleBean implements Serializable {
         listexart = service.findAllExArticles();
         service.close();
         return listexart;
-    }
-
-    public Magasin getMagasin() {
-        SvcMagasin service = new SvcMagasin();
-        Magasin m = service.findAllMagasin().get(0);
-        service.close();
-        return m;
     }
 
     public List<ExemplaireArticle> getReadExArticle() {

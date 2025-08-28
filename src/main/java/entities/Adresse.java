@@ -12,7 +12,6 @@ import java.util.Objects;
         ({
                 @NamedQuery(name = "Adresses.findAll", query = "SELECT a FROM Adresse a"),
                 @NamedQuery(name = "Adresses.findOne", query = "SELECT a FROM Adresse a WHERE a.boite=:boite AND a.numero=:numero AND a.localiteIdLocalite=:localite AND a.rue=:rue"),
-                @NamedQuery(name = "Adresses.findAllNotAdMagasin", query = "SELECT a FROM Adresse a WHERE a.magasinIdMagasin IS NULL"),
 
         })
 public class Adresse implements Serializable {
@@ -42,8 +41,7 @@ public class Adresse implements Serializable {
     @JoinColumn(name = "LocaliteIdLocalite", nullable = false)
     private Localite localiteIdLocalite;
 
-    @ManyToOne
-    @JoinColumn(name = "MagasinIdMagasin")
+    @OneToOne(mappedBy="adresseIdAdresse")
     private Magasin magasinIdMagasin;
 
     public Integer getId() {

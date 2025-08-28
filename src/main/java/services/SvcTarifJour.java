@@ -1,9 +1,6 @@
 package services;
 
-import entities.Article;
-import entities.Jour;
-import entities.Tarif;
-import entities.TarifJour;
+import entities.*;
 import org.apache.log4j.Logger;
 
 import java.io.Serializable;
@@ -37,14 +34,15 @@ public class SvcTarifJour extends Service<TarifJour> implements Serializable {
         return tarifJour;
     }
 
-    public List<TarifJour> findByJour(Tarif t, Jour j) {
+    public List<TarifJour> findByJourByArticle(Tarif t, Jour j, ExemplaireArticle ea) {
         Map<String, Object> param = new HashMap<>();
         Date date = new Date();
         param.put("dateDebut", date);
         param.put("jour", j.getNbrJour());
         param.put("tarif", t);
+        param.put("article", ea.getArticleIdArticle());
         param.put("dateFin", date);
-        return finder.findByNamedQuery("TarifJour.findByJour", param);
+        return finder.findByNamedQuery("TarifJour.findByJourByArticle", param);
     }
 
     public TarifJour createTarifJour(Tarif t, Jour j, Double p, Date db, Date df, Article a)

@@ -1,6 +1,6 @@
 package managedBean;
 
-import entities.FacturesDetail;
+import entities.FactureDetail;
 import org.apache.log4j.Logger;
 import services.SvcFactureDetail;
 
@@ -18,7 +18,7 @@ import java.util.List;
 public class FactureDetailBean implements Serializable {
     // Déclaration des variables globales
     private static final long serialVersionUID = 1L;
-    private FacturesDetail facturesDetail;
+    private FactureDetail factureDetail;
 
     private static final Logger log = Logger.getLogger(FactureDetailBean.class);
 
@@ -30,7 +30,7 @@ public class FactureDetailBean implements Serializable {
         EntityTransaction transaction = service.getTransaction();
         transaction.begin();
         try {
-            service.save(facturesDetail);
+            service.save(factureDetail);
             transaction.commit();
             FacesContext fc = FacesContext.getCurrentInstance();
             fc.getExternalContext().getFlash().setKeepMessages(true);
@@ -47,10 +47,10 @@ public class FactureDetailBean implements Serializable {
 
     }
     // Méthode qui retourne la liste de toutes les facturedetails.
-    public List<FacturesDetail> getReadAll()
+    public List<FactureDetail> getReadAll()
     {
         SvcFactureDetail service = new SvcFactureDetail();
-        List<FacturesDetail> listFactD = new ArrayList<FacturesDetail>();
+        List<FactureDetail> listFactD = new ArrayList<FactureDetail>();
         listFactD= service.findAllFactureDetail();
 
         service.close();
@@ -59,12 +59,12 @@ public class FactureDetailBean implements Serializable {
 
     //-------------------------------Getter & Setter--------------------------------------------
 
-    public FacturesDetail getFactureDetail() {
-        return facturesDetail;
+    public FactureDetail getFactureDetail() {
+        return factureDetail;
     }
 
-    public void setFactureDetail(FacturesDetail facturesDetail) {
-        this.facturesDetail = facturesDetail;
+    public void setFactureDetail(FactureDetail facturesDetail) {
+        this.factureDetail = facturesDetail;
     }
 
 

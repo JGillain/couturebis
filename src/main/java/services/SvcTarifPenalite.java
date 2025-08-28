@@ -40,11 +40,12 @@ public class SvcTarifPenalite extends Service<TarifPenalite> implements Serializ
     public List<TarifPenalite> findAllTarifsPenalites() {
         return finder.findByNamedQuery("TarifPenalite.findAll", null);
     }
-    public List<TarifPenalite> findByPena(Tarif t, Penalite p, Date d) {
+    public List<TarifPenalite> findByPena(Tarif t, Penalite p, Date d, Article a) {
         Map<String, Object> param = new HashMap<>();
         param.put("dateDebut", d);
         param.put("penalite", p);
         param.put("tarif", t);
+        param.put("article", a);
         param.put("dateFin", d);
         return finder.findByNamedQuery("TarifPenalite.findByPenalite", param);
     }

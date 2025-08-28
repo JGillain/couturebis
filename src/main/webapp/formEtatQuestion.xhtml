@@ -14,32 +14,23 @@
     <ui:define name="content">
         <p:growl id="growl" showDetail="true" sticky="true" />
         <h:head>
-            <title>#{I18N['livre.form.question']}</title>
+            <title>#{I18N['Articles.form.question']}</title>
         </h:head>
-        <h2 style="text-align:center">#{I18N['livre.form.question']}</h2>
-        <shiro:hasPermission name="Factures:Creer">
+        <h2 style="text-align:center">#{I18N['Articles.form.question']}</h2>
         <h:form>
-            <p:outputLabel value="bibliotheque"/>
-            <p:selectOneMenu value = "#{factureBean.magasin}" id="bibli" required="true" requiredMessage="#{I18N['formulaire.message.required.biblio']}"
-                             converter="biblioConverter">
-                <f:selectItems value = "#{bibliothequesBean.readAll}" var="bi"
-                               itemLabel="#{bi.nom}"
-                               itemValue="#{bi}"/>
-            </p:selectOneMenu>
-            <h:message for="bibli" styleClass="errorMessage"/>
 
-            <p:outputLabel value = "#{I18N['exemplaireslivres.label.CodeBarre']}"/>
-            <p:inputText id="exemplLivresCB"
+            <p:outputLabel value = "#{I18N['ExemplairesArticles.label.CodeBarre']}"/>
+            <p:inputText id="exArtCB"
                          value="#{factureBean.CB}"
                          required="true"
                          requiredMessage="#{I18N['formulaire.message.required.CB']}"
-                         maxlength="9"
-                         validator="codeBarreValidator">
-                <f:validateLength minimum="9" maximum="9"/>
+                         maxlength="13"
+                         validator="codeBarreExArticleValidator">
+                <f:validateLength minimum="13" maximum="13"/>
             </p:inputText>
-            <h:message for="exemplLivresCB" styleClass="errorMessage"/>
+            <h:message for="exArtCB" styleClass="errorMessage"/>
             <br/>
-            <p:outputLabel value="#{I18N['livre.form.question']}"/>
+            <p:outputLabel value="#{I18N['Articles.form.question']}"/>
             <p:selectOneRadio value = "#{factureBean.choixetat}" required="true">
                 <f:selectItem itemValue = "#{true}" itemLabel = "#{I18N['commune.label.oui']}" />
                 <f:selectItem itemValue = "#{false}" itemLabel = "#{I18N['commune.label.non']}"/>
@@ -47,10 +38,6 @@
             <p:commandButton icon="pi pi-check-circle" value="#{I18N['application.button.validate']}" action="#{factureBean.redirectChoix}"/>
             <p:commandButton icon="pi pi-home" value="#{I18N['application.button.return']}" action="#{factureBean.flushFact}" immediate="true"/>
         </h:form>
-        </shiro:hasPermission>
-        <shiro:lacksPermission name="Factures:Creer">
-            <p:outputLabel value="#{I18N['application.page.accessrefuse']}"/>
-        </shiro:lacksPermission>
     </ui:define>
 </ui:composition>
 

@@ -18,14 +18,6 @@
                     <title>#{I18N['fact.form.nouveau.titre']}</title>
                 </h:head>
                 <h2 style="text-align:center">#{I18N['fact.form.nouveau.titre']}</h2>
-                <p:outputLabel value="bibliotheque"/>
-                <p:selectOneMenu value = "#{factureBean.magasin}" id="bibli" required="true" requiredMessage="#{I18N['formulaire.message.required.biblio']}"
-                                 converter="biblioConverter">
-                    <f:selectItems value = "#{bibliothequesBean.readAll}" var="bi"
-                                   itemLabel="#{bi.nom}"
-                                   itemValue="#{bi}"/>
-                </p:selectOneMenu>
-                <!--<h:message for="bibli" styleClass="errorMessage"/>-->
 
                 <p:outputLabel value="numéro de membre?" />
                 <p:inputText value="#{factureBean.numMembre}" id="numMembre"
@@ -34,7 +26,7 @@
                              maxlength="9"
                 validator="codeBarreCliValidator">
                 </p:inputText>
-                <!--<h:message for="numMembre" styleClass="errorMessage"/>-->
+                <h:message for="numMembre" styleClass="errorMessage"/>
 
 
                 <p:dataTable value="#{factureBean.listLC}" var="LC">
@@ -46,7 +38,7 @@
                                      id="CB"
                                      required="true"
                                      requiredMessage="#{I18N['formulaire.message.required.CB']}"
-                                     validator="codeBarreLivreValidator"/>
+                                     validator="codeBarreExArticleValidator"/>
                     </p:column>
 
                     <p:column>
@@ -63,8 +55,9 @@
                         </p:inputText>
                     </p:column>
                     <p:column>
-                        <!--<h:message for="CB" styleClass="errorMessage"/>--> <p:outputLabel value=" " />
-                        <!--<h:message for="nbrj" styleClass="errorMessage"/>-->
+                        <h:message for="CB" styleClass="errorMessage"/>
+                        <p:outputLabel value=" " />
+                        <h:message for="nbrj" styleClass="errorMessage"/>
                     </p:column>
 
 

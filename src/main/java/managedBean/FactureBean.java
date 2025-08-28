@@ -1,8 +1,9 @@
 package managedBean;
 
 import entities.*;
-import enumeration.ExemplairesLivresEtatEnum;
+import enumeration.ExemplaireArticleEtatEnum;
 import enumeration.FactureEtatEnum;
+import enumeration.FactureTypeEnum;
 import objectCustom.locationCustom;
 import org.apache.log4j.Logger;
 import pdfTools.ModelFactLoca;
@@ -16,6 +17,7 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.mail.*;
 
@@ -25,6 +27,9 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.persistence.EntityTransaction;
 import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.util.*;
 
@@ -42,7 +47,8 @@ public class FactureBean implements Serializable {
     private String numMembre;
     private String CB;
     private boolean choixetat;
-
+    @Inject
+    private MagasinBean magasinBean;
     private Magasin magasin;
     private ExemplaireArticle exemplaireArticle;
 
@@ -53,6 +59,7 @@ public class FactureBean implements Serializable {
         facture = new Facture();
         numMembre= "";
         CB= "";
+        magasin = magasinBean.getMagasin();
     }
     public void addNewListRow() {
         listLC.add(new locationCustom());
@@ -68,44 +75,53 @@ public class FactureBean implements Serializable {
     // Méthode qui permet l'envoi d'un mail via le mail de la bibliotheque avec la facture
     public static void sendMessage( String filename, String mailDest, String Texte, String Titre)  {
         //Création de la session
-        String mail = "bibliolibatc@gmail.com";
-        String password = "porte7345";
+        final String host = "sandbox.smtp.mailtrap.io";
+        final int port = 587;
+        final String user = "api"; // or hardcode while testing
+        final String pass = "850fd96712000a9cc38e9f2bf1162e65";
 
+        Path attachment = Paths.get(System.getProperty("user.dir"),
+                        "src","main","webapp","Factures", filename)
+                .normalize();
 
-        String userdir = System.getProperty("user.dir");
-        userdir = userdir.substring(0,userdir.length()-24) + "\\src\\main\\webapp\\Factures\\" + filename;
+        Properties props = new Properties();
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.smtp.host", host);
+        props.put("mail.smtp.port", String.valueOf(port));
 
+        Session session = Session.getInstance(props, new Authenticator() {
+            @Override protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(user, pass);
+            }
+        });
 
-        Properties properties = new Properties();
-
-
-        Session session = Session.getInstance(properties);
-        MimeMessage message = new MimeMessage(session);
         try {
+            MimeMessage message = new MimeMessage(session);
+            message.setFrom(new InternetAddress("no-reply@yourapp.local")); // any sender for Mailtrap
+            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(mailDest, false));
+            message.setSubject(Titre, "UTF-8");
 
-            BodyPart messageBodyPart = new MimeBodyPart();
-            Multipart multipart = new MimeMultipart();
-            messageBodyPart.setText(Texte);
-            multipart.addBodyPart(messageBodyPart);
-            messageBodyPart = new MimeBodyPart();
-            DataSource source = new FileDataSource(userdir);
-            messageBodyPart.setDataHandler(new DataHandler(source));
-            messageBodyPart.setFileName(filename);
-            multipart.addBodyPart(messageBodyPart);
+            // multipart: text + optional attachment
+            MimeMultipart multipart = new MimeMultipart();
+
+            MimeBodyPart textPart = new MimeBodyPart();
+            textPart.setText(Texte, "UTF-8");
+            multipart.addBodyPart(textPart);
+
+            if (Files.exists(attachment)) {
+                MimeBodyPart attachPart = new MimeBodyPart();
+                attachPart.attachFile(attachment.toFile());
+                attachPart.setFileName(filename);
+                multipart.addBodyPart(attachPart);
+            }
+
             message.setContent(multipart);
-            message.setSubject(Titre);
-            message.setFrom(new InternetAddress(mail));
-            message.addRecipients(Message.RecipientType.TO, mailDest);
-        } catch (MessagingException e) {
-            e.printStackTrace();
-        }
 
-        try {
-            Transport transport = session.getTransport("smtps");
-            transport.connect ("smtp.gmail.com", 465, mail, password);
-            transport.sendMessage(message,new Address[] { new InternetAddress(mailDest)});
-        } catch (MessagingException e) {
-            e.printStackTrace();
+            // Use STARTTLS SMTP (not "smtps")
+            Transport.send(message);
+        } catch (Exception e) {
+            e.printStackTrace(); // or log.error("mail failed", e);
         }
     }
 
@@ -139,14 +155,15 @@ public class FactureBean implements Serializable {
         if(magasin ==null){
             flag=true;
         }
-        else if (serviceT.getTarif(date, magasin.getNom()).size()==0){
+        else if (serviceT.getTarifByMagasin(date, magasin.getNom()).size()==0){
             flag=true;
-        }else {
-            T = serviceT.getTarif(date, magasin.getNom()).get(0);
+        }
+        else {
+            T = serviceT.getTarifByMagasin(date, magasin.getNom()).get(0);
         }
         //vÃ©rif si livre non louÃ©
         for (locationCustom lc: listLC) {
-            if (serviceEA.findOneByCodeBare(lc.getCB()).get(0).isLoue()){
+            if (serviceEA.findOneByCodeBare(lc.getCB()).get(0).getLoue()){
                 flag=true;
                 break;
             }
@@ -163,28 +180,30 @@ public class FactureBean implements Serializable {
                 String path = "Factures\\" + fact.getNumeroFacture() + ".pdf";
                 fact.setLienPdf(path);
                 fact.setEtat(FactureEtatEnum.en_cours);
-                fact.setUtilisateurs(u);
+                fact.setType(FactureTypeEnum.Location);
+                fact.setMagasinIdMagasin(magasin);
+                fact.setUtilisateurIdUtilisateur(u);
                 // parcour de la liste des location a inscrire dans la facture
                 for (locationCustom lc : listLC) {
                     //crÃ©ation des dÃ©tails de la facture
-                    ExemplairesLivres el = serviceEA.findOneByCodeBarre(lc.getCB()).get(0);
-                    serviceEA.loueExemplaire(el);
+                    ExemplaireArticle ea = serviceEA.findOneByCodeBare(lc.getCB()).get(0);
+                    serviceEA.loueExemplaire(ea);
                     Timestamp timestampretour = new Timestamp(rounded + (lc.getNbrJours() * 24 * 3600 * 1000));
-                    FacturesDetail Factdet = serviceFD.newRent(el, fact, T, lc.getNbrJours(), timestampretour);
+                    FactureDetail Factdet = serviceFD.newRent(ea, fact, T, lc.getNbrJours(), timestampretour);
                     serviceFD.save(Factdet);
-                    serviceEA.save(el);
+                    serviceEA.save(ea);
                     prixTVAC = prixTVAC + Factdet.getPrix();
                 }
 
-                fact.setPrixTvac(prixTVAC);
+                fact.setPrixTVAC(prixTVAC);
 
                 // sauvegarde de la facture et commit de transaction
                 service.save(fact);
                 transaction.commit();
                 service.refreshEntity(fact);
                 MFB.creation(fact, magasin);
-                sendMessage(fact.getNumeroFacture()+".pdf",fact.getUtilisateurs().getCourriel(),"vous trouverez la facture concernant votre location en piece jointe","Facture de location");
-                return "/tableFactures.xhtml?faces-redirect=true";
+                sendMessage(fact.getNumeroFacture()+".pdf",fact.getUtilisateurIdUtilisateur().getCourriel(),"vous trouverez la facture concernant votre location en piece jointe","Facture de location");
+                return "/tableFactureLoca.xhtml?faces-redirect=true";
             } finally {
                 //bloc pour gÃ©rer les erreurs lors de la transactions
                 if (transaction.isActive()) {
@@ -205,12 +224,12 @@ public class FactureBean implements Serializable {
             FacesContext fc = FacesContext.getCurrentInstance();
             fc.getExternalContext().getFlash().setKeepMessages(true);
             fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"une erreur est survenue, soit Le livre est déjà loué ou une information est manquante (tarif, biblotheque)",null));
-            return "/formNewFact.xhtml?faces-redirect=true";
+            return "/formNewFactLoca.xhtml?faces-redirect=true";
         }
     }
 
     // Méthode qui permet de créer une facture pénalité
-    public void newFactPena(FacturesDetail facturesDetail)
+    public void newFactPena(FactureDetail facturesDetail)
     {
 
 
@@ -218,16 +237,16 @@ public class FactureBean implements Serializable {
 
         SvcFacture service =new SvcFacture();
         SvcFactureDetail serviceFD = new SvcFactureDetail();
-        SvcExemplairesLivres serviceEL = new SvcExemplairesLivres();
-        SvcUtilisateurs serviceU = new SvcUtilisateurs();
-        SvcTarifs serviceT = new SvcTarifs();
-        SvcPenalites serviceP = new SvcPenalites();
-        SvcTarifsPenalites serviceTP = new SvcTarifsPenalites();
+        SvcExemplaireArticle serviceEA = new SvcExemplaireArticle();
+        SvcUtilisateur serviceU = new SvcUtilisateur();
+        SvcTarif serviceT = new SvcTarif();
+        SvcPenalite serviceP = new SvcPenalite();
+        SvcTarifPenalite serviceTP = new SvcTarifPenalite();
 
         //rassemblement des entity managers pour la transaction
 
         serviceFD.setEm(service.getEm());
-        serviceEL.setEm(service.getEm());
+        serviceEA.setEm(service.getEm());
 
         //initialisation des object et variables
         double prixTVAC = 0;
@@ -237,12 +256,12 @@ public class FactureBean implements Serializable {
 
         Date date = new Date();
 
-        Factures fact = new Factures();
-        FacturesDetail factdet= new FacturesDetail();
-        FacturesDetail factdetretard= null;
+        Facture fact = new Facture();
+        FactureDetail factdet= new FactureDetail();
+        FactureDetail factdetretard= null;
         ModelFactLocaPena MFB =new ModelFactLocaPena();
-        Tarifs T = serviceT.getTarifByBiblio(Date.from(facturesDetail.getFacture().getDateDebut().toInstant()), magasin.getNom()).get(0);
-        Utilisateurs u = serviceU.getByNumMembre(numMembre).get(0);
+        Tarif T = serviceT.getTarifByMagasin(Date.from(facturesDetail.getFactureIdFacture().getDateDebut().toInstant()), magasin.getNom()).get(0);
+        Utilisateur u = serviceU.getByNumMembre(numMembre).get(0);
 
 
 
@@ -256,13 +275,13 @@ public class FactureBean implements Serializable {
             String path = "Factures\\" + fact.getNumeroFacture() + ".pdf";
             fact.setLienPdf(path);
             fact.setEtat(FactureEtatEnum.terminer);
-            fact.setUtilisateurs(u);
+            fact.setUtilisateurIdUtilisateur(u);
 
             //création des facture dÃ©tails
             if (tarifsPenalites.size() >= 1){
-                for (TarifsPenalites tp: tarifsPenalites)
+                for (TarifPenalite tp: tarifsPenalites)
                 {
-                    factdet=serviceFD.newPena(facturesDetail.getExemplairesLivre(),fact,T, tp.getPenalite(), Date.from(facturesDetail.getFacture().getDateDebut().toInstant()),timestampfacture);
+                    factdet=serviceFD.newPena(facturesDetail.getExemplaireArticleIdEA(),fact,T, tp.getPenaliteIdPenalite(), Date.from(facturesDetail.getFactureIdFacture().getDateDebut().toInstant()),timestampfacture);
                     prixTVAC=prixTVAC+factdet.getPrix();
                     serviceFD.save(factdet);
                 }
@@ -271,22 +290,22 @@ public class FactureBean implements Serializable {
             if (facturesDetail.getDateRetour().after(facturesDetail.getDateFin())){
                 int nbjour = (int)((facturesDetail.getDateRetour().getTime() - facturesDetail.getDateFin().getTime())/(1000*60*60*24));
 
-                if (serviceTP.findByPena(T,serviceP.findByName("Retard").get(0),Date.from(facturesDetail.getFacture().getDateDebut().toInstant())).size() >= 1){
-                    factdetretard= serviceFD.newPenaretard(facturesDetail.getExemplairesLivre() , fact , T , serviceP.findByName("Retard").get(0) , nbjour , Date.from(facturesDetail.getFacture().getDateDebut().toInstant()),timestampfacture);
+                if (serviceTP.findByPena(T,serviceP.findByName("Retard").get(0),Date.from(facturesDetail.getFactureIdFacture().getDateDebut().toInstant()),facturesDetail.getExemplaireArticleIdEA().getArticleIdArticle()).size() >= 1){
+                    factdetretard= serviceFD.newPenaretard(facturesDetail.getExemplaireArticleIdEA() , fact , T , serviceP.findByName("Retard").get(0) , nbjour , Date.from(facturesDetail.getFactureIdFacture().getDateDebut().toInstant()),timestampfacture);
                     prixTVAC=prixTVAC+factdetretard.getPrix();
                     serviceFD.save(factdetretard);
                 }
 
             }
 
-            fact.setPrixTvac(prixTVAC);
+            fact.setPrixTVAC(prixTVAC);
             // sauvegarde de la facture et commit de transaction
             service.save(fact);
             transaction.commit();
             //refresh pour récupérer les collections associÃ©es
             service.refreshEntity(fact);
             MFB.creation(fact,tarifsPenalites,factdetretard, magasin);
-            sendMessage(fact.getNumeroFacture()+".pdf",fact.getUtilisateurs().getCourriel(),"vous trouverez la facture concernant les pénalités suite a votre location en piece jointe","Facture de pénalité");
+            sendMessage(fact.getNumeroFacture()+".pdf",fact.getUtilisateurIdUtilisateur().getCourriel(),"vous trouverez la facture concernant les pénalités suite a votre location en piece jointe","Facture de pénalité");
         }
         finally {
             //bloc pour gérer les erreurs lors de la transactions
@@ -306,39 +325,39 @@ public class FactureBean implements Serializable {
     }
 
     public String redirectChoix(){
-        SvcExemplairesLivres serviceEL = new SvcExemplairesLivres();
-        exemplaireArticle = serviceEL.findOneByCodeBarre(CB).get(0);
+        SvcExemplaireArticle serviceEA = new SvcExemplaireArticle();
+        exemplaireArticle = serviceEA.findOneByCodeBare(CB).get(0);
         tarifsPenalites= new ArrayList<>();
         if (choixetat){
             Date date = new Date();
-            SvcTarifs serviceT = new SvcTarifs();
-            tarifsPenalites= (List<TarifsPenalites>) serviceT.getTarifByBiblio(date, magasin.getNom()).get(0).getTarifsPenalites();
-            return "/formEtatLivre.xhtml?faces-redirect=true";
+            SvcTarif serviceT = new SvcTarif();
+            tarifsPenalites= (List<TarifPenalite>) serviceT.getTarifByMagasin(date, magasin.getNom()).get(0).getTarifPenalite();
+            return "/formEtatArticle.xhtml?faces-redirect=true";
         }
         else {
-            return retourLivre();
+            return retourArticleLoca();
         }
     }
 
     // Méthode qui permet
-    public String retourLivre(){
-        FacturesDetail facturesDetail = new FacturesDetail();
-        SvcExemplairesLivres serviceEL = new SvcExemplairesLivres();
-        Factures fact = new Factures();
+    public String retourArticleLoca(){
+        FactureDetail facturesDetail = new FactureDetail();
+        SvcExemplaireArticle serviceEL = new SvcExemplaireArticle();
+        Facture fact = new Facture();
         long now =  System.currentTimeMillis();
         long rounded = now - now % 60000;
         Timestamp timestampretour = new Timestamp(rounded);
         boolean flag =false;
-        if (exemplaireArticle.isLoue())
+        if (exemplaireArticle.getLoue())
         {
-            for (FacturesDetail fd : exemplaireArticle.getFactureDetails()){
+            for (FactureDetail fd : exemplaireArticle.getFactureDetails()){
                 if (fd.getDateRetour() == null) {
                     facturesDetail = fd;
-                    numMembre=fd.getFacture().getUtilisateurs().getNumMembre();
+                    numMembre=fd.getFactureIdFacture().getUtilisateurIdUtilisateur().getCodeBarreIdCB().getCodeBarre();
                     flag=true;
                 }
             }
-            if (flag=true)
+            if (flag)
             {
                 flag=false;
                 facturesDetail.setDateRetour(timestampretour);
@@ -347,7 +366,7 @@ public class FactureBean implements Serializable {
 
                     newFactPena(facturesDetail);
                 }
-                for (FacturesDetail fd: facturesDetail.getFacture().getFactureDetails())
+                for (FactureDetail fd: facturesDetail.getFactureIdFacture().getFactureDetails())
                 {
                     if (fd.getDateRetour() == null) {
                         flag = true;
@@ -355,7 +374,7 @@ public class FactureBean implements Serializable {
                     }
                 }
                 if (!flag){
-                    fact = facturesDetail.getFacture();
+                    fact = facturesDetail.getFactureIdFacture();
                     fact.setEtat(FactureEtatEnum.terminer);
                 }
                 SvcFacture service = new SvcFacture();
@@ -366,7 +385,7 @@ public class FactureBean implements Serializable {
                 transaction.begin();
                 try {
                     exemplaireArticle.setLoue(false);
-                    if (exemplaireArticle.getEtat()==ExemplairesLivresEtatEnum.Mauvais)
+                    if (exemplaireArticle.getEtat()== ExemplaireArticleEtatEnum.Mauvais)
                     {
                         exemplaireArticle.setActif(false);
                     }
@@ -395,7 +414,7 @@ public class FactureBean implements Serializable {
             fc.getExternalContext().getFlash().setKeepMessages(true);
             fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Le livre n'est pas loue",null));
         }
-        return "/tableFactures.xhtml?faces-redirect=true";
+        return "/tableFactureLoca.xhtml?faces-redirect=true";
     }
 
     /*Méthode permettant de créer un numéro de facture avec FB(FactureBiblio) suivi de l'année, le mois et un nombre a 4 chiffres*/
@@ -407,7 +426,7 @@ public class FactureBean implements Serializable {
         int annee = cal.get(Calendar.YEAR);
         int mois = cal.get(Calendar.MONTH) +1;
         SvcFacture serviceF = new SvcFacture();
-        List<Factures> fact;
+        List<Facture> fact;
 
         //tester si l'année en cours = année de la derniÃ¨re facture
         try
@@ -437,13 +456,25 @@ public class FactureBean implements Serializable {
         return numFact;
     }
     /*
-     * Méthode qui permet via le service de retourner la liste de toutes les factures
+     * Méthode qui permet via le service de retourner la liste de toutes les factures de location
      */
-    public List<Factures> getReadAll()
+    public List<Facture> getReadAllLocation()
     {
         SvcFacture service = new SvcFacture();
-        List<Factures> listFact = new ArrayList<Factures>();
-        listFact= service.findAllFacture();
+        List<Facture> listFact = new ArrayList<Facture>();
+        listFact= service.findAllFactureLocation();
+
+        service.close();
+        return listFact;
+    }
+    /*
+     * Méthode qui permet via le service de retourner la liste de toutes les factures de vente
+     */
+    public List<Facture> getReadAllVente()
+    {
+        SvcFacture service = new SvcFacture();
+        List<Facture> listFact = new ArrayList<Facture>();
+        listFact= service.findAllFactureVente();
 
         service.close();
         return listFact;
@@ -454,16 +485,16 @@ public class FactureBean implements Serializable {
     public String flushFact()
     {
         init();
-        return "/tableFactures.xhtml?faces-redirect=true";
+        return "/tableFactureLoca.xhtml?faces-redirect=true";
     }
 
     //-------------------------------Getter & Setter--------------------------------------------
 
-    public Factures getFacture() {
+    public Facture getFacture() {
         return facture;
     }
 
-    public void setFacture(Factures facture) {
+    public void setFacture(Facture facture) {
         this.facture = facture;
     }
 
@@ -475,11 +506,11 @@ public class FactureBean implements Serializable {
         this.listLC = listLC;
     }
 
-    public Bibliotheques getMagasin() {
+    public Magasin getMagasin() {
         return magasin;
     }
 
-    public void setMagasin(Bibliotheques magasin) {
+    public void setMagasin(Magasin magasin) {
         this.magasin = magasin;
     }
 
@@ -499,11 +530,11 @@ public class FactureBean implements Serializable {
         this.CB = CB;
     }
 
-    public List<TarifsPenalites> getTarifsPenalites() {
+    public List<TarifPenalite> getTarifsPenalites() {
         return tarifsPenalites;
     }
 
-    public void setTarifsPenalites(List<TarifsPenalites> tarifsPenalites) {
+    public void setTarifsPenalites(List<TarifPenalite> tarifsPenalites) {
         this.tarifsPenalites = tarifsPenalites;
     }
 
@@ -515,11 +546,11 @@ public class FactureBean implements Serializable {
         this.choixetat = choixetat;
     }
 
-    public ExemplairesLivres getExemplaireArticle() {
+    public ExemplaireArticle getExemplaireArticle() {
         return exemplaireArticle;
     }
 
-    public void setExemplaireArticle(ExemplairesLivres exemplaireArticle) {
+    public void setExemplaireArticle(ExemplaireArticle exemplaireArticle) {
         this.exemplaireArticle = exemplaireArticle;
     }
 }

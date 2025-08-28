@@ -12,7 +12,7 @@ import java.util.Objects;
         ({
                 @NamedQuery(name = "TarifsPenalites.findAll", query = "SELECT tp FROM TarifPenalite tp"),
                 // todo : a tester
-                @NamedQuery(name = "TarifsPenalites.findByPenalites", query = "SELECT tp FROM TarifPenalite tp WHERE tp.dateDebut<=:dateDebut AND tp.dateFin>=:dateFin AND tp.penaliteIdPenalite=:penalite AND tp.tarifIdTarif=:tarif ORDER BY tp.dateDebut DESC"),
+                @NamedQuery(name = "TarifsPenalites.findByPenalitesByArticle", query = "SELECT tp FROM TarifPenalite tp WHERE tp.dateDebut<=:dateDebut AND tp.dateFin>=:dateFin AND tp.penaliteIdPenalite=:penalite AND tp.tarifIdTarif=:tarif AND tp.articleIdArticle=:article ORDER BY tp.dateDebut DESC"),
         })
 public class TarifPenalite implements Serializable {
     private static final long serialVersionUID = 1L;

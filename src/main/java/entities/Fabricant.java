@@ -30,7 +30,6 @@ public class Fabricant implements Serializable {
     @Column(name = "Actif", nullable = false)
     private Boolean actif = false;
 
-
     public Integer getId() {
         return id;
     }

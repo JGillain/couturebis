@@ -10,6 +10,7 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityTransaction;
 import java.io.Serializable;
@@ -24,6 +25,8 @@ public class ArticleBean implements Serializable {
     private Article article;
     private Fabricant fabricant;
     private Categorie categorie;
+    @Inject
+    private CodeBarreBean codeBarreBean;
     private List<Article> listart = new ArrayList<Article>();
     private List<Article> searchResults = new ArrayList<Article>();
     private static final Logger log = Logger.getLogger(ArticleBean.class);
@@ -50,7 +53,6 @@ public class ArticleBean implements Serializable {
             if(article.getId() == null) {
                 SvcCodeBarre svcCB = new SvcCodeBarre();
                 svcCB.setEm(service.getEm());
-                CodeBarreBean codeBarreBean = new CodeBarreBean();
                 List<String> code = codeBarreBean.createCB(false,1); // false = pas client
                 CodeBarre cb = new CodeBarre();
                 log.debug(code);

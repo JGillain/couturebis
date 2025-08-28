@@ -1,5 +1,6 @@
 package pdfTools;
 
+import entities.*;
 import org.apache.log4j.Logger;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentInformation;
@@ -15,6 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -29,7 +31,7 @@ public class ModelFactLoca implements Serializable
 	private static final Logger log = Logger.getLogger(ModelFactLoca.class);
 
 	/*Creation de la facture en PDF*/
-	public void creation (Factures fact, Bibliotheques bib)  {
+	public void creation (Facture fact, Magasin mag)  {
 		try{
 		SimpleDateFormat sf = new SimpleDateFormat("dd/MM/yyyy");
 		String userdir = System.getProperty("user.dir");
@@ -40,26 +42,26 @@ public class ModelFactLoca implements Serializable
 		//Date date = cal.getTime();
 		//variable a mettre dans la facture
 		String numfacture = fact.getNumeroFacture();
-		String utilisateur = fact.getUtilisateurs().getNumMembre();
-		String nompreClient = fact.getUtilisateurs().getNom() + " " + fact.getUtilisateurs().getPrenom();
+		String utilisateur = fact.getUtilisateurIdUtilisateur().getCodeBarreIdCB().toString();
+		String nompreClient = fact.getUtilisateurIdUtilisateur().getNom() + " " + fact.getUtilisateurIdUtilisateur().getPrenom();
 		String adresse="";
 		String adresse2="";
 		/*Mettre une variable pour le code barre du livre*/
-		for(UtilisateursAdresses ua : fact.getUtilisateurs().getUtilisateursAdresses())
+		for(UtilisateurAdresse ua : fact.getUtilisateurIdUtilisateur().getUtilisateurAdresse())
 		{
-			if(ua.isActif())
+			if(ua.getActif())
 			{
-				adresse = ua.getAdresse().getRue() + " " + ua.getAdresse().getNumero() + " ";
-				if(ua.getAdresse().getBoite() !=null) {
-					adresse= adresse+ ua.getAdresse().getBoite() + " ";
+				adresse = ua.getAdresseIdAdresse().getRue() + " " + ua.getAdresseIdAdresse().getNumero() + " ";
+				if(ua.getAdresseIdAdresse().getBoite() !=null) {
+					adresse= adresse+ ua.getAdresseIdAdresse().getBoite() + " ";
 				}
-				adresse2= ua.getAdresse().getLocalites().getCp() + " " + ua.getAdresse().getLocalites().getVille();
+				adresse2= ua.getAdresseIdAdresse().getLocaliteIdLocalite().getCp() + " " + ua.getAdresseIdAdresse().getLocaliteIdLocalite().getVille();
 			}
 		}
 		String laDateDuJour = sf.format(new java.util.Date());
 		
 		//calcule main d'oeuvre
-		Double PTVAC = fact.getPrixTvac();
+		Double PTVAC = fact.getPrixTVAC();
 
 		//String total4 = String.format("%5.02f €", TVA);
 		
@@ -98,17 +100,9 @@ public class ModelFactLoca implements Serializable
 	    //Creation de l'entete de la page
 	    contentStream.newLineAtOffset(198, 725);	    							//Setting the position for the line (l x h)
 	    //String entete1 = "BiblioLib";
-		String entete1="";
-		String entete2 = "";
+		String entete1=mag.getNom();
+		String entete2 = mag.getAdresseIdAdresse().getRue() + " " + mag.getAdresseIdAdresse().getNumero() + " " + mag.getAdresseIdAdresse().getLocaliteIdLocalite().getCp() + " " + mag.getAdresseIdAdresse().getLocaliteIdLocalite().getVille();
 		String entete3 = "TVA: BE0448.150.750 - Tel: 071 35 44 71";
-
-		for (Adresses adress: bib.getAdresses()) {
-			entete1 = bib.getNom();
-			entete2 = adress.getRue() + " " + adress.getNumero() + " " + adress.getLocalites().getCp() + " " + adress.getLocalites().getVille();
-
-			break;
-		}
-
 
 	    contentStream.showText(entete1);      	    								//Adding text in the form of string 
 	    contentStream.newLine();
@@ -166,9 +160,9 @@ public class ModelFactLoca implements Serializable
 	    contentStream.showText("Exemplaire loue :");
 	    contentStream.newLine();
 	    contentStream.newLine();
-	    for (FacturesDetail fd: fact.getFactureDetails())
+	    for (FactureDetail fd: fact.getFactureDetails())
 		{
-	    	contentStream.showText(fd.getExemplairesLivre().getLivres().getTitre() + " pour une duree de " + (ChronoUnit.DAYS.between(fact.getDateDebut().toLocalDateTime(), fd.getDateFin().toLocalDateTime())) + " jour");
+	    	contentStream.showText(fd.getExemplaireArticleIdEA().getArticleIdArticle().getNom() + " pour une duree de " + (ChronoUnit.DAYS.between(fact.getDateDebut().toLocalDateTime(), fd.getDateFin().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())) + " jour");
 	    	contentStream.newLine();
 	    	price.add(String.valueOf(fd.getPrix()));
 			contentStream.newLine();

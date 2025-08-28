@@ -33,7 +33,7 @@ public class SvcCodeBarre extends Service<CodeBarre> implements Serializable {
 
         return cb;
     }
-
+    // Méthode qui permet de trouver des codes barres via un range
     public List<CodeBarre> findBarcodeInRange(String start, String end) {
             Map<String, Object> param = new HashMap<>();
             param.put("start", start);

@@ -1,5 +1,6 @@
 package pdfTools;
 
+import entities.*;
 import org.apache.log4j.Logger;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentInformation;
@@ -29,7 +30,7 @@ public class ModelFactLocaPena implements Serializable
 	private static final Logger log = Logger.getLogger(ModelFactLocaPena.class);
 
 	/*Creation de la facture en PDF*/
-	public void creation (Factures fact, List<TarifsPenalites> tp, FacturesDetail retard, Bibliotheques bib)  {
+	public void creation (Facture fact, List<TarifPenalite> tp, FactureDetail retard, Magasin magasin)  {
 		try{
 		SimpleDateFormat sf = new SimpleDateFormat("dd/MM/yyyy");
 		String userdir = System.getProperty("user.dir");
@@ -40,26 +41,26 @@ public class ModelFactLocaPena implements Serializable
 		//Date date = cal.getTime();
 		//variable a mettre dans la facture
 		String numfacture = fact.getNumeroFacture();
-		String utilisateur = fact.getUtilisateurs().getNumMembre();
-		String nompreClient = fact.getUtilisateurs().getNom() + " " + fact.getUtilisateurs().getPrenom();
+		String utilisateur = fact.getUtilisateurIdUtilisateur().getCodeBarreIdCB().getCodeBarre();
+		String nompreClient = fact.getUtilisateurIdUtilisateur().getNom() + " " + fact.getUtilisateurIdUtilisateur().getPrenom();
 		String adresse="";
 		String adresse2="";
 		/*Mettre une variable pour le code barre du livre*/
-		for(UtilisateursAdresses ua : fact.getUtilisateurs().getUtilisateursAdresses())
+		for(UtilisateurAdresse ua : fact.getUtilisateurIdUtilisateur().getUtilisateurAdresse())
 		{
-			if(ua.isActif())
+			if(ua.getActif())
 			{
-				adresse = ua.getAdresse().getRue() + " " + ua.getAdresse().getNumero() + " ";
-				if(ua.getAdresse().getBoite() !=null) {
-					adresse= adresse+ ua.getAdresse().getBoite() + " ";
+				adresse = ua.getAdresseIdAdresse().getRue() + " " + ua.getAdresseIdAdresse().getNumero() + " ";
+				if(ua.getAdresseIdAdresse().getBoite() !=null) {
+					adresse= adresse+ ua.getAdresseIdAdresse().getBoite() + " ";
 				}
-				adresse2= ua.getAdresse().getLocalites().getCp() + " " + ua.getAdresse().getLocalites().getVille();
+                adresse2= ua.getAdresseIdAdresse().getLocaliteIdLocalite().getCp() + " " + ua.getAdresseIdAdresse().getLocaliteIdLocalite().getVille();
 			}
 		}
 		String laDateDuJour = sf.format(new java.util.Date());
 		
 		//calcule main d'oeuvre
-		Double PTVAC = fact.getPrixTvac();
+		Double PTVAC = fact.getPrixTVAC();
 
 		//String total4 = String.format("%5.02f €", TVA);
 		
@@ -97,16 +98,10 @@ public class ModelFactLocaPena implements Serializable
 	    
 	    //Cr�ation de l'entete de la page
 	    contentStream.newLineAtOffset(198, 725);	    							//Setting the position for the line (l x h)
-			String entete1="";
-			String entete2 = "";
+			String entete1 = magasin.getNom();
+			String entete2 = magasin.getAdresseIdAdresse().getRue() + " " + magasin.getAdresseIdAdresse().getNumero() + " " + magasin.getAdresseIdAdresse().getLocaliteIdLocalite().getCp() + " " + magasin.getAdresseIdAdresse().getLocaliteIdLocalite().getVille();;
 			String entete3 = "TVA: BE0448.150.750 - Tel: 071 35 44 71";
 
-			for (Adresses adress: bib.getAdresses()) {
-				entete1 = bib.getNom();
-				entete2 = adress.getRue() + " " + adress.getNumero() + " " + adress.getLocalites().getCp() + " " + adress.getLocalites().getVille();
-
-				break;
-			}
 	    contentStream.showText(entete1);      	    								//Adding text in the form of string 
 	    contentStream.newLine();
 	    contentStream.setFont(PDType1Font.HELVETICA_BOLD, 10);
@@ -167,13 +162,13 @@ public class ModelFactLocaPena implements Serializable
 	    contentStream.newLineAtOffset(80, 455);	
 	    contentStream.showText("Penalites concernant l'exemplaire de : ");
 	    contentStream.newLine();
-	    contentStream.showText(fact.getFactureDetails().stream().findAny().get().getExemplairesLivre().getLivres().getTitre() + "sous le code barre" + fact.getFactureDetails().stream().findAny().get().getExemplairesLivre().getCodeBarre());;
+	    contentStream.showText(fact.getFactureDetails().stream().findAny().get().getExemplaireArticleIdEA().getArticleIdArticle().getNom() + "sous le code barre" + fact.getFactureDetails().stream().findAny().get().getExemplaireArticleIdEA().getCodeBarreIdCB().getCodeBarre());;
 	    contentStream.newLine();
-	    for (TarifsPenalites TP: tp)
+	    for (TarifPenalite TP: tp)
 		{
-	    	contentStream.showText(TP.getPenalite().getDenomination());
+	    	contentStream.showText(TP.getPenaliteIdPenalite().getDenomination());
 	    	contentStream.newLine();
-	    	if(!TP.getPenalite().getDenomination().equals("Retard"))
+	    	if(!TP.getPenaliteIdPenalite().getDenomination().equals("Retard"))
 			{
 				price.add(String.valueOf(TP.getPrix()));
 			}

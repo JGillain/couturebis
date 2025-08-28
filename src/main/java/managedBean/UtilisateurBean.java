@@ -41,20 +41,11 @@ public class UtilisateurBean implements Serializable {
     @Inject
     private LoginBean loginBean;
 
+    @Inject
+    private CodeBarreBean codeBarreBean;
     public UtilisateurBean() {
         super();
     }
-// TODO(sec): blocking role changes for 'administrateur'
-//
-// TODO(sec): prevent self-demotion (manager -> utilisateur)
-// TODO(sec): prevent demotion of last active manager
-//
-// TODO(sec): verify current user (admin or self) before sensitive actions (e.g., changePassword)
-//
-// TODO(sec): re-check user.actif before mutating operations
-//
-// TODO(sec): ensure barcode gen only for CLIENT (already done)
-// TODO(sec): hide admin-only UI with <shiro:hasAnyRoles name="1,2">
 
     @PostConstruct
     public void init() {
@@ -162,7 +153,7 @@ public class UtilisateurBean implements Serializable {
                 log.debug("entrée génération code-barres");
                 serviceCB = new SvcCodeBarre();
                 serviceCB.setEm(service.getEm());
-                List<String> code = new CodeBarreBean().createCB(true, 1); // true = CLIENT
+                List<String> code = codeBarreBean.createCB(true, 1); // true = CLIENT
                 if (code.isEmpty()) {
                     throw new IllegalStateException("erreur lors de la génération du code-barres");
                 }

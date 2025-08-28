@@ -17,12 +17,12 @@ public class FactureDetail implements Serializable {
     private Integer id;
 
     @NotNull
-    @ManyToOne
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "FactureIdFacture", nullable = false)
     private Facture factureIdFacture;
 
     @NotNull
-    @ManyToOne
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "ExemplaireArticleIdEA", nullable = false)
     private ExemplaireArticle exemplaireArticleIdEA;
 

@@ -7,6 +7,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Objects;
 
 @Entity
@@ -19,7 +20,7 @@ import java.util.Objects;
                 @NamedQuery(name = "ExArticle.searchTri", query="SELECT EA FROM ExemplaireArticle EA WHERE EA.articleIdArticle.nom=:nom ORDER BY EA.articleIdArticle.nom ASC"),//A verifier
                 @NamedQuery(name = "ExArticle.search", query="SELECT EA FROM ExemplaireArticle EA WHERE EA.articleIdArticle.nom=:nom"),
                 @NamedQuery(name = "ExArticle.findByArticle", query="SELECT EA FROM ExemplaireArticle EA WHERE EA.articleIdArticle=:article"),
-                @NamedQuery(name = "ExArticle.findOneByCodeBarre", query="SELECT EA FROM ExemplaireArticle EA WHERE EA.codeBarreIdCB=:CB"),
+                @NamedQuery(name = "ExArticle.findOneByCodeBarre", query="SELECT EA FROM ExemplaireArticle EA WHERE EA.codeBarreIdCB.codeBarre=:CB"),
                 @NamedQuery(name = "ExArticle.AvailableExArticlesRent", query="SELECT EA FROM ExemplaireArticle EA WHERE EA.articleIdArticle =:article AND EA.statut = enumeration.ExemplaireArticleStatutEnum.Location and EA.actif=true"),
                 @NamedQuery(name = "ExArticle.AvailableExArticlesSales", query="SELECT EA FROM ExemplaireArticle EA WHERE EA.articleIdArticle =:article AND EA.statut = enumeration.ExemplaireArticleStatutEnum.Vente and EA.actif=true and EA.loue=false and EA.reserve=false"),
         })
@@ -74,6 +75,9 @@ public class ExemplaireArticle implements Serializable {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "codeBarreIdCB", nullable = true)
     private CodeBarre codeBarreIdCB;
+
+    @OneToMany(mappedBy = "exemplaireArticleIdEA" ,fetch = FetchType.LAZY)
+    private Collection<FactureDetail> factureDetails;
 
     public CodeBarre getCodeBarreIdCB() {
         return codeBarreIdCB;
@@ -161,6 +165,14 @@ public class ExemplaireArticle implements Serializable {
 
     public void setMagasinIdMagasin(Magasin magasinIdMagasin) {
         this.magasinIdMagasin = magasinIdMagasin;
+    }
+
+    public Collection<FactureDetail> getFactureDetails() {
+        return factureDetails;
+    }
+
+    public void setFactureDetails(Collection<FactureDetail> factureDetails) {
+        this.factureDetails = factureDetails;
     }
 
     @Override

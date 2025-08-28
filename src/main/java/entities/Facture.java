@@ -9,11 +9,18 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.Collection;
 import java.util.Objects;
 
 
 @Entity
 @Table(name = "facture")
+@NamedQueries
+        ({
+                @NamedQuery(name = "Facture.findAll", query = "SELECT f FROM Facture f"),
+                @NamedQuery(name = "Facture.findByType", query = "SELECT f FROM Facture f WHERE f.type=:type"),
+                @NamedQuery(name = "Facture.findLastId", query="SELECT f FROM Facture f ORDER BY f.id DESC")
+        })
 public class Facture implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -56,6 +63,9 @@ public class Facture implements Serializable {
     @ManyToOne
     @JoinColumn(name = "MagasinIdMagasin", nullable = false)
     private Magasin magasinIdMagasin;
+
+    @OneToMany(mappedBy = "factureIdFacture", fetch = FetchType.LAZY)
+    private Collection<FactureDetail> factureDetails;
 
     public Integer getId() {
         return id;
@@ -127,6 +137,14 @@ public class Facture implements Serializable {
 
     public void setMagasinIdMagasin(Magasin magasinIdMagasin) {
         this.magasinIdMagasin = magasinIdMagasin;
+    }
+
+    public Collection<FactureDetail> getFactureDetails() {
+        return factureDetails;
+    }
+
+    public void setFactureDetails(Collection<FactureDetail> factureDetails) {
+        this.factureDetails = factureDetails;
     }
 
     @Override

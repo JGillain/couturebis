@@ -14,7 +14,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-
+@Named
+@SessionScoped
 public class CodeBarreBean implements Serializable {
     // Déclaration des variables globales
     private static final long serialVersionUID = 1L;
@@ -67,10 +68,10 @@ public class CodeBarreBean implements Serializable {
             list.add(base+checkDigit);
             next = next+1L;
         }
-
+        init();
         return list;
     }
-    private int calculateCheckDigit(String data) {
+    public int calculateCheckDigit(String data) {
         int sum = 0;
         for (int i = 0; i < data.length(); i++) {
             int digit = Character.getNumericValue(data.charAt(i));

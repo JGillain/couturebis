@@ -25,6 +25,10 @@ public class Magasin implements Serializable {
     @Column(name = "Actif", nullable = false)
     private Boolean actif = false;
 
+    @OneToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "AdresseIdAdresse", nullable = false, unique = true)
+    private Adresse adresseIdAdresse;
+
     public Integer getId() {
         return id;
     }
@@ -47,6 +51,14 @@ public class Magasin implements Serializable {
 
     public void setActif(Boolean actif) {
         this.actif = actif;
+    }
+
+    public Adresse getAdresseIdAdresse() {
+        return adresseIdAdresse;
+    }
+
+    public void setAdresseIdAdresse(Adresse adresseIdAdresse) {
+        this.adresseIdAdresse = adresseIdAdresse;
     }
 
     @Override
