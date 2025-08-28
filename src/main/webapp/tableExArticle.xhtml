@@ -47,14 +47,14 @@
                     </p:column>
 
                     <p:column>
-                        <p:commandButton  icon="pi pi-plus" value="Details" action="articleDetail">
-                            <f:setPropertyActionListener target="#{exemplaireArticleBean.article}" value="#{ex}"/>
+                        <p:commandButton  icon="pi pi-plus" value="Details" action="exArticleDetail.xhtml?faces-redirect=true">
+                            <f:setPropertyActionListener target="#{exemplaireArticleBean.EA}" value="#{ex}"/>
                         </p:commandButton>
                     </p:column>
 
                     <p:column>
-                        <p:commandButton  icon="pi pi-pencil" value="Modifier" action="formEditArticle.xhtml?faces-redirect=true">
-                            <f:setPropertyActionListener target="#{articleBean.article}" value="#{ex}" />
+                        <p:commandButton  icon="pi pi-pencil" value="Modifier" action="formEditExArticle.xhtml?faces-redirect=true">
+                            <f:setPropertyActionListener target="#{exemplaireArticleBean.EA}" value="#{ex}" />
                         </p:commandButton>
                     </p:column>
 

@@ -1,0 +1,75 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f = "http://java.sun.com/jsf/core"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:shiro="http://shiro.apache.org/tags"
+      xmlns:p="http://primefaces.org/ui">
+<ui:composition template="Template/template.xhtml">
+    <ui:define name="title">#{I18N['ExemplairesArticles.form.nouveau.titre']}</ui:define>
+
+    <ui:define name="content">
+        <p:growl id="growl" showDetail="true" sticky="true" />
+        <h:form id="formEditExArticle" prependId="false">
+            <h:head>
+                <title>Modification de l'exemplaire article</title>
+            </h:head>
+            <h2 style="text-align:center">Modification de l'exemplaire article</h2>
+
+            <p:panelGrid id="newrecform" columns="3" columnClasses="col1Newrec,col2Newrec,col3Newrec">
+
+                <p:outputLabel value="#{I18N['ExemplairesArticles.label.Article']}"/>
+                <p:selectOneMenu id="articleSelect"
+                                 value="#{exemplaireArticleBean.article}"
+                                 required="true"
+                                 requiredMessage="#{I18N['formulaire.message.required.article']}"
+                                 filter="true"
+                                 panelStyle="max-height:220px; overflow-y:auto"
+
+                                 converter="articleConverter">
+                    <f:selectItems value="#{articleBean.readAll}" var="ex" itemLabel="#{ex.nom}" itemValue="#{ex}"/>
+                </p:selectOneMenu>
+                <h:message for="articleSelect" styleClass="errorMessage"/>
+
+                <p:outputLabel value="#{I18N['ExemplairesArticles.label.Etat']}"/>
+                <p:selectOneMenu id="etat" value="#{exemplaireArticleBean.flagVente}" required="true">
+                    <f:selectItem itemLabel="#{I18N['ExemplairesArticles.statut.location']}" itemValue="False"/>
+                    <f:selectItem itemLabel="#{I18N['ExemplairesArticles.statut.vente']}" itemValue="True"/>
+                </p:selectOneMenu>
+                <h:message for="etat" styleClass="errorMessage"/>
+
+                <p:outputLabel value = "CommentaireEtat"/>
+                <p:inputText id="commentaireEtat"
+                             value="#{exemplaireArticleBean.EA.commentaireEtat}"
+                             maxlength="100">
+                    <f:validateLength minimum="3" maximum="100"/>
+                </p:inputText>
+                <h:message for="commentaireEtat" styleClass="errorMessage"/>
+
+                <p:outputLabel value="#{I18N['ExemplairesArticles.label.Loue']}"/>
+                <p:toggleSwitch id="loue" value="#{exemplaireArticleBean.EA.loue}" disabled="true"/>
+                <h:message for="loue" styleClass="errorMessage"/>
+
+                <p:outputLabel value="Reservé"/>
+                <p:toggleSwitch id="reserve" value="#{exemplaireArticleBean.EA.reserve}" disabled="true"/>
+                <h:message for="loue" styleClass="errorMessage"/>
+
+                <p:outputLabel value="#{I18N['ExemplairesArticles.label.Statut']}"/>
+                <p:selectOneMenu disabled="true" id="statut" value="#{exemplaireArticleBean.flagVente}" required="true">
+                    <f:selectItem itemLabel="#{I18N['ExemplairesArticles.statut.location']}" itemValue="False"/>
+                    <f:selectItem itemLabel="#{I18N['ExemplairesArticles.statut.vente']}" itemValue="True"/>
+                </p:selectOneMenu>
+                <h:message for="statut" styleClass="errorMessage"/>
+
+
+            </p:panelGrid>
+
+            <p:commandButton icon="pi pi-check-circle" value="#{I18N['application.button.validate']}" action="#{exemplaireArticleBean.save()}" ajax="false"/>
+            <p:commandButton icon="pi pi-home" value="#{I18N['application.button.return']}" action="#{exemplaireArticleBean.flushBienv()}" immediate="true"/>
+        </h:form>
+    </ui:define>
+</ui:composition>
+
+</html>

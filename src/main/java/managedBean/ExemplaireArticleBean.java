@@ -3,10 +3,8 @@ package managedBean;
 import entities.*;
 import enumeration.ExemplaireArticleStatutEnum;
 import org.apache.log4j.Logger;
-import services.SvcArticle;
 import services.SvcCodeBarre;
 import services.SvcExemplaireArticle;
-import services.SvcMagasin;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.SessionScoped;
@@ -15,7 +13,6 @@ import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityTransaction;
-import javax.validation.constraints.Min;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,16 +44,10 @@ public class ExemplaireArticleBean implements Serializable {
         magasin = magasinBean.getMagasin();
     }
 
-    public void saveBatch() {
-        log.debug("ExemplaireArticleBean saveBatch");
+    public void save() {
+        log.debug("ExemplaireArticleBean save");
 
         /* ---- basic validation ---- */
-        if ( nombreExemplaire < 1) {
-            FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                            "La quantité doit être un entier positif (≥ 1)", null));
-            return;   // abort
-        }
         if (article == null) {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR,
@@ -76,34 +67,53 @@ public class ExemplaireArticleBean implements Serializable {
         EntityTransaction tx = service.getTransaction();
         tx.begin();
         try {
-            /* initialisation liste code barres, ne sera utilisé que si mise en location*/
-            List<String> code = Collections.emptyList();
-            if (!flagVente){
-                if (nombreExemplaire < 1 ){
-                    throw new IllegalStateException("nombreExemplaire < 1");
-                }
-                code = codeBarreBean.createCB(false,nombreExemplaire);
-
-            }
-            for (int i = 0; i < nombreExemplaire; i++) {
-                ExemplaireArticle ex = new ExemplaireArticle();
-                ex.setArticleIdArticle(article);
-                ex.setMagasinIdMagasin(magasin);
-                ex.setStatut(flagVente ? ExemplaireArticleStatutEnum.Vente
+            if (EA != null && EA.getId() != null) {
+                // === CAS MODIFICATION ===
+                EA.setArticleIdArticle(article);
+                EA.setMagasinIdMagasin(magasin);
+                EA.setStatut(flagVente ? ExemplaireArticleStatutEnum.Vente
                         : ExemplaireArticleStatutEnum.Location);
+                EA.setCommentaireEtat(EA.getCommentaireEtat()); // au cas où modifié
+                service.save(EA);
 
-                if (!flagVente) {
-                    CodeBarre cb = new CodeBarre();
-                    cb.setCodeBarre(code.get(i));
-                    svcCB.save(cb);          // persist codebarre
-                    ex.setCodeBarreIdCB(cb); // link
+                tx.commit();
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_INFO,
+                                "Exemplaire modifié avec succès", null));
+            } else {
+                // === CAS CREATION (batch) ===
+                if (nombreExemplaire < 1) {
+                    FacesContext.getCurrentInstance().addMessage(null,
+                            new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                                    "La quantité doit être un entier positif (≥ 1)", null));
+                    return;   // abort
                 }
-                service.save(ex);              // persist exemplaire
+
+                List<String> code = Collections.emptyList();
+                if (!flagVente){
+                    code = codeBarreBean.createCB(false, nombreExemplaire);
+                }
+
+                for (int i = 0; i < nombreExemplaire; i++) {
+                    ExemplaireArticle ex = new ExemplaireArticle();
+                    ex.setArticleIdArticle(article);
+                    ex.setMagasinIdMagasin(magasin);
+                    ex.setStatut(flagVente ? ExemplaireArticleStatutEnum.Vente
+                            : ExemplaireArticleStatutEnum.Location);
+
+                    if (!flagVente) {
+                        CodeBarre cb = new CodeBarre();
+                        cb.setCodeBarre(code.get(i));
+                        svcCB.save(cb);          // persist codebarre
+                        ex.setCodeBarreIdCB(cb); // link
+                    }
+                    service.save(ex);              // persist exemplaire
+                }
+                tx.commit();
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_INFO,
+                                nombreExemplaire + " exemplaire(s) enregistré(s)", null));
             }
-            tx.commit();
-            FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_INFO,
-                            nombreExemplaire + " exemplaire(s) enregistré(s)", null));
         }
         catch (Exception e) {
             if (tx.isActive()) tx.rollback();
