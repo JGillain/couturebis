@@ -33,44 +33,51 @@ public class SvcFactureDetail extends Service<FactureDetail> implements Serializ
         return factureDetail;
     }
 
-    public FactureDetail newRent(ExemplaireArticle ea, Facture fa, Tarif t, int J, Timestamp d)
-    {
-        double prix=0.0;
-        int nbrjours=0;
-        int index=0;
+    public FactureDetail newRent(ExemplaireArticle ea, Facture fa, Tarif t, int J, Timestamp dateFin) {
+        // --- initialisation variables ---
+        java.sql.Date today = new java.sql.Date(System.currentTimeMillis());;
         SvcTarifJour serviceTJ = new SvcTarifJour();
-        SvcJours serviceJ = new SvcJours();
-        List<Jour> jours = serviceJ.findByNbrJ(J);
-        FactureDetail facturesDetail = new FactureDetail();
-        facturesDetail.setExemplaireArticleIdEA(ea);
-        facturesDetail.setFactureIdFacture(fa);
-        List<TarifJour> tj = new ArrayList<>();
-        for(Jour jours1 : jours)
-        {
-            tj.add(serviceTJ.findByJourByArticle(t,jours1,ea).get(0));
-        }
-        boolean flag=false;
-        //try catch nécéssaire
+        List<TarifJour> tiers;
+        FactureDetail fd  = new FactureDetail();
+        int remaining = J;
+        double prix= 0.0;
+        int chunk;
+
         try {
-            while (!flag) {
-                prix = prix + tj.get(index).getPrix();
-                nbrjours = nbrjours + tj.get(index).getJourIdJour().getNbrJour();
-                if (nbrjours > J) {
-                    prix = prix - tj.get(index).getPrix();
-                    nbrjours = nbrjours - tj.get(index).getJourIdJour().getNbrJour();
-                    index++;
-                } else if (nbrjours == J) {
-                    flag = true;
-                }
+            tiers = serviceTJ.findAllForArticleOnDate(t, ea.getArticleIdArticle(), J, today);
+            if (tiers == null || tiers.isEmpty()) {
+                throw new IllegalStateException("Aucun tarif actif pour l’article "
+                        + ea.getArticleIdArticle().getNom() + " le " + today);
             }
+
+            for (TarifJour row : tiers) {
+                chunk = row.getJourIdJour().getNbrJour();
+                if (chunk <= 0) continue;
+                while (remaining >= chunk) {
+                    prix += row.getPrix();
+                    remaining -= chunk;
+                }
+                if (remaining == 0) break;
+            }
+
+            if (remaining != 0) {
+                boolean hasDay1 = tiers.stream().anyMatch(tj -> tj.getJourIdJour().getNbrJour() == 1);
+                String hint = hasDay1 ? "" : " (ajoutez une ligne 1 jour au tarif)";
+                throw new IllegalStateException("Impossible de couvrir exactement " + J
+                        + " jours pour l’article \"" + ea.getArticleIdArticle().getNom()
+                        + "\" le " + today + hint);
+            }
+
+            fd.setExemplaireArticleIdEA(ea);
+            fd.setFactureIdFacture(fa);
+            fd.setPrix(prix);
+            fd.setDateFin(dateFin);
+            return fd;
+        } finally {
+            serviceTJ.close();
         }
-        catch (IndexOutOfBoundsException ignored){}
-        facturesDetail.setPrix(prix);
-        facturesDetail.setDateFin(d);
-        serviceTJ.close();
-        serviceJ.close();
-        return facturesDetail;
     }
+
     public FactureDetail newPena(ExemplaireArticle ea, Facture fa, Tarif t, Penalite p, Date dp, Timestamp df)
     {
         SvcTarifPenalite serviceTP = new SvcTarifPenalite();

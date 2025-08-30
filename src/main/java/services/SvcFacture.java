@@ -40,12 +40,12 @@ public class SvcFacture extends Service<Facture> implements Serializable {
     public List<Facture> findAllFactureLocation() {
         Map<String, Object> param = new HashMap<>();
         param.put("type", FactureTypeEnum.Location);
-        return finder.findByNamedQuery("Facture.findAllLocation", param);
+        return finder.findByNamedQuery("Facture.findByType", param);
     }
     public List<Facture> findAllFactureVente() {
         Map<String, Object> param = new HashMap<>();
         param.put("type", FactureTypeEnum.Vente);
-        return finder.findByNamedQuery("Facture.findAllVente", param);
+        return finder.findByNamedQuery("Facture.findByType", param);
     }
     public List<Facture> findAllFactureDesc() {
         return finder.findByNamedQuery("Facture.findLastId", null);

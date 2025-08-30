@@ -35,7 +35,7 @@ public class SvcExemplaireArticle extends Service<ExemplaireArticle> implements 
         return EA;
     }
     public ExemplaireArticle loueExemplaire(ExemplaireArticle exemplaireArticle){
-        System.out.println("Je loue l'exemplaire livre :" + exemplaireArticle.getLoue());
+        log.debug("Je loue l'exemplaire article :" + exemplaireArticle.getLoue());
         exemplaireArticle.setLoue(!exemplaireArticle.getLoue());
         return exemplaireArticle;
     }
@@ -70,10 +70,10 @@ public class SvcExemplaireArticle extends Service<ExemplaireArticle> implements 
         return finder.findByNamedQuery("ExArticle.findByArticle", param);
     }
 
-    public List<ExemplaireArticle> findOneByCodeBare(String codeBare) {
+    public List<ExemplaireArticle> findOneByCodeBarre(String codeBare) {
         Map<String, Object> param = new HashMap<>();
         param.put("CB", codeBare);
-        return finder.findByNamedQuery("ExArticle.findOneByCodeBare", param);
+        return finder.findByNamedQuery("ExArticle.findOneByCodeBarre", param);
     }
 
     public List<ExemplaireArticle> search (String nom) {

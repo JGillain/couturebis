@@ -27,9 +27,10 @@
                         <!-- column header -->
                         <f:facet name="header">#{I18N['factures.label.lien']}</f:facet>
                         <!-- row record -->
-                        <h:outputLink value="#{fa.lienPdf}">
-                            <p:graphicImage value="Images/pdf.png"/>
-                        </h:outputLink>
+                        <h:commandLink action="#{factureBean.downloadPdf}" immediate="true">
+                            <f:param name="numFacture" value="#{fa.numeroFacture}" />
+                            <h:graphicImage library="images" name="pdf.png" />
+                        </h:commandLink>
                     </p:column>
                     <p:column>
                         <!-- column header -->

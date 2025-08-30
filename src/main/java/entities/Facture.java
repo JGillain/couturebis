@@ -40,7 +40,7 @@ public class Facture implements Serializable {
     private String numeroFacture;
 
     @NotNull
-    @Lob
+    @Enumerated(EnumType.STRING)
     @Column(name = "Etat", nullable = false)
     private FactureEtatEnum etat;
 
@@ -48,11 +48,6 @@ public class Facture implements Serializable {
     @Enumerated(EnumType.STRING)
     @Column(name = "Type", nullable = false)
     private FactureTypeEnum type;
-
-    @Size(max = 255)
-    @NotNull
-    @Column(name = "LienPdf", nullable = false)
-    private String lienPdf;
 
     @NotNull
     @ManyToOne
@@ -115,14 +110,6 @@ public class Facture implements Serializable {
         this.type = type;
     }
 
-    public String getLienPdf() {
-        return lienPdf;
-    }
-
-    public void setLienPdf(String lienPdf) {
-        this.lienPdf = lienPdf;
-    }
-
     public Utilisateur getUtilisateurIdUtilisateur() {
         return utilisateurIdUtilisateur;
     }
@@ -149,14 +136,13 @@ public class Facture implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Facture facture = (Facture) o;
-        return Objects.equals(id, facture.id) && Objects.equals(dateDebut, facture.dateDebut) && Objects.equals(prixTVAC, facture.prixTVAC) && Objects.equals(numeroFacture, facture.numeroFacture) && etat == facture.etat && Objects.equals(lienPdf, facture.lienPdf) && Objects.equals(utilisateurIdUtilisateur, facture.utilisateurIdUtilisateur) && Objects.equals(magasinIdMagasin, facture.magasinIdMagasin);
+        return Objects.equals(id, facture.id) && Objects.equals(dateDebut, facture.dateDebut) && Objects.equals(prixTVAC, facture.prixTVAC) && Objects.equals(numeroFacture, facture.numeroFacture) && etat == facture.etat && type == facture.type;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, dateDebut, prixTVAC, numeroFacture, etat, lienPdf, utilisateurIdUtilisateur, magasinIdMagasin);
+        return Objects.hash(id, dateDebut, prixTVAC, numeroFacture, etat, type);
     }
 }

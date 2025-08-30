@@ -12,7 +12,7 @@ import java.util.Objects;
         ({
                 @NamedQuery(name = "TarifJour.findAll", query = "SELECT tj FROM TarifJour tj"),
                 // Todo : a tester
-                @NamedQuery(name = "TarifJour.findByJourByArticle", query = "SELECT tj FROM TarifJour tj WHERE tj.dateDebut<=:dateDebut AND tj.dateFin>=:dateFin AND tj.jourIdJour.nbrJour<=:jour AND tj.tarifIdTarif=:tarif AND tj.articleIdArticle=:article ORDER BY tj.dateDebut DESC, tj.jourIdJour.nbrJour DESC "),
+                @NamedQuery(name = "TarifJour.findAllForArticleOnDate", query = "SELECT tj FROM TarifJour tj WHERE tj.dateDebut<=:date AND tj.dateFin>=:date AND tj.tarifIdTarif=:tarif AND tj.articleIdArticle=:article AND tj.jourIdJour.nbrJour<=:jour ORDER BY tj.jourIdJour.nbrJour DESC, tj.dateDebut DESC"),
         })
 public class TarifJour implements Serializable {
     private static final long serialVersionUID = 1L;

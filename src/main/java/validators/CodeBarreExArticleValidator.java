@@ -1,12 +1,10 @@
 package validators;
 
-import entities.Article;
 import entities.ExemplaireArticle;
-import entities.Utilisateur;
 import managedBean.CodeBarreBean;
 import services.SvcExemplaireArticle;
-import services.SvcUtilisateur;
 
+import javax.enterprise.inject.spi.CDI;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
@@ -25,7 +23,9 @@ public class CodeBarreExArticleValidator implements Validator
     @Override
     public void validate(FacesContext facesContext, UIComponent uiComponent, Object o) throws ValidatorException {
         String CB = (String) o;
-
+        if (codeBarreBean==null){
+            codeBarreBean= CDI.current().select(CodeBarreBean.class).get();
+        }
         if(CB.length() != 13) {
             throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR,"La valeur doit être d'exactement 13 caracteres",null));
         } else if ((!CB.chars().allMatch(Character::isDigit))) {
@@ -36,7 +36,7 @@ public class CodeBarreExArticleValidator implements Validator
 
         SvcExemplaireArticle serviceEA = new SvcExemplaireArticle();
         try {
-            List<ExemplaireArticle> L = serviceEA.findOneByCodeBare(CB);
+            List<ExemplaireArticle> L = serviceEA.findOneByCodeBarre(CB);
             if (L.isEmpty()) {
                 throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR,"Aucun exemplaire d'article n'est associé à ce code barre",null));
             } else if(!L.get(0).getActif()) {

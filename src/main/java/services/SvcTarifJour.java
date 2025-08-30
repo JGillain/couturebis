@@ -62,4 +62,13 @@ public class SvcTarifJour extends Service<TarifJour> implements Serializable {
         return finder.findByNamedQuery("TarifJour.findAll", null);
     }
 
+    public List<TarifJour> findAllForArticleOnDate(Tarif t, Article article,int maxJ, java.sql.Date today) {
+        Map<String, Object> param = new HashMap<>();
+        param.put("article", article);
+        param.put("date", today);
+        param.put("tarif", t);
+        param.put("jour", maxJ);
+
+        return finder.findByNamedQuery("TarifJour.findAllForArticleOnDate", param);
+    }
 }

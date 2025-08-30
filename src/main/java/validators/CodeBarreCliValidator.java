@@ -10,9 +10,9 @@ import javax.faces.context.FacesContext;
 import javax.faces.validator.FacesValidator;
 import javax.faces.validator.Validator;
 import javax.faces.validator.ValidatorException;
+import javax.enterprise.inject.spi.CDI;
 import javax.inject.Inject;
 import java.util.List;
-import java.util.Objects;
 
 @FacesValidator(value="codeBarreCliValidator",managed = true)
 public class CodeBarreCliValidator implements Validator
@@ -23,7 +23,9 @@ public class CodeBarreCliValidator implements Validator
     @Override
     public void validate(FacesContext facesContext, UIComponent uiComponent, Object o) throws ValidatorException {
         String CB = (String) o;
-
+        if (codeBarreBean==null){
+            codeBarreBean=CDI.current().select(CodeBarreBean.class).get();
+        }
         if(CB.length() != 13) {
             throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR,"La valeur doit être d'exactement 13 caracteres",null));
         } else if ((!CB.chars().allMatch(Character::isDigit))) {

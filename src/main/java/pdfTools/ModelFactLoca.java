@@ -10,10 +10,12 @@ import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 
+import javax.faces.context.FacesContext;
 import javax.servlet.annotation.WebServlet;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.time.ZoneId;
@@ -31,12 +33,12 @@ public class ModelFactLoca implements Serializable
 	private static final Logger log = Logger.getLogger(ModelFactLoca.class);
 
 	/*Creation de la facture en PDF*/
-	public void creation (Facture fact, Magasin mag)  {
+	public String creation (Facture fact, Magasin mag)  {
 		try{
 		SimpleDateFormat sf = new SimpleDateFormat("dd/MM/yyyy");
 		String userdir = System.getProperty("user.dir");
 		userdir = userdir.substring(0,userdir.length()-24);
-		String image = userdir + "src\\main\\webapp\\Images\\biblioLib.png";
+		String image = userdir + "\\src\\main\\webapp\\resources\\images\\imgCouture.png";
 		ArrayList<String> price = new ArrayList<>();
 		Calendar cal = Calendar.getInstance();
 		//Date date = cal.getTime();
@@ -74,7 +76,7 @@ public class ModelFactLoca implements Serializable
 			  
 	    //Creating the PDDocumentInformation object 
 	    PDDocumentInformation pdd = doc.getDocumentInformation();    
-	    pdd.setAuthor("BiblioLib");										//Setting the author of the document
+	    pdd.setAuthor("REVECouture");										//Setting the author of the document
 	    pdd.setTitle("Facture"+numfacture); 							// Setting the title of the document
 	    pdd.setSubject("Facturation du client: " + utilisateur); 	//Setting the subject of the document
 	    pdd.setCreationDate(cal); 	    						//Setting the created date of the document 
@@ -231,7 +233,7 @@ public class ModelFactLoca implements Serializable
 	    
 	    contentStream.close();
 
-	    String path = userdir + "\\src\\main\\webapp\\Factures\\";
+	    String path = "c:\\Facture\\";
 	    File file = new File(path);
 	    if(file.mkdir()) 
 	    {
@@ -239,10 +241,13 @@ public class ModelFactLoca implements Serializable
 	    }
 	    doc.save(path + numfacture + ".pdf");
 
-	    doc.close();}
+	    doc.close();
+        return path + numfacture + ".pdf";
+        }
 		catch (IOException e){
 			log.debug(e.getMessage());
-		}
+		    return "Erreur";
+        }
 	}
 	
 	
@@ -254,4 +259,3 @@ public class ModelFactLoca implements Serializable
 
 
 }
-

@@ -16,6 +16,7 @@ import javax.activation.FileDataSource;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.application.FacesMessage;
+import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -26,7 +27,8 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.persistence.EntityTransaction;
-import java.io.Serializable;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -71,59 +73,124 @@ public class FactureBean implements Serializable {
             listLC.remove(listLC.size()-1);
         }
     }
-    /*TODO : Penser a mettre les fonctions d'envoi de mail dans une même classe*/
-    // Méthode qui permet l'envoi d'un mail via le mail de la bibliotheque avec la facture
-    public static void sendMessage( String filename, String mailDest, String Texte, String Titre)  {
-        //Création de la session
-        final String host = "sandbox.smtp.mailtrap.io";
-        final int port = 587;
-        final String user = "api"; // or hardcode while testing
-        final String pass = "850fd96712000a9cc38e9f2bf1162e65";
 
-        Path attachment = Paths.get(System.getProperty("user.dir"),
-                        "src","main","webapp","Factures", filename)
-                .normalize();
+    // password = qcuk ddis vzhb kdfb
 
-        Properties props = new Properties();
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.smtp.host", host);
-        props.put("mail.smtp.port", String.valueOf(port));
 
-        Session session = Session.getInstance(props, new Authenticator() {
-            @Override protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(user, pass);
-            }
-        });
+
+
+    //methode qui permet le téléchargement sur les machines client des factures
+    public void downloadPdf() {
+        FacesContext fc = FacesContext.getCurrentInstance();
+        ExternalContext ec = fc.getExternalContext();
+
+        String numFacture = ec.getRequestParameterMap().get("numFacture");
+        if (numFacture == null || numFacture.isEmpty()) {
+            fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    "Téléchargement", "Numéro de facture manquant."));
+            return;
+        }
+
+        Path file = Paths.get("C:"+ File.separator +"Facture", numFacture + ".pdf");
 
         try {
-            MimeMessage message = new MimeMessage(session);
-            message.setFrom(new InternetAddress("no-reply@yourapp.local")); // any sender for Mailtrap
-            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(mailDest, false));
-            message.setSubject(Titre, "UTF-8");
-
-            // multipart: text + optional attachment
-            MimeMultipart multipart = new MimeMultipart();
-
-            MimeBodyPart textPart = new MimeBodyPart();
-            textPart.setText(Texte, "UTF-8");
-            multipart.addBodyPart(textPart);
-
-            if (Files.exists(attachment)) {
-                MimeBodyPart attachPart = new MimeBodyPart();
-                attachPart.attachFile(attachment.toFile());
-                attachPart.setFileName(filename);
-                multipart.addBodyPart(attachPart);
+            if (!Files.exists(file)) {
+                HttpServletResponse resp = (HttpServletResponse) ec.getResponse();
+                resp.sendError(HttpServletResponse.SC_NOT_FOUND, "PDF introuvable");
+                fc.responseComplete();
+                return;
             }
 
-            message.setContent(multipart);
+            HttpServletResponse resp = (HttpServletResponse) ec.getResponse();
+            resp.reset();
+            resp.setContentType("application/pdf");
+            resp.setHeader("Content-Disposition",
+                    "attachment; filename=\"" + file.getFileName().toString() + "\"");
+            resp.setHeader("Content-Length", String.valueOf(Files.size(file)));
 
-            // Use STARTTLS SMTP (not "smtps")
-            Transport.send(message);
-        } catch (Exception e) {
-            e.printStackTrace(); // or log.error("mail failed", e);
+            try (OutputStream out = resp.getOutputStream()) {
+                Files.copy(file, out);
+                out.flush();
+            }
+
+            fc.responseComplete(); // tell JSF we're done
+        } catch (IOException e) {
+            // log as you prefer
+            fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    "Téléchargement", "Erreur lors de l’envoi du PDF."));
         }
     }
+
+    // Méthode qui permet l'envoi d'un mail via le mail de la bibliotheque avec la facture
+    public static void sendMessage(String absolutePdfPath,
+                                   String destEmail,
+                                   String bodyText,
+                                   String subject) {
+        String host = "smtp.gmail.com";
+        String port = "587";
+        String username = "revecouture1990@gmail.com";   // your Gmail
+        String password = "qcukddisvzhbkdfb";         // 16-char app password (no spaces)
+
+
+
+
+        try {
+
+            java.nio.file.Path p = java.nio.file.Paths.get(absolutePdfPath);
+            if (!java.nio.file.Files.isReadable(p)) {
+                throw new java.io.FileNotFoundException("PDF introuvable: " + absolutePdfPath);
+            }
+            Properties props = new Properties();
+            props.put("mail.transport.protocol", "smtp");
+            props.put("mail.smtp.host", host);
+            props.put("mail.smtp.port", port);
+            props.put("mail.smtp.auth", "true");
+            props.put("mail.smtp.starttls.enable", "true");
+            props.put("mail.smtp.starttls.required", "true");
+            props.put("mail.smtp.ssl.trust", host);
+            props.put("mail.smtp.ssl.protocols", "TLSv1.2");
+
+            Session session = Session.getInstance(props,
+                    new Authenticator() {
+                        @Override protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
+                            return new javax.mail.PasswordAuthentication(username, password);
+                        }
+                    });
+
+            javax.mail.internet.MimeMessage msg = new javax.mail.internet.MimeMessage(session);
+            msg.setFrom(new InternetAddress(username));
+            msg.setRecipients(javax.mail.Message.RecipientType.TO,
+                    javax.mail.internet.InternetAddress.parse(destEmail, false));
+            msg.setSubject(subject, "UTF-8");
+
+            javax.mail.internet.MimeBodyPart text = new javax.mail.internet.MimeBodyPart();
+            text.setText(bodyText, "UTF-8");
+
+            javax.mail.internet.MimeBodyPart attach = new javax.mail.internet.MimeBodyPart();
+            javax.activation.DataSource src = new javax.activation.FileDataSource(absolutePdfPath);
+            attach.setDataHandler(new javax.activation.DataHandler(src));
+            attach.setFileName(new java.io.File(absolutePdfPath).getName());
+
+            javax.mail.Multipart mp = new javax.mail.internet.MimeMultipart();
+            mp.addBodyPart(text);
+            mp.addBodyPart(attach);
+            msg.setContent(mp);
+
+            javax.mail.Transport.send(msg);
+            log.info("Mail sent to " + destEmail + " with " + absolutePdfPath);
+        } catch (Exception e) {
+            log.error("Email send failed to " + destEmail + " (file: " + absolutePdfPath + ")", e);
+            javax.faces.context.FacesContext fc = javax.faces.context.FacesContext.getCurrentInstance();
+            if (fc != null) {
+                fc.getExternalContext().getFlash().setKeepMessages(true);
+                fc.addMessage(null, new javax.faces.application.FacesMessage(
+                        javax.faces.application.FacesMessage.SEVERITY_WARN,
+                        "Facture créée mais l’envoi du mail a échoué.",
+                        "Vous pouvez télécharger la facture depuis l’application." ));
+            }
+        }
+    }
+
 
     // Méthode qui permet de créer une facture de location
     public String newFactLoca()
@@ -148,28 +215,46 @@ public class FactureBean implements Serializable {
         Timestamp timestampdebut = new Timestamp(rounded);
         Date date = new Date();
         Facture fact = new Facture();
+        Tarif T = new Tarif();
         ModelFactLoca MFB =new ModelFactLoca();
-        Tarif T= new Tarif();
         Utilisateur u = serviceU.getByNumMembre(numMembre).get(0);
-        boolean flag = false;
-        if(magasin ==null){
-            flag=true;
+        boolean noTarif = false;
+        boolean missingMagasin = (magasin == null);
+        boolean alreadyLoue = false;
+        boolean missingExemplaire = false;
+
+        java.sql.Date today = new java.sql.Date(System.currentTimeMillis());
+        List<Tarif> tarifs = java.util.Collections.emptyList();
+
+        if (!missingMagasin) {
+            tarifs = serviceT.getTarifByMagasin(today, magasin);
+            noTarif = (tarifs == null || tarifs.isEmpty());
         }
-        else if (serviceT.getTarifByMagasin(date, magasin.getNom()).size()==0){
-            flag=true;
-        }
-        else {
-            T = serviceT.getTarifByMagasin(date, magasin.getNom()).get(0);
-        }
-        //vÃ©rif si livre non louÃ©
-        for (locationCustom lc: listLC) {
-            if (serviceEA.findOneByCodeBare(lc.getCB()).get(0).getLoue()){
-                flag=true;
+
+
+        for (locationCustom lc : listLC) {
+            List<ExemplaireArticle> found = serviceEA.findOneByCodeBarre(lc.getCB()); // NOTE: method name spelled “Barre”
+            if (found == null || found.isEmpty()) {
+                missingExemplaire = true;
+                break;
+            }
+            if (Boolean.TRUE.equals(found.get(0).getLoue())) {
+                alreadyLoue = true;
                 break;
             }
         }
 
+
+
+        log.warn("location prechecks : missingMagasin=" + missingMagasin
+                + ", noTarif=" + noTarif
+                + ", missingExemplaire=" + missingExemplaire
+                + ", alreadyLoue=" + alreadyLoue);
+
+        boolean flag = missingMagasin || noTarif || missingExemplaire || alreadyLoue;
+
         if (!flag) {
+            T=tarifs.get(0);
             //initialisation de la transaction
             EntityTransaction transaction = service.getTransaction();
             transaction.begin();
@@ -177,8 +262,7 @@ public class FactureBean implements Serializable {
                 //crÃ©ation de la facture
                 fact.setDateDebut(timestampdebut);
                 fact.setNumeroFacture(createNumFact());
-                String path = "Factures\\" + fact.getNumeroFacture() + ".pdf";
-                fact.setLienPdf(path);
+                String path = "c:\\Facture\\"+fact.getNumeroFacture() + ".pdf";
                 fact.setEtat(FactureEtatEnum.en_cours);
                 fact.setType(FactureTypeEnum.Location);
                 fact.setMagasinIdMagasin(magasin);
@@ -186,7 +270,7 @@ public class FactureBean implements Serializable {
                 // parcour de la liste des location a inscrire dans la facture
                 for (locationCustom lc : listLC) {
                     //crÃ©ation des dÃ©tails de la facture
-                    ExemplaireArticle ea = serviceEA.findOneByCodeBare(lc.getCB()).get(0);
+                    ExemplaireArticle ea = serviceEA.findOneByCodeBarre(lc.getCB()).get(0);
                     serviceEA.loueExemplaire(ea);
                     Timestamp timestampretour = new Timestamp(rounded + (lc.getNbrJours() * 24 * 3600 * 1000));
                     FactureDetail Factdet = serviceFD.newRent(ea, fact, T, lc.getNbrJours(), timestampretour);
@@ -202,11 +286,16 @@ public class FactureBean implements Serializable {
                 transaction.commit();
                 service.refreshEntity(fact);
                 MFB.creation(fact, magasin);
-                sendMessage(fact.getNumeroFacture()+".pdf",fact.getUtilisateurIdUtilisateur().getCourriel(),"vous trouverez la facture concernant votre location en piece jointe","Facture de location");
+
+                sendMessage(path,fact.getUtilisateurIdUtilisateur().getCourriel(),"Facture de location","vous trouverez la facture concernant votre location en piece jointe");
                 return "/tableFactureLoca.xhtml?faces-redirect=true";
-            } finally {
-                //bloc pour gÃ©rer les erreurs lors de la transactions
+            }catch (Exception e){
+                log.error("Error during facture creation", e);
+            }
+            finally {
+                //bloc pour gérer les erreurs lors de la transactions
                 if (transaction.isActive()) {
+
                     transaction.rollback();
                     FacesContext fc = FacesContext.getCurrentInstance();
                     fc.getExternalContext().getFlash().setKeepMessages(true);
@@ -223,9 +312,11 @@ public class FactureBean implements Serializable {
         else {
             FacesContext fc = FacesContext.getCurrentInstance();
             fc.getExternalContext().getFlash().setKeepMessages(true);
-            fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"une erreur est survenue, soit Le livre est déjà loué ou une information est manquante (tarif, biblotheque)",null));
+            fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"une erreur est survenue, soit Le livre est déjà loué ou une information est manquante (tarif, magasin)",null));
             return "/formNewFactLoca.xhtml?faces-redirect=true";
         }
+        log.debug("erreur, n'est pas sensé être montré");
+        return "";
     }
 
     // Méthode qui permet de créer une facture pénalité
@@ -260,7 +351,7 @@ public class FactureBean implements Serializable {
         FactureDetail factdet= new FactureDetail();
         FactureDetail factdetretard= null;
         ModelFactLocaPena MFB =new ModelFactLocaPena();
-        Tarif T = serviceT.getTarifByMagasin(Date.from(facturesDetail.getFactureIdFacture().getDateDebut().toInstant()), magasin.getNom()).get(0);
+        Tarif T = serviceT.getTarifByMagasin(Date.from(facturesDetail.getFactureIdFacture().getDateDebut().toInstant()), magasin).get(0);
         Utilisateur u = serviceU.getByNumMembre(numMembre).get(0);
 
 
@@ -272,8 +363,7 @@ public class FactureBean implements Serializable {
             //création de la facture
             fact.setDateDebut(timestampfacture);
             fact.setNumeroFacture(createNumFact());
-            String path = "Factures\\" + fact.getNumeroFacture() + ".pdf";
-            fact.setLienPdf(path);
+            String path = "c:\\Facture\\"+fact.getNumeroFacture() + ".pdf";
             fact.setEtat(FactureEtatEnum.terminer);
             fact.setUtilisateurIdUtilisateur(u);
 
@@ -305,7 +395,7 @@ public class FactureBean implements Serializable {
             //refresh pour récupérer les collections associÃ©es
             service.refreshEntity(fact);
             MFB.creation(fact,tarifsPenalites,factdetretard, magasin);
-            sendMessage(fact.getNumeroFacture()+".pdf",fact.getUtilisateurIdUtilisateur().getCourriel(),"vous trouverez la facture concernant les pénalités suite a votre location en piece jointe","Facture de pénalité");
+            sendMessage(path,fact.getUtilisateurIdUtilisateur().getCourriel(),"Facture de pénalité","vous trouverez la facture concernant les pénalités suite a votre location en piece jointe");
         }
         finally {
             //bloc pour gérer les erreurs lors de la transactions
@@ -326,12 +416,12 @@ public class FactureBean implements Serializable {
 
     public String redirectChoix(){
         SvcExemplaireArticle serviceEA = new SvcExemplaireArticle();
-        exemplaireArticle = serviceEA.findOneByCodeBare(CB).get(0);
+        exemplaireArticle = serviceEA.findOneByCodeBarre(CB).get(0);
         tarifsPenalites= new ArrayList<>();
         if (choixetat){
             Date date = new Date();
             SvcTarif serviceT = new SvcTarif();
-            tarifsPenalites= (List<TarifPenalite>) serviceT.getTarifByMagasin(date, magasin.getNom()).get(0).getTarifPenalite();
+            tarifsPenalites= (List<TarifPenalite>) serviceT.getTarifByMagasin(date, magasin).get(0).getTarifPenalite();
             return "/formEtatArticle.xhtml?faces-redirect=true";
         }
         else {
@@ -339,7 +429,7 @@ public class FactureBean implements Serializable {
         }
     }
 
-    // Méthode qui permet
+    // Méthode qui gere le retour des articles en location
     public String retourArticleLoca(){
         FactureDetail facturesDetail = new FactureDetail();
         SvcExemplaireArticle serviceEL = new SvcExemplaireArticle();
@@ -417,7 +507,7 @@ public class FactureBean implements Serializable {
         return "/tableFactureLoca.xhtml?faces-redirect=true";
     }
 
-    /*Méthode permettant de créer un numéro de facture avec FB(FactureBiblio) suivi de l'année, le mois et un nombre a 4 chiffres*/
+    /*Méthode permettant de créer un numéro de facture avec FRC (facture REVEcouture) suivi de l'année, le mois et un nombre a 4 chiffres*/
     public String createNumFact()
     {
 
@@ -439,18 +529,19 @@ public class FactureBean implements Serializable {
                 if(annee == anneelastFact)
                 {
                     int nb = Integer.parseInt(text.substring(text.length() - 5, text.length()));
-                    numFact = "FB" + annee + String.format("%02d", mois) + String.format("%05d",nb+1);
+                    numFact = "FRC" + annee + String.format("%02d", mois) + String.format("%05d",nb+1);
                 }
                 else
                 {
-                    numFact = "FB" + annee + String.format("%02d", mois) + "00001";
+                    numFact = "FRC" + annee + String.format("%02d", mois) + "00001";
                 }
             }
             else{
-                numFact = "FB" + annee + String.format("%02d", mois) + "00001";
+                numFact = "FRC" + annee + String.format("%02d", mois) + "00001";
             }
         }
         catch(NullPointerException npe) {
+            npe.printStackTrace();
         }
 
         return numFact;

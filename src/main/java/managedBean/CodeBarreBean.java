@@ -5,28 +5,23 @@ import org.apache.log4j.Logger;
 import services.SvcCodeBarre;
 
 import javax.annotation.PostConstruct;
-import javax.enterprise.context.SessionScoped;
-import javax.faces.view.ViewScoped;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Named;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 @Named
-@SessionScoped
+@ApplicationScoped
 public class CodeBarreBean implements Serializable {
     // Déclaration des variables globales
     private static final long serialVersionUID = 1L;
-    private CodeBarre CB;
     private static final Logger log = Logger.getLogger(CodeBarreBean.class);
 
     @PostConstruct
     public void init()
     {
         log.info("CodeBarreBean init");
-        CB = new CodeBarre();
     }
 
     public List<String> createCB(boolean client, int count)
