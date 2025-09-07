@@ -17,45 +17,50 @@
                 <p:panel layout="block" id="content">
                     <p:growl id="growl" showDetail="true" sticky="true" />
                     <h2 style="text-align:center">#{I18N['application.adresse.title']}</h2>
-                    <p:dataTable value="#{adresseBean.readAll}" var="ad" id="tableAdresses"
-                                 Class="table" headerClass="table-header" rowClasses="table-odd-row,table-even-row">
+
+                    <p:dataTable value="#{adresseBean.readAll}"
+                                 var="ad"
+                                 id="tableAdresses"
+                                 class="table"
+                                 headerClass="table-header"
+                                 rowClasses="table-odd-row,table-even-row"
+                                 paginator="true"
+                                 rows="10"
+                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}">
+
                         <p:column>
-                            <!-- column header -->
                             <f:facet name="header">#{I18N['adresse.label.Rue']}</f:facet>
-                            <!-- row record -->
                             <p:outputLabel value ="#{ad.rue}"/>
                         </p:column>
+
                         <p:column>
-                            <!-- column header -->
                             <f:facet name="header">#{I18N['adresse.label.Boite']}</f:facet>
-                            <!-- row record -->
                             <p:outputLabel value ="#{ad.boite}"/>
                         </p:column>
+
                         <p:column>
-                            <!-- column header -->
                             <f:facet name="header">#{I18N['adresse.label.Numero']}</f:facet>
-                            <!-- row record -->
                             <p:outputLabel value ="#{ad.numero}"/>
                         </p:column>
+
                         <p:column>
-                            <!-- column header Cette colonne doit être modifier pour voir l'utilisateur qui a cette adresse-->
                             <f:facet name="header">#{I18N['localite.label.Cp']}</f:facet>
-                            <!-- row record -->
                             <p:outputLabel value ="#{ad.localiteIdLocalite.cp}"/>
                         </p:column>
+
                         <p:column>
-                            <!-- column header Cette colonne doit être modifier pour voir l'utilisateur qui a cette adresse-->
                             <f:facet name="header">#{I18N['localite.label.Ville']}</f:facet>
-                            <!-- row record -->
                             <p:outputLabel value ="#{ad.localiteIdLocalite.ville}"/>
                         </p:column>
+
                         <p:column>
-                            <p:commandButton icon="pi pi-pencil" value="Modifier" action="formEditAdress">		<!-- u minuscule -->
-                                <f:setPropertyActionListener target="#{adresseBean.adresse}" value="#{ad}" /><!-- u minuscule -->
+                            <p:commandButton icon="pi pi-pencil" value="Modifier" action="formEditAdress">
+                                <f:setPropertyActionListener target="#{adresseBean.adresse}" value="#{ad}" />
                             </p:commandButton>
                         </p:column>
                     </p:dataTable>
                 </p:panel>
+
                 <h:panelGroup layout="block" styleClass="button-bar">
                     <!-- Left aligned buttons -->
                     <h:panelGroup styleClass="left-buttons">
@@ -67,7 +72,6 @@
                         <p:commandButton icon="pi pi-home" value="#{I18N['application.button.returnbienvenue']}" action="bienvenue.xhtml?faces-redirect=true"/>
                     </h:panelGroup>
                 </h:panelGroup>
-
 
             </h:form>
         </shiro:hasAnyRoles>

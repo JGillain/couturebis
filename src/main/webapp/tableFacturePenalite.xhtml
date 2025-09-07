@@ -15,8 +15,8 @@
             <p:panel layout="block" id="content">
                 <p:growl id="growl" showDetail="true" sticky="true" />
                 <h2 style="text-align:center">#{I18N['application.fact.penalite.title']}</h2>
-                <p:dataTable value="#{factureBean.readAllPenalite}" var="fa" id="tableFacturePena"
-                             Class="table" headerClass="table-header" rowClasses="table-odd-row,table-even-row">
+                <p:dataTable value="#{factureBean.readAllPenalite}" var="fa" id="tableFacturePena" paginator="true" rows="10" paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                             Class="table" headerClass="table-header" rowClasses="table-odd-row,table-even-row" >
                     <p:column>
                         <!-- column header -->
                         <f:facet name="header">#{I18N['factures.label.NumeroFacture']}</f:facet>

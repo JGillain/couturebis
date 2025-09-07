@@ -15,8 +15,16 @@
             <p:panel layout="block" id="content">
                 <p:growl id="growl" showDetail="true" sticky="true" />
                 <h2 style="text-align:center">#{I18N['application.fact.location.title']}</h2>
-                <p:dataTable value="#{factureBean.readAllLocation}" var="fa" id="tableFactureLoca"
-                             Class="table" headerClass="table-header" rowClasses="table-odd-row,table-even-row">
+
+                <p:dataTable value="#{factureBean.readAllLocation}"
+                             var="fa"
+                             id="tableFactureLoca"
+                             class="table"
+                             headerClass="table-header"
+                             rowClasses="table-odd-row,table-even-row"
+                             paginator="true"
+                             rows="10"
+                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}">
                     <p:column>
                         <!-- column header -->
                         <f:facet name="header">#{I18N['factures.label.NumeroFacture']}</f:facet>
@@ -71,13 +79,7 @@
                     <p:commandButton icon="pi pi-home" value="#{I18N['application.button.returnbienvenue']}" action="bienvenue.xhtml?faces-redirect=true"/>
                 </h:panelGroup>
             </h:panelGroup>
-
-
-
-
-
         </h:form>
-
     </ui:define>
 </ui:composition>
 </html>

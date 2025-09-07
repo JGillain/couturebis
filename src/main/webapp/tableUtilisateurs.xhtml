@@ -15,7 +15,7 @@
                     <p:growl id="growl" globalOnly="true" showDetail="true" life="4000"/>
                     <h2 style="text-align:center">#{I18N['application.utilisateur.title']}</h2>
                     <p:dataTable value="#{utilisateurBean.listUtil}" var="ut" id="tableUtilisateurs" widgetVar="utTbl"
-                                 Class="table" headerClass="table-header" rowClasses="table-odd-row,table-even-row">
+                                 Class="table" headerClass="table-header" rowClasses="table-odd-row,table-even-row" paginator="true" rows="10" paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}">
                         <p:column>
                             <f:facet name="header">#{I18N['utilisateur.label.Nom']}</f:facet>
                             <p:outputLabel value ="#{ut.nom}"/>

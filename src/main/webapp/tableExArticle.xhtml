@@ -7,7 +7,6 @@
       xmlns:c="http://java.sun.com/jsp/jstl/core"
       xmlns:shiro="http://shiro.apache.org/tags"
       xmlns:p="http://primefaces.org/ui">
-<!--TODO to adapt-->
 
 <ui:composition template="Template/template.xhtml">
 
@@ -21,19 +20,27 @@
                 <p:growl id="growl" showDetail="true" sticky="true" />
                 <h2 style="text-align:center">#{I18N['application.article.title']}</h2>
 
-                <p:dataTable value="#{exemplaireArticleBean.listexart}" var="ex" id="tableExArticle" widgetVar="exTbl"
-                             Class="table" headerClass="table-header" rowClasses="table-odd-row,table-even-row" rowStyleClass="#{ex.actif ? '' : 'highlight-row'}">
+                <p:dataTable value="#{exemplaireArticleBean.listexart}"
+                             var="ex"
+                             id="tableExArticle"
+                             widgetVar="exTbl"
+                             class="table"
+                             headerClass="table-header"
+                             rowClasses="table-odd-row,table-even-row"
+                             rowStyleClass="#{ex.actif ? '' : 'highlight-row'}"
+                             paginator="true"
+                             rows="10"
+                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}">
 
                     <p:column>
-
                         <f:facet name="header">#{I18N['Articles.label.denomination']}</f:facet>
-
                         <p:outputLabel value ="#{ex.articleIdArticle.nom}"/>
                     </p:column>
 
                     <p:column>
                         <f:facet name="header">#{I18N['ExemplairesArticles.label.CodeBarre']}</f:facet>
-                        <p:outputLabel styleClass="barcode" value ="#{ex.codeBarreIdCB != null ? ex.codeBarreIdCB.codeBarre : ex.articleIdArticle.codeBarreIdCB.codeBarre}"/>
+                        <p:outputLabel styleClass="barcode"
+                                       value ="#{ex.codeBarreIdCB != null ? ex.codeBarreIdCB.codeBarre : ex.articleIdArticle.codeBarreIdCB.codeBarre}"/>
                     </p:column>
 
                     <p:column>
@@ -47,60 +54,80 @@
                     </p:column>
 
                     <p:column>
-                        <p:commandButton  icon="pi pi-plus" value="Details" action="exArticleDetail.xhtml?faces-redirect=true">
+                        <p:commandButton icon="pi pi-plus" value="Details"
+                                         action="exArticleDetail.xhtml?faces-redirect=true">
                             <f:setPropertyActionListener target="#{exemplaireArticleBean.EA}" value="#{ex}"/>
                         </p:commandButton>
                     </p:column>
 
                     <p:column>
-                        <p:commandButton  icon="pi pi-pencil" value="Modifier" action="formEditExArticle.xhtml?faces-redirect=true">
+                        <p:commandButton icon="pi pi-pencil" value="Modifier"
+                                         action="formEditExArticle.xhtml?faces-redirect=true">
                             <f:setPropertyActionListener target="#{exemplaireArticleBean.EA}" value="#{ex}" />
                         </p:commandButton>
                     </p:column>
 
                     <p:column>
-                        <p:commandButton rendered="#{ex.actif}" icon="pi pi-power-off" value ="Désactiver" action="#{exemplaireArticleBean.activdesactivExArt}">
+                        <p:commandButton rendered="#{ex.actif}"
+                                         icon="pi pi-power-off"
+                                         value ="Désactiver"
+                                         action="#{exemplaireArticleBean.activdesactivExArt}">
                             <f:setPropertyActionListener target="#{exemplaireArticleBean.EA}" value="#{ex}" />
                         </p:commandButton>
 
-                        <p:commandButton rendered="#{!ex.actif}" icon="pi pi-check" value ="Activer" action="#{exemplaireArticleBean.activdesactivExArt}">
+                        <p:commandButton rendered="#{!ex.actif}"
+                                         icon="pi pi-check"
+                                         value ="Activer"
+                                         action="#{exemplaireArticleBean.activdesactivExArt}">
                             <f:setPropertyActionListener target="#{exemplaireArticleBean.EA}" value="#{ex}" />
                         </p:commandButton>
                     </p:column>
 
                     <p:column id="actifCol"
-                    filterBy="#{ex.actif}"
-                    filterMatchMode="exact"
-                    style="display:none"/>
-
+                              filterBy="#{ex.actif}"
+                              filterMatchMode="exact"
+                              style="display:none"/>
                 </p:dataTable>
             </p:panel>
+
             <h:outputScript target="body">
                 function setActifFilter(val){
                     var tbl = PF('exTbl');
                     tbl.clearFilters();
-                    $(PrimeFaces.escapeClientId('tableExArticle:actifCol:filter'))
-                            .val(val);
+                    $(PrimeFaces.escapeClientId('tableExArticle:actifCol:filter')).val(val);
                     tbl.filter();
                 }
             </h:outputScript>
+
             <h:panelGroup layout="block" styleClass="button-bar">
                 <!-- Left aligned buttons -->
                 <h:panelGroup styleClass="left-buttons">
-                    <p:commandButton icon="pi pi-plus" value="#{I18N['application.button.new']}" action="formNewExArticle.xhtml?faces-redirect=true" />
+                    <p:commandButton icon="pi pi-plus"
+                                     value="#{I18N['application.button.new']}"
+                                     action="formNewExArticle.xhtml?faces-redirect=true" />
                 </h:panelGroup>
 
                 <!-- Center aligned buttons -->
                 <h:panelGroup styleClass="center-buttons">
-                    <p:commandButton type="button" icon="pi pi-search" value="#{I18N['application.button.find']}" action="formSearchExArticle.xhtml?faces-redirect=true"/>
-                    <p:commandButton type="button" icon="pi pi-search-plus" value="#{I18N['application.button.artActiv']}"
+                    <p:commandButton type="button"
+                                     icon="pi pi-search"
+                                     value="#{I18N['application.button.find']}"
+                                     action="formSearchExArticle.xhtml?faces-redirect=true"/>
+                    <p:commandButton type="button"
+                                     icon="pi pi-search-plus"
+                                     value="#{I18N['application.button.artActiv']}"
                                      onclick="setActifFilter('true')"/>
-                    <p:commandButton type="button" icon="pi pi-search-minus" value="#{I18N['application.button.artInactiv']}" onclick="setActifFilter('false')"/>
+                    <p:commandButton type="button"
+                                     icon="pi pi-search-minus"
+                                     value="#{I18N['application.button.artInactiv']}"
+                                     onclick="setActifFilter('false')"/>
                 </h:panelGroup>
 
                 <!-- Right aligned button -->
                 <h:panelGroup styleClass="right-buttons">
-                    <p:commandButton icon="pi pi-home" value="#{I18N['application.button.returnbienvenue']}" action="#{exemplaireArticleBean.flushBienv}"/>
+                    <p:commandButton icon="pi pi-home"
+                                     value="#{I18N['application.button.returnbienvenue']}"
+                                     action="#{exemplaireArticleBean.flushBienv}"/>
                 </h:panelGroup>
             </h:panelGroup>
 
