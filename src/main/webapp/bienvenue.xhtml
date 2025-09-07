@@ -18,29 +18,15 @@
     <ui:define name="content">
 
         <p:growl id="messages" showDetail="true" life="4000" />
-
-        <shiro:authenticated>
             <div style="display: flex; justify-content: center; margin-top: 50px;">
                 <p:card style="width: 50%; text-align: center; border: none; box-shadow: none;">
-                    <h2>👋 Bienvenue <shiro:principal/> !</h2>
+                    <h2>👋 Bienvenue #{loginBean.utilisateurAuth.prenom} !</h2>
                     <p>
                         Nous sommes ravis de vous revoir.<br/>
                         Comment allez-vous aujourd’hui ?
                     </p>
                 </p:card>
             </div>
-        </shiro:authenticated>
-
-        <shiro:notAuthenticated>
-            <div style="display: flex; justify-content: center; margin-top: 50px;">
-                <p:card style="width: 50%; text-align: center; border: none; box-shadow: none;">
-                    <h2>🚫 #{I18N['application.page.accessrefuse']}</h2>
-                    <p>
-                        Vous devez être connecté pour accéder à cette page.
-                    </p>
-                </p:card>
-            </div>
-        </shiro:notAuthenticated>
 
     </ui:define>
 </ui:composition>
