@@ -1,8 +1,11 @@
 package pdfTools;
 
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.font.PDFont;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Encadrement 
 {

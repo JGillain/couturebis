@@ -93,27 +93,36 @@
                 <p:ajax event="rowEditCancel" listener="#{factureBean.onRowEditCancelVente}"/>
             </p:dataTable>
 
-            <!-- Ajouter / Supprimer ligne -->
-            <p:commandButton value="#{I18N['tarifjour.label.add']}"
-                             action="#{factureBean.addNewListRowVente}"
-                             update="@form"
-                             process="@form"
-                             immediate="true"/>
-            <p:commandButton value="#{I18N['tarifjour.label.del']}"
-                             action="#{factureBean.delListRowVente}"
-                             update="@form"
-                             process="@form"
-                             immediate="true"/>
 
-            <!-- Valider la vente (va vers la page de confirmation) -->
-            <p:commandButton icon="pi pi-check-circle"
-                             value="#{I18N['application.button.validate']}"
-                             action="#{factureBean.preparerVente}"
-                             ajax="false"/>
-            <p:commandButton icon="pi pi-home"
-                             value="#{I18N['application.button.return']}"
-                             action="/tableFactureVente.xhtml?faces-redirect=true"
-                             immediate="true"/>
+            <h:panelGroup layout="block" styleClass="button-bar">
+                <!-- Left aligned buttons -->
+                <h:panelGroup styleClass="left-buttons">
+                    <!-- Ajouter / Supprimer ligne -->
+                    <p:commandButton value="#{I18N['application.label.AddRow']}"
+                                     action="#{factureBean.addNewListRowVente}"
+                                     update="@form"
+                                     process="@form"
+                                     immediate="true"/>
+                    <p:commandButton value="#{I18N['application.label.DelRow']}"
+                                     action="#{factureBean.delListRowVente}"
+                                     update="@form"
+                                     process="@form"
+                                     immediate="true"/>
+                </h:panelGroup>
+
+                <!-- Right aligned button -->
+                <h:panelGroup styleClass="right-buttons">
+                    <!-- Valider la vente (va vers la page de confirmation) -->
+                    <p:commandButton icon="pi pi-check-circle"
+                                     value="#{I18N['application.button.validate']}"
+                                     action="#{factureBean.preparerVente}"
+                                     ajax="false"/>
+                    <p:commandButton icon="pi pi-home"
+                                     value="#{I18N['application.button.return']}"
+                                     action="#{factureBean.flushFactVente}"
+                                     immediate="true"/>
+                </h:panelGroup>
+            </h:panelGroup>
         </h:form>
     </ui:define>
 </ui:composition>

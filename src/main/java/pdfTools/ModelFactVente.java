@@ -367,29 +367,4 @@ public class ModelFactVente implements java.io.Serializable {
     private static String safe(String s) {
         return (s == null) ? "" : s;
     }
-
-    private static List<String> wrap(PDFont font, float size, float maxWidth, String text) throws IOException {
-        List<String> out = new ArrayList<>();
-        if (text == null || text.isEmpty()) return out;
-        String[] words = text.split("\\s+");
-        StringBuilder line = new StringBuilder();
-        for (String w : words) {
-            String test = (line.length()==0) ? w : line + " " + w;
-            float wpt = font.getStringWidth(test) / 1000f * size;
-            if (wpt <= maxWidth) {
-                line.setLength(0); line.append(test);
-            } else {
-                if (line.length() > 0) out.add(line.toString());
-                // long single word fallback
-                while (font.getStringWidth(w) / 1000f * size > maxWidth && w.length() > 1) {
-                    int cut = Math.max(1, (int)(maxWidth * 1000f / (font.getStringWidth(w) / w.length()) / size));
-                    out.add(w.substring(0, Math.min(cut, w.length())));
-                    w = w.substring(Math.min(cut, w.length()));
-                }
-                line.setLength(0); line.append(w);
-            }
-        }
-        if (line.length() > 0) out.add(line.toString());
-        return out;
-    }
 }
