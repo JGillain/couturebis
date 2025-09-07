@@ -9,7 +9,6 @@
 
 <ui:composition template="Template/template.xhtml">
     <ui:define name="title">#{I18N['utilisateur.form.nouveau.titre']}</ui:define>
-    <ui:debug hotkey="x" />
     <ui:define name="content">
         <p:growl id="growl" showDetail="true" sticky="true" />
         <shiro:hasAnyRoles name="1,2">
@@ -111,11 +110,6 @@
                                        itemValue="#{ad}"/>
                     </p:selectOneMenu>
                     <h:message for="utiladress" styleClass="errorMessage"/>
-
-
-                    <!-- A rajouter l'adresse-->
-
-
                 </p:panelGrid>
 
                 <h:panelGroup layout="block" styleClass="button-bar">
@@ -129,9 +123,6 @@
                         <p:commandButton icon="pi pi-home" value="#{I18N['application.button.return']}" action="#{utilisateurBean.flushUtil}" immediate="true"/>
                     </h:panelGroup>
                 </h:panelGroup>
-
-
-
             </h:form>
         </shiro:hasAnyRoles>
         <shiro:lacksRole name="2">
