@@ -156,9 +156,14 @@
                     <p:ajax event="rowEditCancel" listener="#{tarifBean.onJourRowCancel}"/>
                 </p:dataTable>
 
+                <h:panelGroup layout="block" styleClass="button-bar">
+                    <h:panelGroup styleClass="left-buttons">
+                        <p:commandButton icon="pi pi-plus" value="#{I18N['tarifjour.label.add']}" action="#{tarifBean.addNewJourRow}" update="tarifJour" immediate="true"/>
+                        <p:commandButton icon="pi pi-minus" value="#{I18N['tarifjour.label.del']}" action="#{tarifBean.delJourRow}" update="tarifJour" immediate="true"/>
+                    </h:panelGroup>
+                </h:panelGroup>
 
-                <p:commandButton icon="pi pi-plus" value="#{I18N['tarifjour.label.add']}" action="#{tarifBean.addNewJourRow}" update="tarifJour" immediate="true"/>
-                <p:commandButton icon="pi pi-minus" value="#{I18N['tarifjour.label.del']}" action="#{tarifBean.delJourRow}" update="tarifJour" immediate="true"/>
+
 
                 <p:dataTable id="tarifP"
                              value="#{tarifBean.grillePena}"

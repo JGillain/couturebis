@@ -38,10 +38,10 @@ public class Tarif implements Serializable {
     @JoinColumn(name = "MagasinIdMagasin", nullable = false)
     private Magasin magasinIdMagasin;
 
-    @OneToMany
+    @OneToMany(mappedBy = "tarifIdTarif" ,fetch = FetchType.LAZY)
     private Collection<TarifPenalite> tarifPenalite;
 
-    @OneToMany
+    @OneToMany(mappedBy = "tarifIdTarif" ,fetch = FetchType.LAZY)
     private Collection<TarifJour> tarifJour;
 
     public Integer getId() {

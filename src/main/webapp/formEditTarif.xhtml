@@ -17,14 +17,18 @@
                     <title>#{I18N['tarif.form.nouveau.titre']}</title>
                 </h:head>
                 <h2 style="text-align:center">#{I18N['tarif.form.nouveau.titre']}</h2>
-                <p:outputLabel value="#{I18N['tarif.label.dateDebutgrille']}" />
-                <p:outputLabel value="#{tarifBean.tarif.dateDebut}" >
-                    <f:convertDateTime timeZone="Europe/Brussels" type="date" pattern="dd/MM/yyyy"/>
-                </p:outputLabel>
-                <p:outputLabel value="#{I18N['tarif.label.nom']}" />
-                <p:outputLabel value="#{I18N['tarif.label.nom']}" />
-                <p:outputLabel id="nomGrille" value="#{tarifBean.tarif.denomination}" required="true"
-                             requiredMessage="#{I18N['formulaire.message.required.denomination']}" maxlength="255"/>
+                <h:panelGroup layout="block" styleClass="button-bar">
+                    <h:panelGroup styleClass="left-buttons">
+                        <p:outputLabel value=" #{I18N['tarif.label.dateDebutgrille']} :" />
+                        <p:outputLabel value="#{tarifBean.tarif.dateDebut}" >
+                            <f:convertDateTime timeZone="Europe/Brussels" type="date" pattern="dd/MM/yyyy"/>
+                        </p:outputLabel>
+                    </h:panelGroup>
+                    <h:panelGroup styleClass="right-buttons">
+                        <p:outputLabel value="#{I18N['tarif.label.nom']} :" for="nomGrille" />
+                        <p:outputLabel id="nomGrille" value="#{tarifBean.tarif.denomination}" required="true" requiredMessage="#{I18N['formulaire.message.required.denomination']}" maxlength="255"/>
+                    </h:panelGroup>
+                </h:panelGroup>
 
                 <p:dataTable value="#{tarifBean.grilleJour}" var="J">
                     <p:column>
@@ -74,8 +78,12 @@
                     </p:column>
                 </p:dataTable>
 
-                <p:commandButton value="#{I18N['tarifjour.label.add']}" action="#{tarifBean.addNewJourRow}" />
-                <p:commandButton value="#{I18N['tarifjour.label.del']}" action="#{tarifBean.delJourRow}" />
+                <h:panelGroup layout="block" styleClass="button-bar">
+                <h:panelGroup styleClass="left-buttons">
+                    <p:commandButton icon="pi pi-plus" value="#{I18N['tarifjour.label.add']}" action="#{tarifBean.addNewJourRow}" />
+                    <p:commandButton icon="pi pi-minus" value="#{I18N['tarifjour.label.del']}" action="#{tarifBean.delJourRow}" />
+                </h:panelGroup>
+                </h:panelGroup>
 
                 <p:dataTable value="#{tarifBean.grillePena}" var="P">
                     <p:column>
@@ -122,8 +130,8 @@
 
                 <h:panelGroup layout="block" styleClass="button-bar">
                     <h:panelGroup styleClass="left-buttons">
-                        <p:commandButton value="#{I18N['tarifpenalite.label.add']}" action="#{tarifBean.addNewPenaRow}" />
-                        <p:commandButton value="#{I18N['tarifpenalite.label.del']}" action="#{tarifBean.delPenaRow}" />
+                        <p:commandButton icon="pi pi-plus" value="#{I18N['tarifpenalite.label.add']}" action="#{tarifBean.addNewPenaRow}" />
+                        <p:commandButton icon="pi pi-minus" value="#{I18N['tarifpenalite.label.del']}" action="#{tarifBean.delPenaRow}" />
                     </h:panelGroup>
 
                     <h:panelGroup styleClass="right-buttons">
