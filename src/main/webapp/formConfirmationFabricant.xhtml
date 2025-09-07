@@ -8,15 +8,15 @@
       xmlns:p="http://primefaces.org/ui">
 <!--TODO A refaire-->
 <ui:composition template="Template/template.xhtml">
-    <ui:define name="title">#{I18N['auteur.form.confirm']}</ui:define>
+    <ui:define name="title">#{I18N['fabricant.form.confirm']}</ui:define>
 
     <ui:define name="content">
         <p:growl id="growl" showDetail="true" sticky="true" />
         <shiro:hasPermission name="Auteurs:ActivDesactiv">
         <h:form>
-        <h2 style="text-align:center">#{I18N['auteur.form.questionconfirm']}</h2>
+        <h2 style="text-align:center">#{I18N['fabricant.form.questionconfirm']}</h2>
             <p:commandButton icon="pi pi-check-circle" value="#{I18N['commune.label.oui']}" action="#{auteursBean.activdesactivAut}"/>
-            <p:commandButton value="#{I18N['commune.label.non']}" action="#{auteursBean.flushAut}" immediate="true"/>
+            <p:commandButton icon="pi pi-ban" value="#{I18N['commune.label.non']}" action="#{auteursBean.flushAut}" immediate="true"/>
     </h:form>
         </shiro:hasPermission>
         <shiro:lacksPermission name="Auteurs:ActivDesactiv">
