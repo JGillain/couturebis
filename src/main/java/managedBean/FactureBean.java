@@ -77,13 +77,13 @@ public class FactureBean implements Serializable {
         }
     }
     public void addNewListRowVente() {
-        listLC.add(new locationCustom());
+        listVC.add(new venteCustom());
     }
 
     public void delListRowVente() {
-        if (listLC.size() >1)
+        if (listVC.size() >1)
         {
-            listLC.remove(listLC.size()-1);
+            listVC.remove(listVC.size()-1);
         }
     }
 
