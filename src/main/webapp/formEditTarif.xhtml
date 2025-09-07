@@ -119,10 +119,23 @@
                     </p:column>
                 </p:dataTable>
                 <br/>
-                <p:commandButton value="#{I18N['tarifpenalite.label.add']}" action="#{tarifBean.addNewPenaRow}" />
-                <p:commandButton icon="pi pi-home" value="#{I18N['application.button.return']}" action="#{tarifBean.flushTarifs}" immediate="true"/>
-                <p:commandButton value="#{I18N['tarifpenalite.label.del']}" action="#{tarifBean.delPenaRow}" />
-                <p:commandButton icon="pi pi-check-circle" value="#{I18N['application.button.sauvegarder']}" action="#{tarifBean.newTarif}" />
+
+                <h:panelGroup layout="block" styleClass="button-bar">
+                    <h:panelGroup styleClass="left-buttons">
+                        <p:commandButton value="#{I18N['tarifpenalite.label.add']}" action="#{tarifBean.addNewPenaRow}" />
+                        <p:commandButton value="#{I18N['tarifpenalite.label.del']}" action="#{tarifBean.delPenaRow}" />
+                    </h:panelGroup>
+
+                    <h:panelGroup styleClass="right-buttons">
+                        <p:commandButton icon="pi pi-home" value="#{I18N['application.button.return']}" action="#{tarifBean.flushTarifs}" immediate="true"/>
+                        <p:commandButton icon="pi pi-check-circle" value="#{I18N['application.button.sauvegarder']}" action="#{tarifBean.newTarif}" />
+                    </h:panelGroup>
+                </h:panelGroup>
+
+
+
+
+
             </h:form>
 
 
