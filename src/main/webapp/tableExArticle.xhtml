@@ -30,7 +30,8 @@
                              rowStyleClass="#{ex.actif ? '' : 'highlight-row'}"
                              paginator="true"
                              rows="10"
-                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}">
+                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                             currentPageReportTemplate="Page {currentPage} sur {totalPages}">
 
                     <p:column>
                         <f:facet name="header">#{I18N['Articles.label.denomination']}</f:facet>

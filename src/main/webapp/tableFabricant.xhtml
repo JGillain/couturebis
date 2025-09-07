@@ -29,9 +29,9 @@
                              headerClass="table-header"
                              rowClasses="table-odd-row,table-even-row"
                              paginator="true"
-                             rows="20"
+                             rows="10"
                              paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
-                             rowsPerPageTemplate="10,20,50,100">
+                             currentPageReportTemplate="Page {currentPage} sur {totalPages}">
 
                     <p:column>
                         <f:facet name="header">#{I18N['fabricant.label.Denomination']}</f:facet>

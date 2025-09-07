@@ -22,7 +22,9 @@
                 <h2 style="text-align:center">#{I18N['application.tarifs.title']}</h2>
 
                 <p:dataTable value="#{tarifBean.readAll}" var="tar" id="tableTarifs"
-                             Class="table" headerClass="table-header" rowClasses="table-odd-row,table-even-row" paginator="true" rows="10" paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}">
+                             Class="table" headerClass="table-header" rowClasses="table-odd-row,table-even-row" paginator="true" rows="10"
+                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                             currentPageReportTemplate="Page {currentPage} sur {totalPages}">
 
                     <p:column>
                         <!-- column header -->
