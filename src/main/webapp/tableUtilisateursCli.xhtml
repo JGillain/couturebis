@@ -93,13 +93,24 @@
                         tbl.filter();
                     }
                 </h:outputScript>
-                    <p:commandButton icon="pi pi-plus" value="#{I18N['application.button.new']}" action="formNewUtilisateurCli.xhtml?faces-redirect=true" />
+                <h:panelGroup layout="block" styleClass="button-bar">
+                    <!-- Left aligned buttons -->
+                    <h:panelGroup styleClass="left-buttons">
+                        <p:commandButton icon="pi pi-plus" value="#{I18N['application.button.new']}" action="formNewUtilisateurCli.xhtml?faces-redirect=true" />
+                    </h:panelGroup>
 
-                <p:commandButton icon="pi pi-search" value="#{I18N['application.button.find']}" action="formSearchUtilisateur.xhtml?faces-redirect=true"/>
-                <p:commandButton icon="pi pi-search-plus" value="#{I18N['application.button.utilActiv']}" onclick="setActifFilter('true')"/>
-                <p:commandButton icon="pi pi-search-minus" value="#{I18N['application.button.utilInactiv']}" onclick="setActifFilter('false')"/>
+                    <!-- Center aligned buttons -->
+                    <h:panelGroup styleClass="center-buttons">
+                        <p:commandButton icon="pi pi-search" value="#{I18N['application.button.find']}" action="formSearchUtilisateur.xhtml?faces-redirect=true"/>
+                        <p:commandButton icon="pi pi-search-plus" value="#{I18N['application.button.utilActiv']}" onclick="setActifFilter('true')"/>
+                        <p:commandButton icon="pi pi-search-minus" value="#{I18N['application.button.utilInactiv']}" onclick="setActifFilter('false')"/>
+                    </h:panelGroup>
 
-                    <p:commandButton icon="pi pi-home" value="#{I18N['application.button.returnbienvenue']}" action="#{utilisateurBean.flushBienv}"/>
+                    <!-- Right aligned button -->
+                    <h:panelGroup styleClass="right-buttons">
+                        <p:commandButton icon="pi pi-home" value="#{I18N['application.button.returnbienvenue']}" action="#{utilisateurBean.flushBienv}"/>
+                    </h:panelGroup>
+                </h:panelGroup>
 
             </h:form>
     </ui:define>

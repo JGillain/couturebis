@@ -47,16 +47,28 @@
                 </p:selectOneMenu>
                 <h:message for="statut" styleClass="errorMessage"/>
 
-
             </p:panelGrid>
-            <p:commandButton icon="pi pi-check-circle"
-                                           value="#{I18N['application.button.validate']}"
-                                           action="#{exemplaireArticleBean.save()}"
-                                           ajax="false"/>
-            <p:commandButton icon="pi pi-home"
-                             value="#{I18N['application.button.return']}"
-                             action="#{exemplaireArticleBean.flushExArt()}"
-                             immediate="true"/>
+
+            <h:panelGroup layout="block" styleClass="button-bar">
+                <!-- Left aligned buttons -->
+                <h:panelGroup styleClass="left-buttons">
+                    <p:commandButton icon="pi pi-check-circle"
+                                     value="#{I18N['application.button.validate']}"
+                                     action="#{exemplaireArticleBean.save()}"
+                                     ajax="false"/>
+                </h:panelGroup>
+
+                <!-- Right aligned button -->
+                <h:panelGroup styleClass="right-buttons">
+                    <p:commandButton icon="pi pi-home"
+                                     value="#{I18N['application.button.return']}"
+                                     action="#{exemplaireArticleBean.flushExArt()}"
+                                     immediate="true"/>
+                </h:panelGroup>
+
+            </h:panelGroup>
+
+
         </h:form>
     </ui:define>
 </ui:composition>

@@ -35,8 +35,23 @@
                 <f:selectItem itemValue = "#{true}" itemLabel = "#{I18N['commune.label.oui']}" />
                 <f:selectItem itemValue = "#{false}" itemLabel = "#{I18N['commune.label.non']}"/>
             </p:selectOneRadio>
-            <p:commandButton icon="pi pi-check-circle" value="#{I18N['application.button.validate']}" action="#{factureBean.redirectChoix}"/>
-            <p:commandButton icon="pi pi-home" value="#{I18N['application.button.return']}" action="#{factureBean.flushFactLoca}" immediate="true"/>
+
+            <h:panelGroup layout="block" styleClass="button-bar">
+                <!-- Left aligned buttons -->
+                <h:panelGroup styleClass="left-buttons">
+                    <!-- Ajouter / Supprimer ligne -->
+                    <p:commandButton icon="pi pi-check-circle" value="#{I18N['application.button.validate']}" action="#{factureBean.redirectChoix}"/>
+                </h:panelGroup>
+
+                <!-- Right aligned button -->
+                <h:panelGroup styleClass="right-buttons">
+                    <!-- Valider la vente (va vers la page de confirmation) -->
+                    <p:commandButton icon="pi pi-home" value="#{I18N['application.button.return']}" action="#{factureBean.flushFactLoca}" immediate="true"/>
+                </h:panelGroup>
+            </h:panelGroup>
+
+
+
         </h:form>
     </ui:define>
 </ui:composition>

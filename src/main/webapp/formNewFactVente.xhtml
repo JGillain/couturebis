@@ -98,12 +98,12 @@
                 <!-- Left aligned buttons -->
                 <h:panelGroup styleClass="left-buttons">
                     <!-- Ajouter / Supprimer ligne -->
-                    <p:commandButton value="#{I18N['application.label.AddRow']}"
+                    <p:commandButton icon="pi pi-plus" value="#{I18N['application.label.AddRow']}"
                                      action="#{factureBean.addNewListRowVente}"
                                      update="@form"
                                      process="@form"
                                      immediate="true"/>
-                    <p:commandButton value="#{I18N['application.label.DelRow']}"
+                    <p:commandButton icon="pi pi-minus" value="#{I18N['application.label.DelRow']}"
                                      action="#{factureBean.delListRowVente}"
                                      update="@form"
                                      process="@form"

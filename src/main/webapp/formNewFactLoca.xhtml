@@ -84,11 +84,24 @@
                     <p:ajax event="rowEditCancel" listener="#{factureBean.onRowEditCancel}" />
                 </p:dataTable>
 
-                <p:commandButton value="ajouter" action="#{factureBean.addNewListRowLoca}" update="@form" process="@form" immediate="true"/>
-                <p:commandButton value="Supprimer" action="#{factureBean.delListRowLoca}" update="@form" process="@form" immediate="true"/>
+                <h:panelGroup layout="block" styleClass="button-bar">
+                    <!-- Left aligned buttons -->
+                    <h:panelGroup styleClass="left-buttons">
+                        <!-- Ajouter / Supprimer ligne -->
+                        <p:commandButton icon="pi pi-plus" value="ajouter" action="#{factureBean.addNewListRowLoca}" update="@form" process="@form" immediate="true"/>
+                        <p:commandButton icon="pi pi-minus" value="Supprimer" action="#{factureBean.delListRowLoca}" update="@form" process="@form" immediate="true"/>
+                    </h:panelGroup>
 
-                <p:commandButton icon="pi pi-check-circle" value="#{I18N['application.button.validate']}" action="#{factureBean.newFactLoca}" ajax="false"/>
-                <p:commandButton icon="pi pi-home" value="#{I18N['application.button.return']}" action="tableFactureLoca.xhtml?faces-redirect=true" immediate="true"/>
+                    <!-- Right aligned button -->
+                    <h:panelGroup styleClass="right-buttons">
+                        <p:commandButton icon="pi pi-check-circle" value="#{I18N['application.button.validate']}" action="#{factureBean.newFactLoca}" ajax="false"/>
+                        <p:commandButton icon="pi pi-home" value="#{I18N['application.button.return']}" action="tableFactureLoca.xhtml?faces-redirect=true" immediate="true"/>
+                    </h:panelGroup>
+                </h:panelGroup>
+
+
+
+
             </h:form>
 
     </ui:define>
