@@ -34,10 +34,9 @@ public class SvcExemplaireArticle extends Service<ExemplaireArticle> implements 
 
         return EA;
     }
-    public ExemplaireArticle loueExemplaire(ExemplaireArticle exemplaireArticle){
+    public void loueExemplaire(ExemplaireArticle exemplaireArticle){
         log.debug("Je loue l'exemplaire article :" + exemplaireArticle.getLoue());
-        exemplaireArticle.setLoue(!exemplaireArticle.getLoue());
-        return exemplaireArticle;
+        exemplaireArticle.setLoue(true);
     }
 
     public List<ExemplaireArticle> findAllExArticles() {
@@ -62,6 +61,11 @@ public class SvcExemplaireArticle extends Service<ExemplaireArticle> implements 
         Map<String, Object> param = new HashMap<>();
         param.put("article", article);
         return finder.findByNamedQuery("ExArticle.AvailableExArticlesSales", param).size();
+    }
+    public List<ExemplaireArticle> findAvailableExArticlesSales(Article article) {
+        Map<String, Object> param = new HashMap<>();
+        param.put("article", article);
+        return finder.findByNamedQuery("ExArticle.AvailableExArticlesSales", param);
     }
 
     public List<ExemplaireArticle> findByArticle(Article article) {

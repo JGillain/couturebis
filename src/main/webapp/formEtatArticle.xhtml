@@ -11,7 +11,6 @@
 
     <ui:define name="content">
         <p:growl id="growl" showDetail="true" sticky="true" />
-        <shiro:hasPermission name="Factures:Creer">
             <h:form id="form" prependId="false">
                 <h:head>
                     <title>#{I18N['etatlivre.form.titre']}</title>
@@ -21,7 +20,7 @@
 
                     <p:outputLabel value = "#{I18N['exemplaireslivres.label.Etat']}"/>
                     <p:selectOneRadio id="exetat" value="#{factureBean.exemplaireArticle.etat}" required="true">
-                        <f:selectItems value="#{exemplairesLivresEnumBean.etatEnum}"/>
+                        <f:selectItems value="#{exemplaireArticleEnumBean.etatEnum}"/>
                     </p:selectOneRadio>
 
                     <p:outputLabel value = "#{I18N['exemplaireslivres.label.CommentaireEtat']}"/>
@@ -33,20 +32,15 @@
                     <h:message for="CommentaireEtat" styleClass="errorMessage"/>
 
                     <p:outputLabel value = "#{I18N['penalite.label.Nom']}"/>
-                    <!--TODO : regarder l'équivalent du selectManyListBox en primefaces-->
                     <p:selectManyMenu value = "#{factureBean.tarifsPenalites}">
-                        <f:selectItems value = "#{factureBean.tarifsPenalites}" var="pena" itemLabel="#{pena.penalite.denomination}" itemValue="#{pena}"/>
+                        <f:selectItems value = "#{factureBean.tarifsPenalites}" var="pena" itemLabel="#{pena.penaliteIdPenalite.denomination}" itemValue="#{pena}"/>
                     </p:selectManyMenu>
 
                 </p:panelGrid>
 
                 <p:commandButton icon="pi pi-check-circle" value="#{I18N['application.button.validate']}" action="#{factureBean.retourArticleLoca}"/>
-                <p:commandButton icon="pi pi-home" value="#{I18N['application.button.return']}" action="#{factureBean.flushFact}" immediate="true"/>
+                <p:commandButton icon="pi pi-home" value="#{I18N['application.button.return']}" action="#{factureBean.flushFactLoca}" immediate="true"/>
             </h:form>
-        </shiro:hasPermission>
-        <shiro:lacksPermission name="Factures:Creer">
-            <p:outputLabel value="#{I18N['application.page.accessrefuse']}"/>
-        </shiro:lacksPermission>
     </ui:define>
 </ui:composition>
 

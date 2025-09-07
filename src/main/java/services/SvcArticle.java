@@ -2,6 +2,7 @@ package services;
 
 
 import entities.Article;
+import entities.ExemplaireArticle;
 import org.apache.log4j.Logger;
 
 import java.io.Serializable;
@@ -32,6 +33,11 @@ public class SvcArticle extends Service<Article> implements Serializable {
         }
 
         return article;
+    }
+    public List<Article> findOneByCodeBarre(String codeBare) {
+        Map<String, Object> param = new HashMap<>();
+        param.put("CB", codeBare);
+        return finder.findByNamedQuery("Article.findOneByCodeBarre", param);
     }
 
     public List<Article> getbyName(String titre) {

@@ -5,14 +5,14 @@ import enumeration.ExemplaireArticleEtatEnum;
 import enumeration.FactureEtatEnum;
 import enumeration.FactureTypeEnum;
 import objectCustom.locationCustom;
+import objectCustom.venteCustom;
 import org.apache.log4j.Logger;
+import org.primefaces.event.RowEditEvent;
 import pdfTools.ModelFactLoca;
 import pdfTools.ModelFactLocaPena;
+import pdfTools.ModelFactVente;
 import services.*;
 
-import javax.activation.DataHandler;
-import javax.activation.DataSource;
-import javax.activation.FileDataSource;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.application.FacesMessage;
@@ -23,9 +23,6 @@ import javax.inject.Named;
 import javax.mail.*;
 
 import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
 import javax.persistence.EntityTransaction;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
@@ -37,7 +34,6 @@ import java.util.*;
 
 @Named
 @SessionScoped
-
 public class FactureBean implements Serializable {
     // Déclaration des variables globales
     private static final long serialVersionUID = 1L;
@@ -45,10 +41,12 @@ public class FactureBean implements Serializable {
     private Facture facture;
     private static final Logger log = Logger.getLogger(FactureBean.class);
     private List<locationCustom> listLC = new ArrayList<>();
+    private List<venteCustom> listVC = new ArrayList<>();
     private List<TarifPenalite> tarifsPenalites;
     private String numMembre;
     private String CB;
     private boolean choixetat;
+    private double montant;
     @Inject
     private MagasinBean magasinBean;
     private Magasin magasin;
@@ -57,27 +55,110 @@ public class FactureBean implements Serializable {
     @PostConstruct
     public void init(){
         listLC = new ArrayList<>();
-        addNewListRow();
+        listVC = new ArrayList<>();
+        addNewListRowLoca();
+        addNewListRowVente();
         facture = new Facture();
         numMembre= "";
         CB= "";
         magasin = magasinBean.getMagasin();
     }
-    public void addNewListRow() {
+
+    //methodes de gestions des tableaux newFactLoca et newFactVente
+
+    public void addNewListRowLoca() {
         listLC.add(new locationCustom());
     }
 
-    public void delListRow() {
+    public void delListRowLoca() {
+        if (listLC.size() >1)
+        {
+            listLC.remove(listLC.size()-1);
+        }
+    }
+    public void addNewListRowVente() {
+        listLC.add(new locationCustom());
+    }
+
+    public void delListRowVente() {
         if (listLC.size() >1)
         {
             listLC.remove(listLC.size()-1);
         }
     }
 
-    // password = qcuk ddis vzhb kdfb
+    public void onRowEdit(RowEditEvent event) {
+        locationCustom row = (locationCustom) event.getObject();
+        log.info("Row saved: " + row);
+        FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_INFO, "Ligne mise à jour", null));
+    }
 
+    public void onRowEditCancel(RowEditEvent event) {
+        locationCustom row = (locationCustom) event.getObject();
+        log.info("Edit canceled: " + row);
+    }
+    public void onRowEditVente(RowEditEvent event) {
+        venteCustom row = (venteCustom) event.getObject();
+        String cb = row.getCB();
+        if (cb == null || cb.isEmpty()) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_WARN, "Code barre manquant", null));
+            return;
+        }
 
+        SvcArticle serviceA = new SvcArticle();
+        try {
+            List<Article> arts = serviceA.findOneByCodeBarre(cb);
+            if (arts == null || arts.isEmpty()) {
+                row.setArticleNom("");
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_WARN, "Article introuvable", "CB: " + cb));
+                return;
+            }
 
+            Article a = arts.get(0);
+            row.setArticleNom(a.getNom());
+
+            if (row.getNbrArticles() < 1) {
+                row.setNbrArticles(1);
+            }
+
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_INFO, "Ligne mise à jour", a.getNom()));
+            log.info("Row saved: " + row);
+        } catch (Exception e) {
+            log.error("onRowEditVente error for CB=" + cb, e);
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Erreur lors de la mise à jour de la ligne", null));
+        } finally {
+            serviceA.close();
+        }
+    }
+
+    public void onRowEditCancelVente(RowEditEvent event) {
+        venteCustom row = (venteCustom) event.getObject();
+        log.info("Edit canceled: " + row);
+    }
+
+    public void onCbChangeVente(int index) {
+        if (listVC == null || index < 0 || index >= listVC.size()) return;
+
+        venteCustom v = listVC.get(index);
+        String cb = v.getCB();
+        if (cb == null || cb.length() != 13) {
+            v.setArticleNom("");
+            return;
+        }
+
+        SvcArticle serviceA = new SvcArticle();
+        try {
+            java.util.List<Article> arts = serviceA.findOneByCodeBarre(cb);
+            v.setArticleNom((arts == null || arts.isEmpty()) ? "" : arts.get(0).getNom());
+        } finally {
+            serviceA.close();
+        }
+    }
 
     //methode qui permet le téléchargement sur les machines client des factures
     public void downloadPdf() {
@@ -113,23 +194,22 @@ public class FactureBean implements Serializable {
                 out.flush();
             }
 
-            fc.responseComplete(); // tell JSF we're done
+            fc.responseComplete();
         } catch (IOException e) {
-            // log as you prefer
             fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
                     "Téléchargement", "Erreur lors de l’envoi du PDF."));
         }
     }
 
-    // Méthode qui permet l'envoi d'un mail via le mail de la bibliotheque avec la facture
+    // Méthode qui permet l'envoi d'un mail via le mail du magasin avec la facture
     public static void sendMessage(String absolutePdfPath,
                                    String destEmail,
                                    String bodyText,
                                    String subject) {
         String host = "smtp.gmail.com";
         String port = "587";
-        String username = "revecouture1990@gmail.com";   // your Gmail
-        String password = "qcukddisvzhbkdfb";         // 16-char app password (no spaces)
+        String username = "revecouture1990@gmail.com";
+        String password = "qcukddisvzhbkdfb";
 
 
 
@@ -191,11 +271,9 @@ public class FactureBean implements Serializable {
         }
     }
 
-
     // Méthode qui permet de créer une facture de location
     public String newFactLoca()
     {
-
         //initialisation des services requis
         SvcFacture service =new SvcFacture();
         SvcFactureDetail serviceFD = new SvcFactureDetail();
@@ -227,10 +305,9 @@ public class FactureBean implements Serializable {
         List<Tarif> tarifs = java.util.Collections.emptyList();
 
         if (!missingMagasin) {
-            tarifs = serviceT.getTarifByMagasin(today, magasin);
+            tarifs = serviceT.findTarifByMagasin(today, magasin);
             noTarif = (tarifs == null || tarifs.isEmpty());
         }
-
 
         for (locationCustom lc : listLC) {
             List<ExemplaireArticle> found = serviceEA.findOneByCodeBarre(lc.getCB()); // NOTE: method name spelled “Barre”
@@ -244,13 +321,6 @@ public class FactureBean implements Serializable {
             }
         }
 
-
-
-        log.warn("location prechecks : missingMagasin=" + missingMagasin
-                + ", noTarif=" + noTarif
-                + ", missingExemplaire=" + missingExemplaire
-                + ", alreadyLoue=" + alreadyLoue);
-
         boolean flag = missingMagasin || noTarif || missingExemplaire || alreadyLoue;
 
         if (!flag) {
@@ -262,7 +332,7 @@ public class FactureBean implements Serializable {
                 //crÃ©ation de la facture
                 fact.setDateDebut(timestampdebut);
                 fact.setNumeroFacture(createNumFact());
-                String path = "c:\\Facture\\"+fact.getNumeroFacture() + ".pdf";
+                String path = "c:\\REVEcouture\\Facture\\"+fact.getNumeroFacture() + ".pdf";
                 fact.setEtat(FactureEtatEnum.en_cours);
                 fact.setType(FactureTypeEnum.Location);
                 fact.setMagasinIdMagasin(magasin);
@@ -290,7 +360,8 @@ public class FactureBean implements Serializable {
                 sendMessage(path,fact.getUtilisateurIdUtilisateur().getCourriel(),"Facture de location","vous trouverez la facture concernant votre location en piece jointe");
                 return "/tableFactureLoca.xhtml?faces-redirect=true";
             }catch (Exception e){
-                log.error("Error during facture creation", e);
+                log.error("Erreur pendant la creation de la facture ", e);
+                return "";
             }
             finally {
                 //bloc pour gérer les erreurs lors de la transactions
@@ -300,7 +371,6 @@ public class FactureBean implements Serializable {
                     FacesContext fc = FacesContext.getCurrentInstance();
                     fc.getExternalContext().getFlash().setKeepMessages(true);
                     fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"l'operation n'a pas reussie",null));
-                    return "";
                 }
                 //fermeture des service
                 service.close();
@@ -312,17 +382,14 @@ public class FactureBean implements Serializable {
         else {
             FacesContext fc = FacesContext.getCurrentInstance();
             fc.getExternalContext().getFlash().setKeepMessages(true);
-            fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"une erreur est survenue, soit Le livre est déjà loué ou une information est manquante (tarif, magasin)",null));
+            fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"une erreur est survenue, soit l'article est déjà loué ou une information est manquante (tarif, magasin)",null));
             return "/formNewFactLoca.xhtml?faces-redirect=true";
         }
-        log.debug("erreur, n'est pas sensé être montré");
-        return "";
     }
 
     // Méthode qui permet de créer une facture pénalité
     public void newFactPena(FactureDetail facturesDetail)
     {
-
 
         //initialisation des services requis
 
@@ -351,7 +418,7 @@ public class FactureBean implements Serializable {
         FactureDetail factdet= new FactureDetail();
         FactureDetail factdetretard= null;
         ModelFactLocaPena MFB =new ModelFactLocaPena();
-        Tarif T = serviceT.getTarifByMagasin(Date.from(facturesDetail.getFactureIdFacture().getDateDebut().toInstant()), magasin).get(0);
+        Tarif T = serviceT.findTarifByMagasin(Date.from(facturesDetail.getFactureIdFacture().getDateDebut().toInstant()), magasin).get(0);
         Utilisateur u = serviceU.getByNumMembre(numMembre).get(0);
 
 
@@ -365,6 +432,8 @@ public class FactureBean implements Serializable {
             fact.setNumeroFacture(createNumFact());
             String path = "c:\\Facture\\"+fact.getNumeroFacture() + ".pdf";
             fact.setEtat(FactureEtatEnum.terminer);
+            fact.setType(FactureTypeEnum.Penalite);
+            fact.setMagasinIdMagasin(magasin);
             fact.setUtilisateurIdUtilisateur(u);
 
             //création des facture dÃ©tails
@@ -380,7 +449,7 @@ public class FactureBean implements Serializable {
             if (facturesDetail.getDateRetour().after(facturesDetail.getDateFin())){
                 int nbjour = (int)((facturesDetail.getDateRetour().getTime() - facturesDetail.getDateFin().getTime())/(1000*60*60*24));
 
-                if (serviceTP.findByPena(T,serviceP.findByName("Retard").get(0),Date.from(facturesDetail.getFactureIdFacture().getDateDebut().toInstant()),facturesDetail.getExemplaireArticleIdEA().getArticleIdArticle()).size() >= 1){
+                if (serviceTP.findByPenalitesByArticle(T,serviceP.findByName("Retard").get(0),Date.from(facturesDetail.getFactureIdFacture().getDateDebut().toInstant()),facturesDetail.getExemplaireArticleIdEA().getArticleIdArticle()).size() >= 1){
                     factdetretard= serviceFD.newPenaretard(facturesDetail.getExemplaireArticleIdEA() , fact , T , serviceP.findByName("Retard").get(0) , nbjour , Date.from(facturesDetail.getFactureIdFacture().getDateDebut().toInstant()),timestampfacture);
                     prixTVAC=prixTVAC+factdetretard.getPrix();
                     serviceFD.save(factdetretard);
@@ -414,15 +483,227 @@ public class FactureBean implements Serializable {
         }
     }
 
+    public String preparerVente() {
+        SvcArticle serviceA = new SvcArticle();
+        SvcExemplaireArticle serviceEA = new SvcExemplaireArticle();
+        double total = 0d;
+
+        try {
+            if (listVC == null || listVC.isEmpty()) {
+                FacesContext fc = FacesContext.getCurrentInstance();
+                fc.getExternalContext().getFlash().setKeepMessages(true);
+                fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN,
+                        "Aucun article", "Ajoutez au moins une ligne."));
+                return "";
+            }
+
+            for (venteCustom v : listVC) {
+                String cb = (v.getCB() == null) ? "" : v.getCB().trim();
+
+                if (cb.isEmpty()) {
+                    FacesContext fc = FacesContext.getCurrentInstance();
+                    fc.getExternalContext().getFlash().setKeepMessages(true);
+                    fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN,
+                            "Code barre manquant", "Veuillez compléter la ligne."));
+                    return "";
+                }
+
+                int qte = Math.max(v.getNbrArticles(), 1);
+
+                // Récupère l'article via le CB (re-vérifié par sécurité)
+                List<Article> arts = serviceA.findOneByCodeBarre(cb);
+                if (arts == null || arts.isEmpty()) {
+                    FacesContext fc = FacesContext.getCurrentInstance();
+                    fc.getExternalContext().getFlash().setKeepMessages(true);
+                    fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN,
+                            "Article introuvable", "CB: " + cb));
+                    return "";
+                }
+                Article a = arts.get(0);
+                // ajoute le nom de l'article pour affichage
+                v.setArticleNom(a.getNom());
+                // Vérifie le stock disponible d'exemplaires vendables (statut=Vente, actif=true, loue=false, reserve=false)
+                int dispo = serviceEA.countAvailableExArticlesSales(a);
+
+                if (dispo < qte) {
+                    FacesContext fc = FacesContext.getCurrentInstance();
+                    fc.getExternalContext().getFlash().setKeepMessages(true);
+                    fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN,
+                            "Stock insuffisant",
+                            a.getNom() + " — demandé: " + qte + ", disponible: " + dispo));
+                    return "";
+                }
+
+                total += a.getPrix() * qte;
+            }
+
+            montant = total;
+
+            // On passe à la page de confirmation de paiement
+            FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
+            return "/venteConfirm.xhtml?faces-redirect=true";
+
+        } finally {
+            serviceEA.close();
+            serviceA.close();
+        }
+    }
+    public String finaliserVente() {
+        SvcFacture service = new SvcFacture();
+        SvcFactureDetail serviceFD = new SvcFactureDetail();
+        SvcExemplaireArticle serviceEA = new SvcExemplaireArticle();
+        SvcArticle serviceA = new SvcArticle();
+        SvcUtilisateur serviceU = new SvcUtilisateur();
+
+        // Partage de l’EM/transaction
+        serviceFD.setEm(service.getEm());
+        serviceEA.setEm(service.getEm());
+
+        double total = 0d;
+
+        long now = System.currentTimeMillis();
+        long rounded = now - (now % 60000);
+        Timestamp ts = new Timestamp(rounded);
+
+        try {
+            // Client (via numéro membre)
+            Utilisateur u = serviceU.getByNumMembre(numMembre).get(0);
+
+            // Facture à persister
+            Facture fact = new Facture();
+            fact.setDateDebut(ts);
+            fact.setNumeroFacture(createNumFact());
+            fact.setEtat(FactureEtatEnum.terminer);     // vente réglée
+            fact.setType(FactureTypeEnum.Vente);
+            fact.setMagasinIdMagasin(magasin);
+            fact.setUtilisateurIdUtilisateur(u);
+
+            EntityTransaction tx = service.getTransaction();
+            tx.begin();
+            try {
+                // Pour chaque ligne saisie
+                for (venteCustom v : listVC) {
+                    String cb = v.getCB();
+                    int qte = v.getNbrArticles();
+
+                    // Article par code-barres (déjà validé en amont)
+                    Article a = serviceA.findOneByCodeBarre(cb).get(0);
+
+                    // Récupérer qte exemplaires vendables (actif=true, loue=false, reserve=false, statut=Vente)
+                    List<ExemplaireArticle> dispo = serviceEA.findAvailableExArticlesSales(a);
+
+                    // vérification minimale : si stock changé entre-temps (ne devrait pas poser probleme ici
+                    if (dispo.size() < qte) {
+                        tx.rollback();
+                        FacesContext fc = FacesContext.getCurrentInstance();
+                        fc.getExternalContext().getFlash().setKeepMessages(true);
+                        fc.addMessage(null, new FacesMessage(
+                                FacesMessage.SEVERITY_WARN,
+                                "Stock insuffisant",
+                                a.getNom() + " — demandé: " + qte + ", disponible: " + dispo.size()));
+                        return "";
+                    }
+
+                    for (int i = 0; i < qte; i++) {
+                        ExemplaireArticle ea = dispo.get(i);
+
+                        // Marquer vendu : inactif = vendu ou HS
+                        ea.setActif(false);
+                        serviceEA.save(ea);
+
+                        // Détail de facture
+                        FactureDetail fd = new FactureDetail();
+                        fd.setFactureIdFacture(fact);
+                        fd.setExemplaireArticleIdEA(ea);
+                        fd.setDateFin(ts);
+                        fd.setDateRetour(ts);
+                        fd.setEtatRendu(null);
+                        fd.setPrix(a.getPrix());
+                        serviceFD.save(fd);
+
+                        total += a.getPrix();
+                    }
+                }
+
+                fact.setPrixTVAC(total);
+                service.save(fact);
+                tx.commit();
+
+                // Post-commit : PDF + mail
+                service.refreshEntity(fact);
+
+                ModelFactVente mfv = new ModelFactVente();
+                String pdfPath = mfv.creation(fact, magasin); // retourne "C:\\REVECouture\\facture\\FRC....pdf"
+
+                sendMessage(
+                        pdfPath,
+                        fact.getUtilisateurIdUtilisateur().getCourriel(),
+                        "Facture de vente",
+                        "Vous trouverez la facture concernant votre achat en pièce jointe."
+                );
+
+                FacesContext fc = FacesContext.getCurrentInstance();
+                fc.getExternalContext().getFlash().setKeepMessages(true);
+                fc.addMessage(null, new FacesMessage(
+                        FacesMessage.SEVERITY_INFO,
+                        "Vente finalisée",
+                        "Facture " + fact.getNumeroFacture() + " créée."));
+
+                // Reset page
+                init();
+                return "/tableFactureVente.xhtml?faces-redirect=true";
+
+            } catch (Exception e) {
+                if (tx.isActive()) {
+                    tx.rollback();
+                }
+                log.error("Erreur finaliserVente()", e);
+                FacesContext fc = FacesContext.getCurrentInstance();
+                fc.getExternalContext().getFlash().setKeepMessages(true);
+                fc.addMessage(null, new FacesMessage(
+                        FacesMessage.SEVERITY_ERROR,
+                        "Erreur fatale",
+                        "La vente n'a pas pu être enregistrée."));
+                return "";
+            }
+
+        } finally {
+            serviceFD.close();
+            serviceEA.close();
+            serviceA.close();
+            serviceU.close();
+            service.close();
+        }
+    }
+
     public String redirectChoix(){
         SvcExemplaireArticle serviceEA = new SvcExemplaireArticle();
         exemplaireArticle = serviceEA.findOneByCodeBarre(CB).get(0);
         tarifsPenalites= new ArrayList<>();
         if (choixetat){
-            Date date = new Date();
+
+            SvcFacture serviceF = new SvcFacture();
             SvcTarif serviceT = new SvcTarif();
-            tarifsPenalites= (List<TarifPenalite>) serviceT.getTarifByMagasin(date, magasin).get(0).getTarifPenalite();
-            return "/formEtatArticle.xhtml?faces-redirect=true";
+            SvcTarifPenalite serviceTP = new SvcTarifPenalite();
+            List<Facture> facture1 = serviceF.findActiveByExemplaireArticle(exemplaireArticle);
+            if(facture1.isEmpty())
+            {
+                serviceT.close();
+                serviceTP.close();
+                serviceF.close();
+                FacesContext fc = FacesContext.getCurrentInstance();
+                fc.getExternalContext().getFlash().setKeepMessages(true);
+                fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"erreur","facture initialle non trouvee"));
+                return "";
+            }
+            else{
+                Date date = facture1.get(0).getDateDebut();
+                tarifsPenalites= serviceTP.FindTarifPenaByTarifByArticle(date,serviceT.findTarifByMagasin(date, magasin).get(0), exemplaireArticle.getArticleIdArticle());
+                serviceT.close();
+                serviceTP.close();
+                serviceF.close();
+                return "/formEtatArticle.xhtml?faces-redirect=true";
+            }
         }
         else {
             return retourArticleLoca();
@@ -487,7 +768,7 @@ public class FactureBean implements Serializable {
                     transaction.commit();
                     FacesContext fc = FacesContext.getCurrentInstance();
                     fc.getExternalContext().getFlash().setKeepMessages(true);
-                    fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"retour ok",null));
+                    fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"retour accepté",null));
                 } finally {
                     if (transaction.isActive()) {
                         transaction.rollback();
@@ -495,6 +776,7 @@ public class FactureBean implements Serializable {
                         fc.addMessage("Erreur", new FacesMessage("l'operation n'est pas reussie"));
                     }
                     service.close();
+                    init();
                 }
             }
         }
@@ -502,7 +784,8 @@ public class FactureBean implements Serializable {
         {
             FacesContext fc = FacesContext.getCurrentInstance();
             fc.getExternalContext().getFlash().setKeepMessages(true);
-            fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Le livre n'est pas loue",null));
+            fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"l'article n'est pas loue",null));
+            init();
         }
         return "/tableFactureLoca.xhtml?faces-redirect=true";
     }
@@ -522,9 +805,9 @@ public class FactureBean implements Serializable {
         try
         {
             fact = serviceF.findAllFactureDesc();
-            if (fact.size() != 0){
+            if (!fact.isEmpty()){
                 String text = fact.get(0).getNumeroFacture();
-                int anneelastFact = Integer.parseInt(text.substring(2, 6));
+                int anneelastFact = Integer.parseInt(text.substring(3, 7));
 
                 if(annee == anneelastFact)
                 {
@@ -571,77 +854,132 @@ public class FactureBean implements Serializable {
         return listFact;
     }
     /*
-     * Méthode qui permet de vider les variables et retourne sur la table des factures
+     * Méthode qui permet via le service de retourner la liste de toutes les factures de pénalité
+     */
+    public List<Facture> getReadAllPenalite()
+    {
+        SvcFacture service = new SvcFacture();
+        List<Facture> listFact = new ArrayList<Facture>();
+        listFact= service.findAllFacturePenalite();
+
+        service.close();
+        return listFact;
+    }
+
+
+    /*
+     * Méthode qui permet de vider les variables et retourne sur la table des factures associée
      * */
-    public String flushFact()
+    public String flushFactLoca()
     {
         init();
         return "/tableFactureLoca.xhtml?faces-redirect=true";
+    }
+    public String flushFactVente()
+    {
+        init();
+        return "/tableFactureVente.xhtml?faces-redirect=true";
     }
 
     //-------------------------------Getter & Setter--------------------------------------------
 
     public Facture getFacture() {
+        log.debug("getFacture");
         return facture;
     }
 
     public void setFacture(Facture facture) {
+        log.debug("setFacture");
         this.facture = facture;
     }
 
     public List<locationCustom> getListLC() {
+        log.debug("getListLC");
         return listLC;
     }
 
     public void setListLC(List<locationCustom> listLC) {
+        log.debug("setListLC");
+        log.debug("values : "+listLC );
         this.listLC = listLC;
     }
 
+    public List<venteCustom> getListVC() {
+        log.debug("getListLC");
+        return listVC;
+    }
+
+    public double getMontant() {
+        return montant;
+    }
+
+    public void setMontant(double montant) {
+        this.montant = montant;
+    }
+
+    public void setListVC(List<venteCustom> listVC) {
+        log.debug("setListLC");
+        log.debug("values : "+listVC );
+        this.listVC = listVC;
+    }
+
     public Magasin getMagasin() {
+        log.debug("getMagasin");
         return magasin;
     }
 
     public void setMagasin(Magasin magasin) {
+        log.debug("setMagasin");
         this.magasin = magasin;
     }
 
     public String getNumMembre() {
+        log.debug("getNumMembre");
         return numMembre;
     }
 
     public void setNumMembre(String numMembre) {
+        log.debug("setNumMembre");
         this.numMembre = numMembre;
     }
 
     public String getCB() {
+        log.debug("getCB");
         return CB;
     }
 
     public void setCB(String CB) {
+        log.debug("setCB");
         this.CB = CB;
     }
 
     public List<TarifPenalite> getTarifsPenalites() {
+        log.debug("getTarifsPenalites");
         return tarifsPenalites;
     }
 
     public void setTarifsPenalites(List<TarifPenalite> tarifsPenalites) {
+        log.debug("setTarifsPenalites");
         this.tarifsPenalites = tarifsPenalites;
     }
 
     public boolean isChoixetat() {
+        log.debug("isChoixetat");
         return choixetat;
     }
 
     public void setChoixetat(boolean choixetat) {
+        log.debug("setChoixetat");
         this.choixetat = choixetat;
     }
 
     public ExemplaireArticle getExemplaireArticle() {
+        log.debug("getExemplaireArticle");
         return exemplaireArticle;
     }
 
     public void setExemplaireArticle(ExemplaireArticle exemplaireArticle) {
+        log.debug("setExemplaireArticle");
         this.exemplaireArticle = exemplaireArticle;
     }
 }

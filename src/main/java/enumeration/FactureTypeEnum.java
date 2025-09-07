@@ -3,7 +3,8 @@ package enumeration;
 public enum FactureTypeEnum
 {
     Location("Location"),
-    Vente("Vente");
+    Vente("Vente"),
+    Penalite("Penalite");
 
     private final String label;
 

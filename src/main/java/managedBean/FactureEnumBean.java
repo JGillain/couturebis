@@ -18,7 +18,7 @@ public class FactureEnumBean implements Serializable{
             return FactureEtatEnum.values();
         }
 
-        public FactureTypeEnum[] getFactureEnum()
+        public FactureTypeEnum[] getTypeEnum()
         {
             return FactureTypeEnum.values();
         }

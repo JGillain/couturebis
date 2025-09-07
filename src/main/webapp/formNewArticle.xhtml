@@ -52,7 +52,13 @@
                 </p:selectOneMenu>
                 <h:message for="articleCategorie" styleClass="errorMessage"/>
 
-
+                <p:outputLabel value = "#{I18N['Articles.label.stockMin']}"/>
+                <p:inputText id="articleStockMin"
+                             value="#{articleBean.article.stockMin}"
+                             required="true"
+                             requiredMessage="#{I18N['formulaire.message.required.numero']}">
+                </p:inputText>
+                <h:message for="articleNumSerie" styleClass="errorMessage"/>
 
                 <p:outputLabel value = "#{I18N['Articles.label.numSerie']}"/>
                 <p:inputText id="articleNumSerie"

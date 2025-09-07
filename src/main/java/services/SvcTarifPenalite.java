@@ -1,9 +1,6 @@
 package services;
 
-import entities.Article;
-import entities.Penalite;
-import entities.Tarif;
-import entities.TarifPenalite;
+import entities.*;
 import org.apache.log4j.Logger;
 
 import java.io.Serializable;
@@ -40,16 +37,23 @@ public class SvcTarifPenalite extends Service<TarifPenalite> implements Serializ
     public List<TarifPenalite> findAllTarifsPenalites() {
         return finder.findByNamedQuery("TarifPenalite.findAll", null);
     }
-    public List<TarifPenalite> findByPena(Tarif t, Penalite p, Date d, Article a) {
+    public List<TarifPenalite> findByPenalitesByArticle(Tarif t, Penalite p, Date d, Article a) {
         Map<String, Object> param = new HashMap<>();
         param.put("dateDebut", d);
         param.put("penalite", p);
         param.put("tarif", t);
         param.put("article", a);
         param.put("dateFin", d);
-        return finder.findByNamedQuery("TarifPenalite.findByPenalite", param);
+        return finder.findByNamedQuery("TarifPenalite.findByPenalitesByArticle", param);
     }
 
+    public List<TarifPenalite> FindTarifPenaByTarifByArticle(Date d, Tarif t, Article a) {
+        Map<String, Object> param = new HashMap<>();
+        param.put("date", d);
+        param.put("tarif", t);
+        param.put("article", a);
+        return finder.findByNamedQuery("TarifPenalite.FindTarifPenaByTarifByArticle", param);
+    }
 
 
     public TarifPenalite createTarifPenalite(Tarif t, Penalite pe, Double pr, Date db, Date df, Article a)

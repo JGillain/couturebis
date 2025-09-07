@@ -4,7 +4,9 @@ package managedBean;
 import entities.*;
 import objectCustom.JourCustom;
 import objectCustom.PenaCustom;
+import objectCustom.locationCustom;
 import org.apache.log4j.Logger;
+import org.primefaces.event.RowEditEvent;
 import services.*;
 
 import javax.annotation.PostConstruct;
@@ -49,6 +51,7 @@ public class TarifBean implements Serializable {
         articles = service.findAllActive();
         service.close();
     }
+
 
     public void save()
     {
@@ -266,6 +269,30 @@ public class TarifBean implements Serializable {
         {
             grilleJour.remove(grilleJour.size()-1);
         }
+    }
+
+    public void onJourRowEdit(RowEditEvent event) {
+        JourCustom row = (JourCustom) event.getObject();
+        log.info("Row saved: " + row);
+        FacesContext.getCurrentInstance()
+                .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Ligne (jours) mise à jour", null));
+    }
+
+    public void onJourRowCancel(RowEditEvent event) {
+        JourCustom row = (JourCustom) event.getObject();
+        log.info("Edit canceled: " + row);
+    }
+
+    public void onPenaRowEdit(RowEditEvent event) {
+        PenaCustom row = (PenaCustom) event.getObject();
+        log.info("Row saved: " + row);
+        FacesContext.getCurrentInstance()
+                .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Ligne (pénalité) mise à jour", null));
+    }
+
+    public void onPenaRowCancel(RowEditEvent event) {
+        PenaCustom row = (PenaCustom) event.getObject();
+        log.info("Edit canceled: " + row);
     }
 
     /*

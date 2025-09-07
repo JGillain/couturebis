@@ -2,6 +2,7 @@ package objectCustom;
 
 import entities.Article;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class JourCustom
@@ -26,6 +27,17 @@ public class JourCustom
         this.dateDebut = new Date();
         this.dateFin = new Date();
         this.article = new Article();
+    }
+    @Override
+    public String toString() {
+        SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+        return "JourCustom{" +
+                "nbrJours=" + nbrJours +
+                ", prix=" + prix +
+                ", dateDebut=" + (dateDebut != null ? df.format(dateDebut) : "null") +
+                ", dateFin=" + (dateFin != null ? df.format(dateFin) : "null") +
+                ", article=" + (article != null ? article.getNom() : "null") +
+                '}';
     }
 
     public int getNbrJours() {

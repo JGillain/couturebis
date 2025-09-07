@@ -9,13 +9,13 @@
       xmlns:p="http://primefaces.org/ui">
 
 <ui:composition template="Template/template.xhtml">
-    <ui:define name="title">#{I18N['application.fact.location.title']}</ui:define>
+    <ui:define name="title">#{I18N['application.fact.penalite.title']}</ui:define>
     <ui:define name="content">
         <h:form prependId="false">
             <p:panel layout="block" id="content">
                 <p:growl id="growl" showDetail="true" sticky="true" />
-                <h2 style="text-align:center">#{I18N['application.fact.location.title']}</h2>
-                <p:dataTable value="#{factureBean.readAllLocation}" var="fa" id="tableFactureLoca"
+                <h2 style="text-align:center">#{I18N['application.fact.penalite.title']}</h2>
+                <p:dataTable value="#{factureBean.readAllPenalite}" var="fa" id="tableFacturePena"
                              Class="table" headerClass="table-header" rowClasses="table-odd-row,table-even-row">
                     <p:column>
                         <!-- column header -->
@@ -46,16 +46,10 @@
                             <f:convertDateTime pattern="dd/MM/yyyy HH:mm" timeZone="Europe/Brussels"/>
                         </p:outputLabel>
                     </p:column>
-                    <p:column>
-                        <!-- column header -->
-                        <f:facet name="header">#{I18N['factures.label.Etat']}</f:facet>
-                        <!-- row record -->
-                        <p:outputLabel value ="#{fa.etat}"/>
-                    </p:column>
+
                 </p:dataTable>
             </p:panel>
 
-            <p:commandButton value="#{I18N['application.button.new']}" action="formNewFactLoca.xhtml?faces-redirect=true" />
             <p:commandButton value="#{I18N['application.button.returnarticle']}" action="formEtatQuestion.xhtml?faces-redirect=true"/>
 
             <p:commandButton icon="pi pi-home" value="#{I18N['application.button.returnbienvenue']}" action="bienvenue.xhtml?faces-redirect=true"/>

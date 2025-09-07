@@ -36,7 +36,7 @@
                 <f:selectItem itemValue = "#{false}" itemLabel = "#{I18N['commune.label.non']}"/>
             </p:selectOneRadio>
             <p:commandButton icon="pi pi-check-circle" value="#{I18N['application.button.validate']}" action="#{factureBean.redirectChoix}"/>
-            <p:commandButton icon="pi pi-home" value="#{I18N['application.button.return']}" action="#{factureBean.flushFact}" immediate="true"/>
+            <p:commandButton icon="pi pi-home" value="#{I18N['application.button.return']}" action="#{factureBean.flushFactLoca}" immediate="true"/>
         </h:form>
     </ui:define>
 </ui:composition>

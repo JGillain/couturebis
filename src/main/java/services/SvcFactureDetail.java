@@ -84,7 +84,7 @@ public class SvcFactureDetail extends Service<FactureDetail> implements Serializ
         FactureDetail facturesDetail = new FactureDetail();
         facturesDetail.setExemplaireArticleIdEA(ea);
         facturesDetail.setFactureIdFacture(fa);
-        facturesDetail.setPrix(serviceTP.findByPena(t,p,dp,ea.getArticleIdArticle()).get(0).getPrix());
+        facturesDetail.setPrix(serviceTP.findByPenalitesByArticle(t,p,dp,ea.getArticleIdArticle()).get(0).getPrix());
         facturesDetail.setDateFin(df);
         serviceTP.close();
         return facturesDetail;
@@ -95,7 +95,7 @@ public class SvcFactureDetail extends Service<FactureDetail> implements Serializ
         FactureDetail facturesDetail = new FactureDetail();
         facturesDetail.setExemplaireArticleIdEA(ea);
         facturesDetail.setFactureIdFacture(fa);
-        facturesDetail.setPrix(serviceTP.findByPena(t,p,dp, ea.getArticleIdArticle()).get(0).getPrix()*nbjour);
+        facturesDetail.setPrix(serviceTP.findByPenalitesByArticle(t,p,dp, ea.getArticleIdArticle()).get(0).getPrix()*nbjour);
         facturesDetail.setDateFin(df);
         facturesDetail.setDateRetour(df);
         serviceTP.close();

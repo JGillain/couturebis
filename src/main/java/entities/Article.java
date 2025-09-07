@@ -18,6 +18,7 @@ import java.util.Objects;
                 @NamedQuery(name = "Article.searchTri", query="SELECT A FROM Article A WHERE A.nom=:nom ORDER BY A.nom ASC"),//A verifier
                 @NamedQuery(name = "Article.findByFabricant", query = "SELECT A FROM Article A WHERE A.fabricantIdFabricant=:fab"),
                 @NamedQuery(name = "Article.findByNumserie", query = "SELECT A FROM Article A WHERE A.numSerie=:numserie"),
+                @NamedQuery(name = "Article.findOneByCodeBarre", query="SELECT A FROM Article A WHERE A.codeBarreIdCB.codeBarre=:CB"),
                 @NamedQuery(name = "Article.search", query="SELECT A FROM Article A WHERE A.nom=:nom"),
         })
 public class Article implements Serializable {
@@ -43,6 +44,10 @@ public class Article implements Serializable {
     @NotNull
     @Column(name = "NumSerie", nullable = false)
     private String numSerie;
+
+    @NotNull
+    @Column(name = "StockMin", nullable = false)
+    private Integer stockMin;
 
     @NotNull
     @ManyToOne
@@ -134,17 +139,21 @@ public class Article implements Serializable {
         this.fabricantIdFabricant = fabricantIdFabricant;
     }
 
+    public Integer getStockMin() {
+        return stockMin;
+    }
+    public void setStockMin(Integer stockMin) {}
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Article article = (Article) o;
-        return Objects.equals(id, article.id) && Objects.equals(nom, article.nom) && Objects.equals(actif, article.actif) && Objects.equals(prix, article.prix) && Objects.equals(numSerie, article.numSerie);
+        return Objects.equals(id, article.id) && Objects.equals(stockMin, article.stockMin) && Objects.equals(nom, article.nom) && Objects.equals(actif, article.actif) && Objects.equals(prix, article.prix) && Objects.equals(numSerie, article.numSerie);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, nom, actif, prix, numSerie);
+        return Objects.hash(id, nom, actif, prix, numSerie, stockMin);
     }
 }

@@ -19,6 +19,7 @@ import java.util.Objects;
         ({
                 @NamedQuery(name = "Facture.findAll", query = "SELECT f FROM Facture f"),
                 @NamedQuery(name = "Facture.findByType", query = "SELECT f FROM Facture f WHERE f.type=:type"),
+                @NamedQuery(name = "Facture.findActiveByExemplaireArticle", query = "SELECT f FROM Facture f,FactureDetail fa WHERE f.etat=:etat AND fa.factureIdFacture=f AND fa.exemplaireArticleIdEA=:exArticle "),
                 @NamedQuery(name = "Facture.findLastId", query="SELECT f FROM Facture f ORDER BY f.id DESC")
         })
 public class Facture implements Serializable {

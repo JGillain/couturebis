@@ -28,47 +28,67 @@
                 </p:inputText>
                 <h:message for="numMembre" styleClass="errorMessage"/>
 
+                <p:dataTable id="newLocaFact"
+                             value="#{factureBean.listLC}"
+                             var="LC"
+                             editable="true"
+                             editMode="row">
 
-                <p:dataTable id="newLocaFact" value="#{factureBean.listLC}" var="LC">
-                    <p:column>
-                        <f:facet name="header">
-                            <p:outputLabel value="code barre" />
-                        </f:facet>
-                        <p:inputText value="#{LC.CB}"
-                                     id="CB"
-                                     required="true"
-                                     requiredMessage="#{I18N['formulaire.message.required.CB']}"
-                                     maxlength="13"
-                                     validator="codeBarreExArticleValidator">
-                            <f:validateLength minimum="13" maximum="13"/>
-                        </p:inputText>
+                    <!-- Code barre -->
+                    <p:column headerText="Code barre">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:outputText value="#{LC.CB}"/>
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:inputText id="CB"
+                                             value="#{LC.CB}"
+                                             maxlength="13"
+                                             required="true"
+                                             requiredMessage="#{I18N['formulaire.message.required.CB']}"
+                                             validator="codeBarreExArticleValidator">
+                                    <f:validateLength minimum="13" maximum="13"/>
+                                </p:inputText>
+                                <p:message for="CB" display="tooltip"/>
+                            </f:facet>
+                        </p:cellEditor>
                     </p:column>
 
-                    <p:column>
-                        <f:facet name="header">
-                            <p:outputLabel value="Nombre de jours" />
-                        </f:facet>
-                        <p:inputText value="#{LC.nbrJours}"
-                                     id="nbrj"
-                                     validatorMessage="Le nombre de jours minimum doit être de 1"
-                                     converterMessage="Le nombre doit etre un entier positif"
-                                     required="true"
-                                     requiredMessage="#{I18N['formulaire.message.required.nbrJ']}">
-                            <f:validateLongRange minimum="1"/>
-                        </p:inputText>
+                    <!-- Nombre de jours -->
+                    <p:column headerText="Nombre de jours">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:outputText value="#{LC.nbrJours}"/>
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:inputText id="nbrj"
+                                             value="#{LC.nbrJours}"
+                                             required="true"
+                                             requiredMessage="#{I18N['formulaire.message.required.nbrJ']}"
+                                             converterMessage="Le nombre doit être un entier positif"
+                                             validatorMessage="Le nombre de jours minimum doit être de 1">
+                                    <f:validateLongRange minimum="1"/>
+                                </p:inputText>
+                                <p:message for="nbrj" display="tooltip"/>
+                            </f:facet>
+                        </p:cellEditor>
                     </p:column>
 
+                    <!-- Row editor controls (pencil / check / X) -->
+                    <p:column style="width:6rem">
+                        <p:rowEditor/>
+                    </p:column>
 
-
+                    <!-- Fire bean callbacks on save/cancel -->
+                    <p:ajax event="rowEdit" listener="#{factureBean.onRowEdit}" update=":growl"/>
+                    <p:ajax event="rowEditCancel" listener="#{factureBean.onRowEditCancel}" />
                 </p:dataTable>
 
-                <p:commandButton value="ajouter" action="#{factureBean.addNewListRow}" update="newLocaFact" immediate="true"/>
-                <p:commandButton value="Supprimer" action="#{factureBean.delListRow}" update="newLocaFact" immediate="true"/>
-
-
+                <p:commandButton value="ajouter" action="#{factureBean.addNewListRowLoca}" update="@form" process="@form" immediate="true"/>
+                <p:commandButton value="Supprimer" action="#{factureBean.delListRowLoca}" update="@form" process="@form" immediate="true"/>
 
                 <p:commandButton icon="pi pi-check-circle" value="#{I18N['application.button.validate']}" action="#{factureBean.newFactLoca}" ajax="false"/>
-                <p:commandButton icon="pi pi-home" value="#{I18N['application.button.return']}" action="tableFactures" immediate="true"/>
+                <p:commandButton icon="pi pi-home" value="#{I18N['application.button.return']}" action="tableFactureLoca.xhtml?faces-redirect=true" immediate="true"/>
             </h:form>
 
     </ui:define>

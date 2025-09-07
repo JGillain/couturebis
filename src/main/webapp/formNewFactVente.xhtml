@@ -1,0 +1,120 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+<ui:composition template="Template/template.xhtml">
+    <ui:define name="title">#{I18N['fact.form.vente.nouveau.titre']}</ui:define>
+
+    <ui:define name="content">
+        <p:growl id="growl" showDetail="true" sticky="true"/>
+
+        <h:form id="form" prependId="false">
+            <h:head>
+                <title>#{I18N['fact.form.vente.nouveau.titre']}</title>
+            </h:head>
+            <h2 style="text-align:center">#{I18N['fact.form.vente.nouveau.titre']}</h2>
+
+            <!-- Numéro membre client -->
+            <p:outputLabel value="#{I18N['utilisateur.label.NumMembre']}" for="numMembre"/>
+            <p:inputText id="numMembre"
+                         value="#{factureBean.numMembre}"
+                         required="true"
+                         requiredMessage="#{I18N['formulaire.message.required.numero']}"
+                         maxlength="13"
+                         validator="codeBarreCliValidator">
+                <f:validateLength minimum="13" maximum="13"/>
+            </p:inputText>
+            <h:message for="numMembre" styleClass="errorMessage"/>
+
+            <!-- Lignes de vente -->
+            <p:dataTable id="newVenteFact"
+                         value="#{factureBean.listVC}"
+                         var="VC"
+                         rowIndexVar="ri"
+                         editable="true"
+                         editMode="row">
+
+                <!-- Code barre -->
+                <p:column headerText="#{I18N['Articles.label.codeBarre']}">
+                    <p:cellEditor>
+                        <f:facet name="output">
+                            <h:outputText value="#{VC.CB}"/>
+                        </f:facet>
+                        <f:facet name="input">
+                            <p:inputText id="CB"
+                                         value="#{VC.CB}"
+                                         maxlength="13"
+                                         required="true"
+                                         requiredMessage="#{I18N['formulaire.message.required.CB']}"
+                                         validator="codeBarreArticleValidator">
+                                <f:validateLength minimum="13" maximum="13"/>
+
+                            </p:inputText>
+                            <p:message for="CB" display="tooltip"/>
+                        </f:facet>
+                    </p:cellEditor>
+                </p:column>
+
+                <!-- Nom d'article (lecture seule) -->
+                <p:column headerText="#{I18N['Articles.label.denomination']}">
+                    <h:outputText value="#{VC.articleNom}"/>
+                </p:column>
+
+                <!-- Quantité -->
+                <p:column headerText="Nombre d’articles">
+                    <p:cellEditor>
+                        <f:facet name="output">
+                            <h:outputText value="#{VC.nbrArticles}"/>
+                        </f:facet>
+                        <f:facet name="input">
+                            <p:inputText id="qte"
+                                         value="#{VC.nbrArticles}"
+                                         required="true"
+                                         requiredMessage="#{I18N['formulaire.message.validation.min1']}"
+                                         converterMessage="Le nombre doit être un entier positif"
+                                         validatorMessage="#{I18N['formulaire.message.validation.min1']}">
+                                <f:validateLongRange minimum="1"/>
+                            </p:inputText>
+                            <p:message for="qte" display="tooltip"/>
+                        </f:facet>
+                    </p:cellEditor>
+                </p:column>
+
+                <!-- Actions d’édition -->
+                <p:column style="width:6rem">
+                    <p:rowEditor/>
+                </p:column>
+
+                <!-- Callbacks ligne -->
+                <p:ajax event="rowEdit" listener="#{factureBean.onRowEditVente}" update=":growl"/>
+                <p:ajax event="rowEditCancel" listener="#{factureBean.onRowEditCancelVente}"/>
+            </p:dataTable>
+
+            <!-- Ajouter / Supprimer ligne -->
+            <p:commandButton value="#{I18N['tarifjour.label.add']}"
+                             action="#{factureBean.addNewListRowVente}"
+                             update="@form"
+                             process="@form"
+                             immediate="true"/>
+            <p:commandButton value="#{I18N['tarifjour.label.del']}"
+                             action="#{factureBean.delListRowVente}"
+                             update="@form"
+                             process="@form"
+                             immediate="true"/>
+
+            <!-- Valider la vente (va vers la page de confirmation) -->
+            <p:commandButton icon="pi pi-check-circle"
+                             value="#{I18N['application.button.validate']}"
+                             action="#{factureBean.preparerVente}"
+                             ajax="false"/>
+            <p:commandButton icon="pi pi-home"
+                             value="#{I18N['application.button.return']}"
+                             action="/tableFactureVente.xhtml?faces-redirect=true"
+                             immediate="true"/>
+        </h:form>
+    </ui:define>
+</ui:composition>
+</html>

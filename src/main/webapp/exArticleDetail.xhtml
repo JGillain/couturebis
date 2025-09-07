@@ -1,10 +1,48 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
-<f:view>
-    <h:outputLabel value="Hello, world"/>
-</f:view>
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f = "http://java.sun.com/jsf/core"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:shiro="http://shiro.apache.org/tags"
+      xmlns:p="http://primefaces.org/ui">
+<ui:composition template="Template/template.xhtml">
+    <ui:define name="title">#{I18N['ExemplairesArticles.form.nouveau.titre']}</ui:define>
+
+    <ui:define name="content">
+        <p:growl id="growl" showDetail="true" sticky="true" />
+        <h:form id="formdetailExArticle" prependId="false">
+            <h:head>
+                <title>détails de l'exemplaire article</title>
+            </h:head>
+            <h2 style="text-align:center">détails de de l'exemplaire article</h2>
+
+            <p:panelGrid id="newrecform" columns="2" columnClasses="col1Newrec,col2Newrec">
+
+                <p:outputLabel value="#{I18N['ExemplairesArticles.label.Article']}"/>
+                <p:outputLabel value="#{exemplaireArticleBean.EA.articleIdArticle.nom}"/>
+
+                <p:outputLabel value="#{I18N['ExemplairesArticles.label.liste.Status']}"/>
+                <p:outputLabel value="#{exemplaireArticleBean.EA.statut.label}"/>
+
+                <p:outputLabel value="#{I18N['ExemplairesArticles.label.Etat']}"/>
+                <p:outputLabel value="#{exemplaireArticleBean.EA.etat.label}"/>
+
+                <p:outputLabel value = "#{I18N['ExemplairesArticles.label.CommentaireEtat']}"/>
+                <p:outputLabel value = "#{exemplaireArticleBean.EA.commentaireEtat}"/>
+
+                <p:outputLabel value="#{I18N['ExemplairesArticles.label.Loue']}"/>
+                <p:outputLabel value="#{exemplaireArticleBean.EA.loue ? 'non' : 'oui'}"/>
+
+                <p:outputLabel value="#{I18N['ExemplairesArticles.label.reserve']}"/>}
+                <p:outputLabel value="#{exemplaireArticleBean.EA.reserve ? 'non' : 'oui'}"/>
+
+            </p:panelGrid>
+
+            <p:commandButton icon="pi pi-home" value="#{I18N['application.button.return']}" action="#{exemplaireArticleBean.flushExArt()}" immediate="true"/>
+        </h:form>
+    </ui:define>
+</ui:composition>
+
 </html>

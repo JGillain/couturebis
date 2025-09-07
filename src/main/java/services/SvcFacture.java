@@ -1,7 +1,9 @@
 package services;
 
 
+import entities.ExemplaireArticle;
 import entities.Facture;
+import enumeration.FactureEtatEnum;
 import enumeration.FactureTypeEnum;
 import org.apache.log4j.Logger;
 
@@ -42,6 +44,12 @@ public class SvcFacture extends Service<Facture> implements Serializable {
         param.put("type", FactureTypeEnum.Location);
         return finder.findByNamedQuery("Facture.findByType", param);
     }
+
+    public List<Facture> findAllFacturePenalite() {
+        Map<String, Object> param = new HashMap<>();
+        param.put("type", FactureTypeEnum.Penalite);
+        return finder.findByNamedQuery("Facture.findByType", param);
+    }
     public List<Facture> findAllFactureVente() {
         Map<String, Object> param = new HashMap<>();
         param.put("type", FactureTypeEnum.Vente);
@@ -49,6 +57,13 @@ public class SvcFacture extends Service<Facture> implements Serializable {
     }
     public List<Facture> findAllFactureDesc() {
         return finder.findByNamedQuery("Facture.findLastId", null);
+    }
+
+    public List<Facture> findActiveByExemplaireArticle(ExemplaireArticle ea) {
+        Map<String, Object> param = new HashMap<>();
+        param.put("etat", FactureEtatEnum.en_cours);
+        param.put("exArticle", ea);
+        return finder.findByNamedQuery("Facture.findActiveByExemplaireArticle", param);
     }
 
 }

@@ -20,22 +20,22 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-
-@WebServlet("/ModelFactBiblioPena")
-
-
 public class ModelFactLocaPena implements Serializable
 {
 	private static final long serialVersionUID = 1L;
 	private static final Logger log = Logger.getLogger(ModelFactLocaPena.class);
 
+    private static final String RES_BASE     = "C:\\REVECouture\\resources\\";
+    private static final String IMG_LOGO     = RES_BASE + "images\\imgCouture.png";
+    private static final String FONT_BARCODE = RES_BASE + "fonts\\LibreBarcodeEAN13Text-Regular.ttf";
+    private static final String OUT_BASE     = "C:\\REVECouture\\facture\\";
 	/*Creation de la facture en PDF*/
 	public void creation (Facture fact, List<TarifPenalite> tp, FactureDetail retard, Magasin magasin)  {
 		try{
 		SimpleDateFormat sf = new SimpleDateFormat("dd/MM/yyyy");
-		String userdir = System.getProperty("user.dir");
-		userdir = userdir.substring(0,userdir.length()-24);
-		String image = userdir + "src\\main\\webapp\\Images\\biblioLib.png";
+        String userdir = System.getProperty("user.dir");
+        userdir = userdir.substring(0,userdir.length()-24);
+        String image = userdir + "\\src\\main\\webapp\\resources\\images\\imgCouture.png";
 		ArrayList<String> price = new ArrayList<>();
 		Calendar cal = Calendar.getInstance();
 		//Date date = cal.getTime();
@@ -73,7 +73,7 @@ public class ModelFactLocaPena implements Serializable
 			  
 	    //Creating the PDDocumentInformation object 
 	    PDDocumentInformation pdd = doc.getDocumentInformation();    
-	    pdd.setAuthor("BiblioLib");										//Setting the author of the document
+	    pdd.setAuthor("REVECouture");										//Setting the author of the document
 	    pdd.setTitle("Facture"+numfacture); 							// Setting the title of the document
 	    pdd.setSubject("Facturation du client: " + utilisateur); 	//Setting the subject of the document
 	    pdd.setCreationDate(cal); 	    						//Setting the created date of the document 
@@ -241,7 +241,7 @@ public class ModelFactLocaPena implements Serializable
 	    
 	    contentStream.close();
 
-	    String path = userdir + "\\src\\main\\webapp\\Factures\\";
+        String path = "c:\\Facture\\";
 	    File file = new File(path);
 	    if(file.mkdir()) 
 	    {
