@@ -141,25 +141,6 @@ public class FactureBean implements Serializable {
         log.info("Edit canceled: " + row);
     }
 
-    public void onCbChangeVente(int index) {
-        if (listVC == null || index < 0 || index >= listVC.size()) return;
-
-        venteCustom v = listVC.get(index);
-        String cb = v.getCB();
-        if (cb == null || cb.length() != 13) {
-            v.setArticleNom("");
-            return;
-        }
-
-        SvcArticle serviceA = new SvcArticle();
-        try {
-            java.util.List<Article> arts = serviceA.findOneByCodeBarre(cb);
-            v.setArticleNom((arts == null || arts.isEmpty()) ? "" : arts.get(0).getNom());
-        } finally {
-            serviceA.close();
-        }
-    }
-
     //methode qui permet le téléchargement sur les machines client des factures
     public void downloadPdf() {
         FacesContext fc = FacesContext.getCurrentInstance();
@@ -172,7 +153,7 @@ public class FactureBean implements Serializable {
             return;
         }
 
-        Path file = Paths.get("C:"+ File.separator +"Facture", numFacture + ".pdf");
+        Path file = Paths.get("C:"+ File.separator +"REVECouture"+File.separator +"facture", numFacture + ".pdf");
 
         try {
             if (!Files.exists(file)) {
@@ -654,22 +635,25 @@ public class FactureBean implements Serializable {
                 return "/tableFactureVente.xhtml?faces-redirect=true";
 
             } catch (Exception e) {
+                FacesContext fc = FacesContext.getCurrentInstance();
+                log.error("Erreur finaliserVente()", e);
                 if (tx.isActive()) {
                     tx.rollback();
+                    fc.addMessage(null, new FacesMessage(
+                            FacesMessage.SEVERITY_ERROR,
+                            "Erreur fatale",
+                            "La vente n'a pas pu être enregistrée."));
                 }
-                log.error("Erreur finaliserVente()", e);
-                FacesContext fc = FacesContext.getCurrentInstance();
-                fc.getExternalContext().getFlash().setKeepMessages(true);
-                fc.addMessage(null, new FacesMessage(
-                        FacesMessage.SEVERITY_ERROR,
-                        "Erreur fatale",
-                        "La vente n'a pas pu être enregistrée."));
+                else {
+                    fc.addMessage(null, new FacesMessage(
+                            FacesMessage.SEVERITY_ERROR,
+                            "Erreur fatale",
+                            "La génération du pdf ou de l'email n'a pas réussie."));
+                }
                 return "";
             }
 
         } finally {
-            serviceFD.close();
-            serviceEA.close();
             serviceA.close();
             serviceU.close();
             service.close();
@@ -905,22 +889,21 @@ public class FactureBean implements Serializable {
     }
 
     public List<venteCustom> getListVC() {
-        log.debug("getListLC");
+        log.debug("getListVC");
         return listVC;
     }
 
+    public void setListVC(List<venteCustom> listVC) {
+        log.debug("setListVC");
+        log.debug("values : "+listVC );
+        this.listVC = listVC;
+    }
     public double getMontant() {
         return montant;
     }
 
     public void setMontant(double montant) {
         this.montant = montant;
-    }
-
-    public void setListVC(List<venteCustom> listVC) {
-        log.debug("setListLC");
-        log.debug("values : "+listVC );
-        this.listVC = listVC;
     }
 
     public Magasin getMagasin() {

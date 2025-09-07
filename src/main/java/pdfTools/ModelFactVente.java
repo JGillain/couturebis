@@ -1,5 +1,11 @@
 package pdfTools;
 
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.WriterException;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
 import entities.Facture;
 import entities.FactureDetail;
 import entities.Magasin;
@@ -13,16 +19,17 @@ import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
+import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+
 
 import java.awt.Color;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 public class ModelFactVente implements java.io.Serializable {
 
@@ -132,22 +139,70 @@ public class ModelFactVente implements java.io.Serializable {
                 cs.showText("TVA: BE0448.150.750 - Tel: 071 35 44 71");
                 cs.endText();
 
-                // Cadre client
+                // --- Cadre client ---
                 Encadrement.creation(cs, 350, 615, 200, 80);
 
-                // Bloc client
+                // --- Bloc client avec retour à la ligne auto ---
+                final float boxX = 350f, boxY = 615f, boxW = 200f, boxH = 80f;
+                // point de départ du texte (petite marge intérieure)
+                final float textX = 360f;
+                final float textY = 600f;
+                final float labelFontSize   = 12f;
+                final float contentFontSize = 10f;
+                final float leading         = 12.5f;
+                // largeur max utilisable à l’intérieur du cadre
+                final float maxWidth = boxW - 16f; // ~8 pt de marge de chaque côté
+
+                // lignes sources
+                String label = "Client :";
+
                 cs.beginText();
-                cs.setFont(fontText, 14f);
                 cs.setNonStrokingColor(Color.BLACK);
-                cs.setLeading(14.5f);
-                cs.newLineAtOffset(360, 600);
-                cs.showText("Client :");
+                cs.setLeading(leading);
+
+                // positionner le curseur
+                cs.newLineAtOffset(textX, textY);
+
+                // 1) libellé
+                cs.setFont(fontText, labelFontSize);
+                cs.showText(label);
                 cs.newLine();
-                cs.showText(nomPrenom);
-                cs.newLine();
-                cs.showText(adr1);
-                cs.newLine();
-                cs.showText(adr2);
+
+                // 2) contenu (nom + adresses) avec wrap dans la largeur disponible
+                cs.setFont(fontText, contentFontSize);
+
+                // on limite à 3 lignes de contenu pour rester dans 80 pt de hauteur
+                int linesLeft = 3;
+                for (String src : new String[]{nomPrenom, adr1, adr2}) {
+                    if (linesLeft <= 0 || src == null || src.isEmpty()) continue;
+
+                    // wrap naïf par mots selon largeur max
+                    String[] words = src.split("\\s+");
+                    StringBuilder line = new StringBuilder();
+                    for (String w : words) {
+                        String trial = line.length() == 0 ? w : line + " " + w;
+                        float trialW = 0f;
+                        trialW = fontText.getStringWidth(trial) / 1000f * contentFontSize;
+
+                        if (trialW <= maxWidth) {
+                            line.setLength(0);
+                            line.append(trial);
+                        } else {
+                            // écrire la ligne pleine
+                            cs.showText(line.toString());
+                            cs.newLine();
+                            if (--linesLeft == 0) break;
+                            // démarrer une nouvelle ligne avec le mot courant
+                            line.setLength(0);
+                            line.append(w);
+                        }
+                    }
+                    if (linesLeft > 0 && line.length() > 0) {
+                        cs.showText(line.toString());
+                        cs.newLine();
+                        linesLeft--;
+                    }
+                }
                 cs.endText();
 
                 // Entête facture
@@ -155,7 +210,9 @@ public class ModelFactVente implements java.io.Serializable {
                 cs.setFont(fontBold, 12f);
                 cs.setLeading(14.5f);
                 cs.newLineAtOffset(80, 600);
-                cs.showText("Facture de vente n° : " + numfacture + "  créée le " + today);
+                cs.showText("Facture de vente n° : " + numfacture);
+                cs.newLine();
+                cs.showText("créée le " + today);
                 cs.endText();
 
                 // Colonne de séparation
@@ -179,10 +236,8 @@ public class ModelFactVente implements java.io.Serializable {
                 List<String> rightCol = new ArrayList<>();
                 if (fact.getFactureDetails() != null) {
                     for (FactureDetail fd : fact.getFactureDetails()) {
-                        String nom = safe(fd.getExemplaireArticleIdEA()
-                                .getArticleIdArticle().getNom());
-                        String cb  = safe(fd.getExemplaireArticleIdEA()
-                                .getCodeBarreIdCB().getCodeBarre());
+                        String nom = safe(fd.getExemplaireArticleIdEA().getArticleIdArticle().getNom());
+                        String cb  = safe(fd.getExemplaireArticleIdEA().getArticleIdArticle().getCodeBarreIdCB().getCodeBarre());
                         String qty = "Qté: 1";
                         String prix = String.format("%.2f", fd.getPrix());
 
@@ -192,12 +247,41 @@ public class ModelFactVente implements java.io.Serializable {
                         cs.showText(nom);
                         cs.endText(); y -= lineGap;
 
-                        // barcode text (font encodes bars + digits)
-                        cs.beginText();
-                        cs.setFont(fontBarcode, 28f);
-                        cs.newLineAtOffset(startX, y);
-                        cs.showText(cb);
-                        cs.endText(); y -= (lineGap + 6);
+                        // --- BARCODE (ZXing -> image) ---
+                        try {
+                            int bw =  Math.round(95 * 0.90f), bh = 80; // pixels
+                            Map<EncodeHintType,Object> hints = new EnumMap<>(EncodeHintType.class);
+                            hints.put(EncodeHintType.MARGIN, 0);
+
+                            BitMatrix m = new MultiFormatWriter()
+                                    .encode(cb, BarcodeFormat.EAN_13, bw, bh, hints);
+
+                            BufferedImage img =
+                                    MatrixToImageWriter.toBufferedImage(m);
+
+                            PDImageXObject ximg =
+                                    LosslessFactory.createFromImage(doc, img);
+
+                            cs.drawImage(ximg, startX, y - bh + 8, bw, bh);
+
+                            // human-readable digits below the bars
+                            cs.beginText();
+                            cs.setFont(fontText, 9f);
+                            cs.newLineAtOffset(startX + 8, y - bh - 6);
+                            cs.showText(cb);
+                            cs.endText();
+
+                            y -= (bh + 24); // advance after barcode
+                        } catch (WriterException we) {
+                            log.warn("EAN-13 generation failed for CB=" + cb, we);
+                            // Fallback: at least print the digits
+                            cs.beginText();
+                            cs.setFont(fontText, 9f);
+                            cs.newLineAtOffset(startX, y);
+                            cs.showText(cb);
+                            cs.endText();
+                            y -= lineGap;
+                        }
 
                         cs.beginText();
                         cs.setFont(fontMono, 9f);
@@ -282,5 +366,30 @@ public class ModelFactVente implements java.io.Serializable {
 
     private static String safe(String s) {
         return (s == null) ? "" : s;
+    }
+
+    private static List<String> wrap(PDFont font, float size, float maxWidth, String text) throws IOException {
+        List<String> out = new ArrayList<>();
+        if (text == null || text.isEmpty()) return out;
+        String[] words = text.split("\\s+");
+        StringBuilder line = new StringBuilder();
+        for (String w : words) {
+            String test = (line.length()==0) ? w : line + " " + w;
+            float wpt = font.getStringWidth(test) / 1000f * size;
+            if (wpt <= maxWidth) {
+                line.setLength(0); line.append(test);
+            } else {
+                if (line.length() > 0) out.add(line.toString());
+                // long single word fallback
+                while (font.getStringWidth(w) / 1000f * size > maxWidth && w.length() > 1) {
+                    int cut = Math.max(1, (int)(maxWidth * 1000f / (font.getStringWidth(w) / w.length()) / size));
+                    out.add(w.substring(0, Math.min(cut, w.length())));
+                    w = w.substring(Math.min(cut, w.length()));
+                }
+                line.setLength(0); line.append(w);
+            }
+        }
+        if (line.length() > 0) out.add(line.toString());
+        return out;
     }
 }
