@@ -6,8 +6,18 @@ import services.SvcCodeBarre;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import javax.faces.application.FacesMessage;
+import javax.faces.context.ExternalContext;
+import javax.faces.context.FacesContext;
 import javax.inject.Named;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Serializable;
+import java.net.URLEncoder;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,6 +32,55 @@ public class CodeBarreBean implements Serializable {
     public void init()
     {
         log.info("CodeBarreBean init");
+    }
+
+    public void downloadBarcode() {
+        FacesContext fc = FacesContext.getCurrentInstance();
+        ExternalContext ec = fc.getExternalContext();
+
+        String fileName = ec.getRequestParameterMap().get("barcodeFile");
+        if (fileName == null || fileName.isEmpty()) {
+            bounceWithError(ec, fc, null);
+            return;
+        }
+
+        Path file = Paths.get("C:\\REVECouture\\barcodes", fileName);
+
+        try {
+            if (!Files.exists(file)) {
+                bounceWithError(ec, fc, fileName);
+                return;
+            }
+
+            HttpServletResponse resp = (HttpServletResponse) ec.getResponse();
+            resp.reset();
+            resp.setContentType("application/pdf");
+            resp.setHeader("Content-Disposition", "attachment; filename=\"" + file.getFileName().toString() + "\"");
+            resp.setHeader("Content-Length", String.valueOf(Files.size(file)));
+
+            try (OutputStream out = resp.getOutputStream()) {
+                Files.copy(file, out);
+                out.flush();
+            }
+
+            fc.responseComplete();
+        } catch (IOException e) {
+            bounceWithError(ec, fc, fileName);
+        }
+    }
+
+    private void bounceWithError(ExternalContext ec, FacesContext fc, String fileName) {
+        try {
+            String base = ec.getRequestContextPath() + "/formNewExArticle.xhtml";
+            String qs = "?dlError=1";
+            if (fileName != null) {
+                qs += "&barcodeFile=" + URLEncoder.encode(fileName, "UTF-8");
+            }
+            ec.redirect(base + qs);
+        } catch (IOException ignored) {
+        } finally {
+            fc.responseComplete();
+        }
     }
 
     public List<String> createCB(boolean client, int count)

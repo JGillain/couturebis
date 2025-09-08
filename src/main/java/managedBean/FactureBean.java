@@ -142,7 +142,7 @@ public class FactureBean implements Serializable {
     }
 
     //methode qui permet le téléchargement sur les machines client des factures
-    public void downloadPdf() {
+    public void downloadPdfFacture() {
         FacesContext fc = FacesContext.getCurrentInstance();
         ExternalContext ec = fc.getExternalContext();
 

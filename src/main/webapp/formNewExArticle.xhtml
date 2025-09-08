@@ -67,9 +67,35 @@
                 </h:panelGroup>
 
             </h:panelGroup>
-
-
         </h:form>
+        <!-- Auto-download if barcodeFile is present and there is no dlError -->
+        <h:panelGroup rendered="#{not empty param.barcodeFile and param.dlError ne '1'}">
+            <!-- a tiny form that posts to your bean method which streams the PDF -->
+            <h:form id="autoDlForm">
+                <h:commandLink id="autoDl" action="#{codeBarreBean.downloadBarcode}">
+                    <f:param name="barcodeFile" value="#{param.barcodeFile}"/>
+                </h:commandLink>
+            </h:form>
+
+            <!-- auto-click the hidden link -->
+            <script>
+                (function() {
+                    var btn = document.getElementById('autoDlForm:autoDl');
+                    if (btn) { btn.click(); }
+                })();
+            </script>
+        </h:panelGroup>
+
+        <!-- Fallback UI: only show if the server told us the download failed -->
+        <h:panelGroup rendered="#{param.dlError eq '1'}">
+            <p:growl id="dlGrowl" showDetail="true" sticky="false" life="6000" />
+            <h:form id="manualDlForm">
+                <p:commandLink value="Télécharger le PDF manuellement"
+                               action="#{codeBarreBean.downloadBarcode}">
+                    <f:param name="barcodeFile" value="#{param.barcodeFile}"/>
+                </p:commandLink>
+            </h:form>
+        </h:panelGroup>
     </ui:define>
 </ui:composition>
 

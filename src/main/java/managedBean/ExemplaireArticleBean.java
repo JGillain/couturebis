@@ -3,20 +3,25 @@ package managedBean;
 import entities.*;
 import enumeration.ExemplaireArticleStatutEnum;
 import org.apache.log4j.Logger;
+import pdfTools.ModelCodeBarre;
 import services.SvcCodeBarre;
 import services.SvcExemplaireArticle;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.application.FacesMessage;
+import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityTransaction;
+import java.io.File;
 import java.io.Serializable;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 @Named
 @SessionScoped
@@ -110,17 +115,51 @@ public class ExemplaireArticleBean implements Serializable {
                     service.save(ex);              // persist exemplaire
                 }
                 tx.commit();
-                FacesContext.getCurrentInstance().addMessage(null,
-                        new FacesMessage(FacesMessage.SEVERITY_INFO,
-                                nombreExemplaire + " exemplaire(s) enregistré(s)", null));
+                String pdf = "erreur";
+                if (flagVente) {
+                    pdf = new ModelCodeBarre().createSheet(article.getCodeBarreIdCB().getCodeBarre(), nombreExemplaire, "CB_vente_" + article.getId());
+                }
+                else {
+                    ModelCodeBarre mcb = new ModelCodeBarre();
+                    pdf = mcb.createSheet(code, "CB_loc_" + article.getId());
+                }
+                if (!Objects.equals(pdf, "erreur")) {
+                    FacesContext fc = FacesContext.getCurrentInstance();
+                    ExternalContext ec = fc.getExternalContext();
+
+                    fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,
+                            nombreExemplaire + " exemplaire(s) enregistré(s)", null));
+                    ec.getFlash().setKeepMessages(true);
+
+                    // redirect back to the same form page (adjust the path)
+                    String url = ec.getRequestContextPath()
+                            + "/formNewExArticle.xhtml?faces-redirect=true"
+                            + "&barcodeFile=" + java.net.URLEncoder.encode( new File(pdf).getName(), "UTF-8");
+                    ec.redirect(url);
+                    fc.responseComplete();
+                }
+                else {
+                    FacesContext.getCurrentInstance().addMessage(null,
+                            new FacesMessage(FacesMessage.SEVERITY_INFO,
+                                    nombreExemplaire + " exemplaire(s) enregistré(s)", null));
+
+                }
             }
         }
         catch (Exception e) {
-            if (tx.isActive()) tx.rollback();
-            log.error("Erreur lors du saveBatch", e);
-            FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                            "Échec de l'enregistrement", null));
+            if (tx.isActive()) {
+                tx.rollback();
+                log.error("Erreur lors du save", e);
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                                "Échec de l'enregistrement", null));
+            }
+            else  {
+                log.error("Erreur lors du save", e);
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                                "Échec de la génération du pdf", null));
+            }
         }
         finally {
             service.close();
