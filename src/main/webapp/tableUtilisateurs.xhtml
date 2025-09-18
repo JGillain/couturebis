@@ -10,102 +10,145 @@
 <ui:composition template="Template/template.xhtml">
     <ui:define name="title">#{I18N['application.utilisateur.title']}</ui:define>
     <ui:define name="content">
-            <h:form prependId="false">
-                <p:panel layout="block" id="content">
-                    <p:growl id="growl" globalOnly="true" showDetail="true" life="4000"/>
-                    <h2 style="text-align:center">#{I18N['application.utilisateur.title']}</h2>
-                    <p:dataTable value="#{utilisateurBean.listUtil}" var="ut" id="tableUtilisateurs" widgetVar="utTbl"
-                                 Class="table" headerClass="table-header" rowClasses="table-odd-row,table-even-row" paginator="true" rows="10"
-                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
-                                 currentPageReportTemplate="Page {currentPage} sur {totalPages}">
-                        <p:column>
-                            <f:facet name="header">#{I18N['utilisateur.label.Nom']}</f:facet>
-                            <p:outputLabel value ="#{ut.nom}"/>
-                        </p:column>
-                        <p:column>
-                            <f:facet name="header">#{I18N['utilisateur.label.Prenom']}</f:facet>
-                            <p:outputLabel value ="#{ut.prenom}"/>
-                        </p:column>
-                        <p:column>
-                            <f:facet name="header">#{I18N['utilisateur.label.Sexe']}</f:facet>
-                            <p:outputLabel value ="#{ut.sexe}"/>
-                        </p:column>
-                        <p:column>
-                            <f:facet name="header">#{I18N['utilisateur.label.Courriel']}</f:facet>
-                            <p:outputLabel value ="#{ut.courriel}"/>
-                        </p:column>
-                        <p:column>
-                            <f:facet name="header">#{I18N['utilisateur.label.Role']}</f:facet>
-                            <ui:repeat value="#{ut.utilisateurRole}" var="utar">
-                                <p:outputLabel rendered="#{utar.actif}" value ="#{utar.roleIdRole.denomination}"/>
-                                <br/>
-                            </ui:repeat>
-                        </p:column>
-                        <p:column>
-                            <f:facet name="header">#{I18N['adresse.label.complete']}</f:facet>
-                            <ui:repeat value="#{ut.utilisateurAdresse}" var="utad">
-                                    <p:outputLabel rendered="#{utad.actif}" value ="#{utad.adresseIdAdresse.rue}, #{utad.adresseIdAdresse.numero}#{utad.adresseIdAdresse.boite} #{utad.adresseIdAdresse.localiteIdLocalite.cp} #{utad.adresseIdAdresse.localiteIdLocalite.ville}"/>
-                            </ui:repeat>
-                        </p:column>
+        <h:form prependId="false">
+            <p:panel layout="block" id="content">
+                <p:growl id="growl" globalOnly="true" showDetail="true" life="4000"/>
+                <h2 style="text-align:center">#{I18N['application.utilisateur.title']}</h2>
 
+                <p:dataTable value="#{utilisateurBean.listUtil}"
+                             var="ut"
+                             id="tableUtilisateurs"
+                             widgetVar="utTbl"
+                             Class="table hide-filters"
+                             headerClass="table-header"
+                             rowClasses="table-odd-row,table-even-row"
+                             rowStyleClass="#{ut.actif ? '' : 'highlight-row'}"
+                             paginator="true"
+                             rows="10"
+                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                             currentPageReportTemplate="Page {currentPage} sur {totalPages}">
+
+                    <!-- NOM (with filter) -->
+                    <p:column filterBy="#{ut.nom}"
+                              filterMatchMode="contains"
+                              filterPlaceholder="#{I18N['application.search.placeholder']}">
+                        <f:facet name="header">#{I18N['utilisateur.label.Nom']}</f:facet>
+                        <p:outputLabel value ="#{ut.nom}"/>
+                    </p:column>
+
+                    <!-- PRENOM (with filter) -->
+                    <p:column filterBy="#{ut.prenom}"
+                              filterMatchMode="contains"
+                              filterPlaceholder="#{I18N['application.search.placeholder']}">
+                        <f:facet name="header">#{I18N['utilisateur.label.Prenom']}</f:facet>
+                        <p:outputLabel value ="#{ut.prenom}"/>
+                    </p:column>
+
+                    <p:column>
+                        <f:facet name="header">#{I18N['utilisateur.label.Sexe']}</f:facet>
+                        <p:outputLabel value ="#{ut.sexe}"/>
+                    </p:column>
+
+                    <!-- COURRIEL (with filter) -->
+                    <p:column filterBy="#{ut.courriel}"
+                              filterMatchMode="contains"
+                              filterPlaceholder="#{I18N['application.search.placeholder']}">
+                        <f:facet name="header">#{I18N['utilisateur.label.Courriel']}</f:facet>
+                        <p:outputLabel value ="#{ut.courriel}"/>
+                    </p:column>
+
+                    <p:column>
+                        <f:facet name="header">#{I18N['utilisateur.label.Role']}</f:facet>
+                        <ui:repeat value="#{ut.utilisateurRole}" var="utar">
+                            <p:outputLabel rendered="#{utar.actif}" value ="#{utar.roleIdRole.denomination}"/><br/>
+                        </ui:repeat>
+                    </p:column>
+
+                    <p:column>
+                        <f:facet name="header">#{I18N['adresse.label.complete']}</f:facet>
+                        <ui:repeat value="#{ut.utilisateurAdresse}" var="utad">
+                            <p:outputLabel rendered="#{utad.actif}"
+                                           value ="#{utad.adresseIdAdresse.rue}, #{utad.adresseIdAdresse.numero}#{utad.adresseIdAdresse.boite}
+                                                   #{utad.adresseIdAdresse.localiteIdLocalite.cp} #{utad.adresseIdAdresse.localiteIdLocalite.ville}"/>
+                        </ui:repeat>
+                    </p:column>
+
+                    <p:column>
+                        <p:commandButton rendered="#{loginBean.managerOrDev or (loginBean.utilisateurAuth.id eq ut.id)}"
+                                         icon="pi pi-pencil" value="Modifier" action="#{utilisateurBean.redirectModifUtil}">
+                            <f:setPropertyActionListener target="#{utilisateurBean.utilisateur}" value="#{ut}" />
+                        </p:commandButton>
+                    </p:column>
+
+                    <p:column>
+                        <p:commandButton value="Modifier MDP" type="button"
+                                         rendered="#{loginBean.managerOrDev or (loginBean.utilisateurAuth.id eq ut.id)}">
+                            <f:setPropertyActionListener target="#{utilisateurBean.utilisateur}" value="#{ut}" />
+                            <f:ajax event="click" onevent="function f(data){PF('dlg1').show();}"/>
+                        </p:commandButton>
+                    </p:column>
+
+                    <shiro:hasAnyRoles name="1,2">
+                        <!-- Activer / Désactiver column WITH filter toggle/clear in header -->
                         <p:column>
-                            <p:commandButton rendered="#{loginBean.managerOrDev or (loginBean.utilisateurAuth.id eq ut.id)}"
-                                             icon="pi pi-pencil" value="Modifier" action="#{utilisateurBean.redirectModifUtil}">
+                            <f:facet name="header">
+                                <h:panelGroup style="display:flex;gap:.5rem;align-items:center;justify-content:flex-end">
+                                    <h:outputText value="#{I18N['application.button.filters']}" />
+                                    <p:commandButton type="button" icon="pi pi-filter"
+                                                     title="#{I18N['application.button.filters']}"
+                                                     onclick="PF('utTbl').jq.toggleClass('hide-filters');" />
+                                    <p:commandButton type="button" icon="pi pi-times"
+                                                     title="#{I18N['application.button.clear']}"
+                                                     onclick="PF('utTbl').clearFilters();" />
+                                </h:panelGroup>
+                            </f:facet>
+
+                            <p:commandButton icon="pi pi-power-off"
+                                             value ="#{ut.actif ? 'Désactiver' : 'Activer'}"
+                                             rendered="#{!(loginBean.utilisateurAuth.id eq ut.id)}"
+                                             action="#{utilisateurBean.activdesactivUtil}">
                                 <f:setPropertyActionListener target="#{utilisateurBean.utilisateur}" value="#{ut}" />
                             </p:commandButton>
-
-                       </p:column>
-                        <p:column>
-                            <p:commandButton value="Modif.MDP" type="button">
-                                <f:setPropertyActionListener target="#{utilisateurBean.utilisateur}" value="#{ut}" />
-                                <f:ajax event="click" onevent="function f(data){PF('dlg1').show();}"/>
-                            </p:commandButton>
-
-
                         </p:column>
-                        <shiro:hasAnyRoles name="1,2">
-                           <p:column>
-                               <p:commandButton icon="pi pi-power-off" value ="#{ut.actif ? 'Désactiver' : 'Activer'}" rendered="#{!(loginBean.utilisateurAuth.id eq ut.id)}"  action="#{utilisateurBean.activdesactivUtil}">
-                                   <f:setPropertyActionListener target="#{utilisateurBean.utilisateur}" value="#{ut}" />
-                               </p:commandButton>
-                           </p:column>
-                            <p:column id="actifCol"
-                                      filterBy="#{ut.actif}"
-                                      filterMatchMode="exact"
-                                      style="display:none"/>
-                       </shiro:hasAnyRoles>
 
-                    </p:dataTable>
-                </p:panel>
-                <h:outputScript target="body">
-                    function setActifFilter(val){
-                        var tbl = PF('utTbl');
-                        tbl.clearFilters();
-                        $(PrimeFaces.escapeClientId('tableUtilisateurs:actifCol:filter'))
-                                .val(val);
-                        tbl.filter();
-                    }
-                </h:outputScript>
+                        <!-- keep your hidden 'actif' filter for quick toggles -->
+                        <p:column id="actifCol"
+                                  filterBy="#{ut.actif}"
+                                  filterMatchMode="exact"
+                                  style="display:none"/>
+                    </shiro:hasAnyRoles>
 
-                <h:panelGroup layout="block" styleClass="button-bar">
-                    <!-- Left aligned buttons -->
-                    <h:panelGroup styleClass="left-buttons">
-                        <p:commandButton icon="pi pi-plus" value="#{I18N['application.button.new']}" action="formNewUtilisateur.xhtml?faces-redirect=true" />
-                    </h:panelGroup>
+                </p:dataTable>
+            </p:panel>
 
-                    <!-- Center aligned buttons -->
-                    <h:panelGroup styleClass="center-buttons">
-                        <p:commandButton icon="pi pi-search-plus" value="#{I18N['application.button.utilActiv']}" onclick="setActifFilter('true')"/>
-                        <p:commandButton icon="pi pi-search-minus" value="#{I18N['application.button.utilInactiv']}" onclick="setActifFilter('false')"/>
-                    </h:panelGroup>
+            <h:outputScript target="body">
+                function setActifFilter(val){
+                    var tbl = PF('utTbl');
+                    tbl.clearFilters();
+                    $(PrimeFaces.escapeClientId('tableUtilisateurs:actifCol:filter')).val(val);
+                    tbl.filter();
+                }
+            </h:outputScript>
 
-                    <!-- Right aligned button -->
-                    <h:panelGroup styleClass="right-buttons">
-                        <p:commandButton icon="pi pi-home" value="#{I18N['application.button.returnbienvenue']}" action="#{utilisateurBean.flushBienv}"/>
-                    </h:panelGroup>
+            <h:panelGroup layout="block" styleClass="button-bar">
+                <h:panelGroup styleClass="left-buttons">
+                    <p:commandButton icon="pi pi-plus" value="#{I18N['application.button.new']}"
+                                     action="formNewUtilisateur.xhtml?faces-redirect=true" />
                 </h:panelGroup>
-            </h:form>
+                <h:panelGroup styleClass="center-buttons">
+                    <p:commandButton icon="pi pi-search-plus" value="#{I18N['application.button.utilActiv']}"
+                                     onclick="toggleBoolFilter('utTbl','tableUtilisateurs:actifCol:filter','true','btnUtActif',['btnUtInactif'])"/>
+                    <p:commandButton icon="pi pi-search-minus" value="#{I18N['application.button.utilInactiv']}"
+                                     onclick="toggleBoolFilter('utTbl','tableUtilisateurs:actifCol:filter','false','btnUtInactif',['btnUtActif'])"/>
+                </h:panelGroup>
+                <h:panelGroup styleClass="right-buttons">
+                    <p:commandButton icon="pi pi-home" value="#{I18N['application.button.returnbienvenue']}"
+                                     action="#{utilisateurBean.flushBienv}"/>
+                </h:panelGroup>
+            </h:panelGroup>
+        </h:form>
 
+        <!-- dialog unchanged -->
         <p:dialog header="changer mot de passe" widgetVar="dlg1" minHeight="40" onHide="remoteFlush()">
             <h:form id="formModifMdp" prependId="false">
                 <p:remoteCommand name="remoteFlush"
@@ -116,39 +159,27 @@
                 </p:remoteCommand>
                 <p:panelGrid columns="3" StyleClass="formConfig">
                     <h:outputText value="Veuillez introduire le nouveau mot de passe" />
-                    <p:password id="mdp"
-                                value="#{utilisateurBean.mdpNouveau}"
-                                required="true"
-                                requiredMessage="Ce champ est obligatoire."
-                                label="Mot de passe"
-                                maxlength="40">
+                    <p:password id="mdp" value="#{utilisateurBean.mdpNouveau}" required="true"
+                                requiredMessage="Ce champ est obligatoire." label="Mot de passe" maxlength="40">
                         <f:validateLength minimum="8" maximum="40"/>
                     </p:password>
                     <p:message id="mdpMsg" for="mdp"/>
 
                     <h:outputText value="Confirmer le nouveau mot de passe" />
-                    <p:password id="confmdp"
-                                value="#{utilisateurBean.mdpNouveau2}"
-                                required="true"
-                                requiredMessage="Ce champ est obligatoire."
-                                label="Confirmation du mot de passe"
-                                validator="checkMdpValidator"
-                                maxlength="40">
+                    <p:password id="confmdp" value="#{utilisateurBean.mdpNouveau2}" required="true"
+                                requiredMessage="Ce champ est obligatoire." label="Confirmation du mot de passe"
+                                validator="checkMdpValidator" maxlength="40">
                         <f:validateLength minimum="8" maximum="40"/>
                     </p:password>
                     <p:message id="confMsg" for="confmdp"/>
                 </p:panelGrid>
 
-                <p:commandButton value="Modifier"
-                                 action="#{utilisateurBean.modifMdp}"
-                                 process="@form"
-                                 update="formModifMdp :growl"/>
-
+                <p:commandButton value="Modifier" action="#{utilisateurBean.modifMdp}"
+                                 process="@form" update="formModifMdp :growl"/>
                 <p:commandButton value="Annuler" type="button" onclick="PF('dlg1').hide();"/>
             </h:form>
         </p:dialog>
 
     </ui:define>
 </ui:composition>
-
 </html>

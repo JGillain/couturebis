@@ -72,7 +72,7 @@
                 <h:message for="roles" styleClass="errorMessage"/>
                 </shiro:hasAnyRoles>
 
-                <p:outputLabel value = "#{I18N['adresse.label.Rue']}"/>
+                <p:outputLabel value = "#{I18N['utilisateur.label.adresse']}"/>
                 <p:selectOneMenu value = "#{utilisateurBean.adresses}" id="utiladress" required="true"
                                  requiredMessage="#{I18N['formulaire.message.required.adresse']}"
                                  converter="adressConverter">

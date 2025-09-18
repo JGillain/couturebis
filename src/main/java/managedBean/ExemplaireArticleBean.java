@@ -3,7 +3,7 @@ package managedBean;
 import entities.*;
 import enumeration.ExemplaireArticleStatutEnum;
 import org.apache.log4j.Logger;
-import pdfTools.ModelCodeBarre;
+import tools.ModelCodeBarre;
 import services.SvcCodeBarre;
 import services.SvcExemplaireArticle;
 
@@ -17,7 +17,6 @@ import javax.inject.Named;
 import javax.persistence.EntityTransaction;
 import java.io.File;
 import java.io.Serializable;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -165,7 +164,11 @@ public class ExemplaireArticleBean implements Serializable {
             service.close();
         }
     }
-
+    public String redirectModif(){
+        article = EA.getArticleIdArticle();
+        magasin = EA.getMagasinIdMagasin();
+        return "/formEditExArticle.xhtml?faces-redirect=true";
+    }
     public String activdesactivExArt() {
 
         SvcExemplaireArticle service = new SvcExemplaireArticle();

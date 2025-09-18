@@ -1,7 +1,11 @@
 package managedBean;
 
+import entities.Article;
+import entities.ExemplaireArticle;
 import entities.Fabricant;
 import org.apache.log4j.Logger;
+import services.SvcArticle;
+import services.SvcExemplaireArticle;
 import services.SvcFabricant;
 
 import javax.annotation.PostConstruct;
@@ -29,8 +33,8 @@ public class FabricantBean implements Serializable {
         fabricant = new Fabricant();
     }
 
-    // Méthode qui permet l'appel de save() qui créée une nouvelle adresse et envoi un message si jamais
-    // l'adresse se trouve déjà en base de donnée et nous renvoi sur la table des auteurs
+    // Méthode qui permet l'appel de save() qui créée un nouveau fabricant et envoi un message si jamais
+    // le fabricant se trouve déjà en base de donnée et nous renvoi sur la table des fabricants
     public String newFabricant()
     {
         log.debug("test 1 ");
@@ -50,7 +54,7 @@ public class FabricantBean implements Serializable {
 
     }
 
-    // Méthode qui permet la sauvegarde d'une adresse en base de donnée
+    // Méthode qui permet la sauvegarde d'un fabricant en base de donnée
     public void save()
     {
         SvcFabricant service = new SvcFabricant();
@@ -79,8 +83,49 @@ public class FabricantBean implements Serializable {
             service.close();
         }
     }
+    public String activDesactivFab() {
+        SvcFabricant service = new SvcFabricant();
+        SvcArticle serviceA = new SvcArticle();
+        SvcExemplaireArticle serviceEA = new SvcExemplaireArticle();
+        serviceEA.setEm(service.getEm());
+        serviceA.setEm(service.getEm());
+        EntityTransaction transaction = service.getTransaction();
+        transaction.begin();
+        try {
+            if(fabricant.getActif())
+            {
+                fabricant.setActif(false);
+                for (Article A : fabricant.getArticles()){
+                    for (ExemplaireArticle EA : A.getExemplaireArticles()){
+                        EA.setActif(false);
+                        serviceEA.save(EA);
+                    }
+                    A.setActif(false);
+                    serviceA.save(A);
+                }
+            }
+            else {
+                fabricant.setActif(true);
+            }
+            service.save(fabricant);
+            transaction.commit();
+            FacesContext fc = FacesContext.getCurrentInstance();
+            fc.getExternalContext().getFlash().setKeepMessages(true);
+            fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"L'operation a reussie",null));
+        }finally {
+            if (transaction.isActive()) {
+                transaction.rollback();
+                FacesContext fc = FacesContext.getCurrentInstance();
+                fc.getExternalContext().getFlash().setKeepMessages(true);
+                fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"l'operation a échoué",null));
+            }
+            init();
+            serviceA.close();
+        }
+        return("/tableArticle.xhtml?faces-redirect=true");
+    }
 
-    // Méthode qui vérifie qu'une adresse déjà ou pas dans la base de donnée
+    // Méthode qui vérifie qu'un Fabricant déjà ou pas dans la base de donnée
     public boolean verifFabricantExist(Fabricant fa)
     {
         SvcFabricant serviceF = new SvcFabricant();
@@ -98,7 +143,7 @@ public class FabricantBean implements Serializable {
 
     }
     /*
-     * Méthode qui permet de vider les variables et de revenir sur le table des Adresses .
+     * Méthode qui permet de vider les variables et de revenir sur la table des Fabricants .
      * */
     public String flushFab()
     {
@@ -109,7 +154,7 @@ public class FabricantBean implements Serializable {
 
     /*
      * Méthode qui permet via le service de retourner
-     * la liste des adresses
+     * la liste des Fabricants
      */
     public List<Fabricant> getReadAll()
     {

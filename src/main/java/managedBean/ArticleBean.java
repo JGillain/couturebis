@@ -3,6 +3,7 @@ package managedBean;
 import entities.*;
 import org.apache.log4j.Logger;
 import services.SvcArticle;
+import services.SvcCategorie;
 import services.SvcCodeBarre;
 import services.SvcExemplaireArticle;
 
@@ -42,15 +43,19 @@ public class ArticleBean implements Serializable {
 
     }
 
-    public void save() {
+    public String save() {
         log.debug("save init");
 
         SvcArticle service = new SvcArticle();
         EntityTransaction tx = service.getTransaction();
+
         tx.begin();
         try {
             // génération du codebarre si nesessaire
             if(article.getId() == null) {
+                if (!service.findOneByDetails(article).isEmpty()){
+                    throw new IllegalStateException("les détails de l'article sont trop similaire avec ceux déjà enregistré dans la db");
+                }
                 SvcCodeBarre svcCB = new SvcCodeBarre();
                 svcCB.setEm(service.getEm());
                 List<String> code = codeBarreBean.createCB(false,1); // false = pas client
@@ -64,36 +69,35 @@ public class ArticleBean implements Serializable {
                 }
                 // Save CodeBarre
                 svcCB.save(cb);
-
+                // liaison de fabricant et categorie a l'article
+                article.setFabricantIdFabricant(fabricant); // from UI
+                article.setCategorieIdCategorie(categorie); // from UI
                 // liaison du cb a l'article
                 article.setCodeBarreIdCB(cb);
             }
-            // liaison de fabricant et categorie a l'article
-            article.setFabricantIdFabricant(fabricant); // from UI
-            article.setCategorieIdCategorie(categorie); // from UI
-
             service.save(article);
 
             tx.commit();
-            FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_INFO, "Article enregistré avec succès", null));
+            FacesContext fc = FacesContext.getCurrentInstance();
+            fc.getExternalContext().getFlash().setKeepMessages(true);
+            fc.addMessage(null,new FacesMessage(FacesMessage.SEVERITY_INFO, "Article enregistré avec succès", null));
+            return("/tableArticle.xhtml?faces-redirect=true");
 
         } catch (Exception ex) {
             if (tx.isActive()) tx.rollback();
-            FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Échec de l'enregistrement", null));
+            log.error("Erreur save Article", ex);
+
+            FacesContext fc = FacesContext.getCurrentInstance();
+            fc.getExternalContext().getFlash().setKeepMessages(true);
+            fc.addMessage(null,new FacesMessage(FacesMessage.SEVERITY_ERROR, "Échec de l'enregistrement", ex.getMessage()));
             ex.printStackTrace();
+            return("");
         } finally {
             service.close();
+            init();
         }
     }
 
-    public String readByFabricants(Fabricant fabricant) {
-        return("/tableFabricant.xhtml?faces-redirect=true");
-    }
-    public String readByCategories(Categorie categorie) {
-        return("/tableCategorie.xhtml?faces-redirect=true");
-    }
     public String activdesactivArt() {
         SvcArticle service = new SvcArticle();
         SvcExemplaireArticle serviceEA = new SvcExemplaireArticle();
@@ -143,21 +147,14 @@ public class ArticleBean implements Serializable {
         return stockLocation;
     }
 
-    public String searchArticle()
-    {
-        SvcArticle service = new SvcArticle();
+    public String stockFlag(Article art) {
+        int loc = getStockLocation(art);
+        int ven = getStockVente(art);
+        int min = art.getStockMin() == null ? 0 : art.getStockMin();
 
-        if(service.getbyName(article.getNom()).isEmpty())
-        {
-            FacesContext fc = FacesContext.getCurrentInstance();
-            fc.addMessage("artRech", new FacesMessage("aucun article correspondant n'a été trouvé"));
-            return null;
-        }
-        else
-        {
-            searchResults = service.getbyName(article.getNom());
-        }
-        return "/formSearchArticle.xhtml?faces-redirect=true";
+        if (loc == 0 || ven == 0) return "red";
+        if (loc <= min || ven <= min) return "orange";
+        return "green";
     }
 
     /*
@@ -203,6 +200,18 @@ public class ArticleBean implements Serializable {
         listart=service.findAllArticles();
         service.close();
         return listart;
+    }
+    public String readByFabricants() {
+        SvcArticle service = new SvcArticle();
+        listart=service.findByFabricant(fabricant);
+        service.close();
+        return "/tableArticle.xhtml?faces-redirect=true";
+    }
+    public String readByCategories() {
+        SvcArticle service = new SvcArticle();
+        listart=service.findByCategorie(categorie);
+        service.close();
+        return "/tableArticle.xhtml?faces-redirect=true";
     }
 
     public List<Article> getReadArticle()
@@ -252,4 +261,6 @@ public class ArticleBean implements Serializable {
     public void setSearchResults(List<Article> searchResults) {
         this.searchResults = searchResults;
     }
+
+
 }

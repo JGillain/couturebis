@@ -14,9 +14,9 @@
         <p:growl id="growl" showDetail="true" sticky="true" />
         <h:form id="formNewArticle" prependId="false">
             <h:head>
-                <title>#{I18N['Articles.form.nouveau.titre']}</title>
+                <title>#{I18N['Articles.form.modif.titre']}</title>
             </h:head>
-            <h2 style="text-align:center">#{I18N['Articles.form.nouveau.titre']}</h2>
+            <h2 style="text-align:center">#{I18N['Articles.form.modif.titre']}</h2>
 
             <p:panelGrid id="newrecform" columns="3" columnClasses="col1Newrec,col2Newrec,col3Newrec">
                 <p:outputLabel value = "#{I18N['Articles.label.denomination']}"/>
@@ -31,7 +31,7 @@
                 <h:message for="articleNom" styleClass="errorMessage"/>
 
                 <p:outputLabel value ="#{I18N['Articles.label.Fabricant']}"/>
-                <p:selectOneMenu value = "#{articleBean.fabricant}" id="articleFabricant"
+                <p:selectOneMenu value = "#{articleBean.article.fabricantIdFabricant}" id="articleFabricant"
                                  required="true"
                                  filter="true"
                                  converter="fabricantConverter"
@@ -41,7 +41,7 @@
                 <h:message for="articleFabricant" styleClass="errorMessage"/>
 
                 <p:outputLabel value ="#{I18N['Articles.label.Categorie']}"/>
-                <p:selectOneMenu value = "#{articleBean.categorie}" id="articleCategorie"
+                <p:selectOneMenu value = "#{articleBean.article.categorieIdCategorie}" id="articleCategorie"
                                  required="true"
                                  filter="true"
                                  panelStyle="max-height: 200px; overflow-y: auto;"

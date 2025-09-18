@@ -4,6 +4,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Objects;
 
 @Entity
@@ -30,6 +31,9 @@ public class Fabricant implements Serializable {
     @Column(name = "Actif", nullable = false)
     private Boolean actif = false;
 
+    @OneToMany(mappedBy = "fabricantIdFabricant")
+    private Collection<Article> articles;
+
     public Integer getId() {
         return id;
     }
@@ -52,6 +56,14 @@ public class Fabricant implements Serializable {
 
     public void setActif(Boolean actif) {
         this.actif = actif;
+    }
+
+    public Collection<Article> getArticles() {
+        return articles;
+    }
+
+    public void setArticles(Collection<Article> articles) {
+        this.articles = articles;
     }
 
     @Override

@@ -4,13 +4,15 @@ import entities.*;
 import enumeration.ExemplaireArticleEtatEnum;
 import enumeration.FactureEtatEnum;
 import enumeration.FactureTypeEnum;
+import enumeration.ReservationStatutEnum;
 import objectCustom.locationCustom;
 import objectCustom.venteCustom;
 import org.apache.log4j.Logger;
 import org.primefaces.event.RowEditEvent;
-import pdfTools.ModelFactLoca;
-import pdfTools.ModelFactLocaPena;
-import pdfTools.ModelFactVente;
+import tools.MailUtils;
+import tools.ModelFactLoca;
+import tools.ModelFactLocaPena;
+import tools.ModelFactVente;
 import services.*;
 
 import javax.annotation.PostConstruct;
@@ -20,9 +22,7 @@ import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.mail.*;
 
-import javax.mail.internet.InternetAddress;
 import javax.persistence.EntityTransaction;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
@@ -182,79 +182,31 @@ public class FactureBean implements Serializable {
         }
     }
 
-    // Méthode qui permet l'envoi d'un mail via le mail du magasin avec la facture
-    public static void sendMessage(String absolutePdfPath,
-                                   String destEmail,
-                                   String bodyText,
-                                   String subject) {
-        String host = "smtp.gmail.com";
-        String port = "587";
-        String username = "revecouture1990@gmail.com";
-        String password = "qcukddisvzhbkdfb";
-
-
-
-
-        try {
-
-            java.nio.file.Path p = java.nio.file.Paths.get(absolutePdfPath);
-            if (!java.nio.file.Files.isReadable(p)) {
-                throw new java.io.FileNotFoundException("PDF introuvable: " + absolutePdfPath);
-            }
-            Properties props = new Properties();
-            props.put("mail.transport.protocol", "smtp");
-            props.put("mail.smtp.host", host);
-            props.put("mail.smtp.port", port);
-            props.put("mail.smtp.auth", "true");
-            props.put("mail.smtp.starttls.enable", "true");
-            props.put("mail.smtp.starttls.required", "true");
-            props.put("mail.smtp.ssl.trust", host);
-            props.put("mail.smtp.ssl.protocols", "TLSv1.2");
-
-            Session session = Session.getInstance(props,
-                    new Authenticator() {
-                        @Override protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
-                            return new javax.mail.PasswordAuthentication(username, password);
-                        }
-                    });
-
-            javax.mail.internet.MimeMessage msg = new javax.mail.internet.MimeMessage(session);
-            msg.setFrom(new InternetAddress(username));
-            msg.setRecipients(javax.mail.Message.RecipientType.TO,
-                    javax.mail.internet.InternetAddress.parse(destEmail, false));
-            msg.setSubject(subject, "UTF-8");
-
-            javax.mail.internet.MimeBodyPart text = new javax.mail.internet.MimeBodyPart();
-            text.setText(bodyText, "UTF-8");
-
-            javax.mail.internet.MimeBodyPart attach = new javax.mail.internet.MimeBodyPart();
-            javax.activation.DataSource src = new javax.activation.FileDataSource(absolutePdfPath);
-            attach.setDataHandler(new javax.activation.DataHandler(src));
-            attach.setFileName(new java.io.File(absolutePdfPath).getName());
-
-            javax.mail.Multipart mp = new javax.mail.internet.MimeMultipart();
-            mp.addBodyPart(text);
-            mp.addBodyPart(attach);
-            msg.setContent(mp);
-
-            javax.mail.Transport.send(msg);
-            log.info("Mail sent to " + destEmail + " with " + absolutePdfPath);
-        } catch (Exception e) {
-            log.error("Email send failed to " + destEmail + " (file: " + absolutePdfPath + ")", e);
-            javax.faces.context.FacesContext fc = javax.faces.context.FacesContext.getCurrentInstance();
-            if (fc != null) {
-                fc.getExternalContext().getFlash().setKeepMessages(true);
-                fc.addMessage(null, new javax.faces.application.FacesMessage(
-                        javax.faces.application.FacesMessage.SEVERITY_WARN,
-                        "Facture créée mais l’envoi du mail a échoué.",
-                        "Vous pouvez télécharger la facture depuis l’application." ));
-            }
-        }
-    }
-
     // Méthode qui permet de créer une facture de location
     public String newFactLoca()
     {
+        //verification si doublons presents
+        List<String> dupCbs = new ArrayList<>();
+        for (int i = 0; i < listLC.size(); i++) {
+            String cbi = listLC.get(i).getCB();
+            if (cbi == null) continue;
+            for (int j = i + 1; j < listLC.size(); j++) {
+                String cbj = listLC.get(j).getCB();
+                if (cbi.equals(cbj) && !dupCbs.contains(cbi)) {
+                    dupCbs.add(cbi);
+                }
+            }
+        }
+        if (!dupCbs.isEmpty()) {
+            FacesContext fc = FacesContext.getCurrentInstance();
+            fc.getExternalContext().getFlash().setKeepMessages(true);
+            fc.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_WARN,
+                    "Doublon",
+                    "Les codes-barres suivants sont saisis plusieurs fois : " + String.join(", ", dupCbs)
+            ));
+            return "/formNewFactLoca.xhtml?faces-redirect=true";
+        }
         //initialisation des services requis
         SvcFacture service =new SvcFacture();
         SvcFactureDetail serviceFD = new SvcFactureDetail();
@@ -282,8 +234,8 @@ public class FactureBean implements Serializable {
         boolean alreadyLoue = false;
         boolean missingExemplaire = false;
 
-        java.sql.Date today = new java.sql.Date(System.currentTimeMillis());
-        List<Tarif> tarifs = java.util.Collections.emptyList();
+        Date today = new Date(System.currentTimeMillis());
+        List<Tarif> tarifs = Collections.emptyList();
 
         if (!missingMagasin) {
             tarifs = serviceT.findTarifByMagasin(today, magasin);
@@ -291,7 +243,7 @@ public class FactureBean implements Serializable {
         }
 
         for (locationCustom lc : listLC) {
-            List<ExemplaireArticle> found = serviceEA.findOneByCodeBarre(lc.getCB()); // NOTE: method name spelled “Barre”
+            List<ExemplaireArticle> found = serviceEA.findOneByCodeBarre(lc.getCB());
             if (found == null || found.isEmpty()) {
                 missingExemplaire = true;
                 break;
@@ -313,7 +265,6 @@ public class FactureBean implements Serializable {
                 //crÃ©ation de la facture
                 fact.setDateDebut(timestampdebut);
                 fact.setNumeroFacture(createNumFact());
-                String path = "c:\\REVEcouture\\Facture\\"+fact.getNumeroFacture() + ".pdf";
                 fact.setEtat(FactureEtatEnum.en_cours);
                 fact.setType(FactureTypeEnum.Location);
                 fact.setMagasinIdMagasin(magasin);
@@ -336,9 +287,8 @@ public class FactureBean implements Serializable {
                 service.save(fact);
                 transaction.commit();
                 service.refreshEntity(fact);
-                MFB.creation(fact, magasin);
-
-                sendMessage(path,fact.getUtilisateurIdUtilisateur().getCourriel(),"Facture de location","vous trouverez la facture concernant votre location en piece jointe");
+                String path=MFB.creation(fact, magasin);
+                MailUtils.sendWithAttachment(fact.getUtilisateurIdUtilisateur().getCourriel(),"Facture de location","vous trouverez la facture concernant votre location en piece jointe",path);
                 return "/tableFactureLoca.xhtml?faces-redirect=true";
             }catch (Exception e){
                 log.error("Erreur pendant la creation de la facture ", e);
@@ -411,7 +361,6 @@ public class FactureBean implements Serializable {
             //création de la facture
             fact.setDateDebut(timestampfacture);
             fact.setNumeroFacture(createNumFact());
-            String path = "c:\\Facture\\"+fact.getNumeroFacture() + ".pdf";
             fact.setEtat(FactureEtatEnum.terminer);
             fact.setType(FactureTypeEnum.Penalite);
             fact.setMagasinIdMagasin(magasin);
@@ -444,8 +393,8 @@ public class FactureBean implements Serializable {
             transaction.commit();
             //refresh pour récupérer les collections associÃ©es
             service.refreshEntity(fact);
-            MFB.creation(fact,tarifsPenalites,factdetretard, magasin);
-            sendMessage(path,fact.getUtilisateurIdUtilisateur().getCourriel(),"Facture de pénalité","vous trouverez la facture concernant les pénalités suite a votre location en piece jointe");
+            String path = MFB.creation(fact,tarifsPenalites,factdetretard, magasin);
+            MailUtils.sendWithAttachment(fact.getUtilisateurIdUtilisateur().getCourriel(),"Facture de pénalité","vous trouverez la facture concernant les pénalités suite a votre location en piece jointe",path);
         }
         finally {
             //bloc pour gérer les erreurs lors de la transactions
@@ -614,14 +563,8 @@ public class FactureBean implements Serializable {
                 service.refreshEntity(fact);
 
                 ModelFactVente mfv = new ModelFactVente();
-                String pdfPath = mfv.creation(fact, magasin); // retourne "C:\\REVECouture\\facture\\FRC....pdf"
-
-                sendMessage(
-                        pdfPath,
-                        fact.getUtilisateurIdUtilisateur().getCourriel(),
-                        "Facture de vente",
-                        "Vous trouverez la facture concernant votre achat en pièce jointe."
-                );
+                String path = mfv.creation(fact, magasin); // retourne "C:\\REVECouture\\facture\\FRC....pdf"
+                MailUtils.sendWithAttachment(fact.getUtilisateurIdUtilisateur().getCourriel(),"Facture de vente","Vous trouverez la facture concernant votre achat en pièce jointe.",path);
 
                 FacesContext fc = FacesContext.getCurrentInstance();
                 fc.getExternalContext().getFlash().setKeepMessages(true);
@@ -660,119 +603,391 @@ public class FactureBean implements Serializable {
         }
     }
 
-    public String redirectChoix(){
+    public String redirectChoix() {
+        // Service pour récupérer l'exemplaire via le code-barres
         SvcExemplaireArticle serviceEA = new SvcExemplaireArticle();
-        exemplaireArticle = serviceEA.findOneByCodeBarre(CB).get(0);
-        tarifsPenalites= new ArrayList<>();
-        if (choixetat){
+        try {
+            List<ExemplaireArticle> found = serviceEA.findOneByCodeBarre(CB);
+            if (found == null || found.isEmpty()) {
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_INFO, "Erreur", "Exemplaire introuvable"));
+                return "";
+            }
+            exemplaireArticle = found.get(0);
+        } finally {
+            serviceEA.close();
+        }
 
+        tarifsPenalites = new ArrayList<>();
+
+        if (choixetat) {
+            // Chemin "constater l'état" : on va chercher la facture initiale + les pénalités applicables
             SvcFacture serviceF = new SvcFacture();
             SvcTarif serviceT = new SvcTarif();
             SvcTarifPenalite serviceTP = new SvcTarifPenalite();
-            List<Facture> facture1 = serviceF.findActiveByExemplaireArticle(exemplaireArticle);
-            if(facture1.isEmpty())
-            {
-                serviceT.close();
+            try {
+                List<Facture> facture1 = serviceF.findActiveByExemplaireArticle(exemplaireArticle);
+                if (facture1 == null || facture1.isEmpty()) {
+                    FacesContext fc = FacesContext.getCurrentInstance();
+                    fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "erreur", "facture initiale non trouvée"));
+                    return "";
+                } else {
+                    Date dateDebutFacture = facture1.get(0).getDateDebut();
+                    List<Tarif> tarifs = serviceT.findTarifByMagasin(dateDebutFacture, magasin);
+                    if (tarifs != null && !tarifs.isEmpty()) {
+                        tarifsPenalites = serviceTP.FindTarifPenaByTarifByArticle(
+                                dateDebutFacture, tarifs.get(0), exemplaireArticle.getArticleIdArticle());
+                    }
+                    return "/formEtatArticle.xhtml?faces-redirect=true";
+                }
+            } finally {
                 serviceTP.close();
-                serviceF.close();
-                FacesContext fc = FacesContext.getCurrentInstance();
-                fc.getExternalContext().getFlash().setKeepMessages(true);
-                fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"erreur","facture initialle non trouvee"));
-                return "";
-            }
-            else{
-                Date date = facture1.get(0).getDateDebut();
-                tarifsPenalites= serviceTP.FindTarifPenaByTarifByArticle(date,serviceT.findTarifByMagasin(date, magasin).get(0), exemplaireArticle.getArticleIdArticle());
                 serviceT.close();
-                serviceTP.close();
                 serviceF.close();
-                return "/formEtatArticle.xhtml?faces-redirect=true";
             }
-        }
-        else {
+        } else {
+            // Chemin "retour simple"
             return retourArticleLoca();
         }
     }
 
+
     // Méthode qui gere le retour des articles en location
-    public String retourArticleLoca(){
-        FactureDetail facturesDetail = new FactureDetail();
-        SvcExemplaireArticle serviceEL = new SvcExemplaireArticle();
-        Facture fact = new Facture();
-        long now =  System.currentTimeMillis();
+    public String retourArticleLoca() {
+        // Variables locales
+        FactureDetail        facturesDetail = null;
+        SvcExemplaireArticle serviceEL      = new SvcExemplaireArticle();
+        SvcReservation       serviceR       = new SvcReservation();     // service pour les réservations (FIFO)
+        Facture              fact           = new Facture();
+        long now = System.currentTimeMillis();
         long rounded = now - now % 60000;
         Timestamp timestampretour = new Timestamp(rounded);
-        boolean flag =false;
-        if (exemplaireArticle.getLoue())
-        {
-            for (FactureDetail fd : exemplaireArticle.getFactureDetails()){
+        boolean flag = false;
+
+        // Réservation promue (pour envoi mail après commit)
+        Reservation resPromo = null;
+        String mailDest = null;
+
+        // Vérifications de base
+        if (Boolean.TRUE.equals(exemplaireArticle.getLoue())) {
+            // Trouver le détail "ouvert" (sans DateRetour)
+            for (FactureDetail fd : exemplaireArticle.getFactureDetails()) {
                 if (fd.getDateRetour() == null) {
                     facturesDetail = fd;
-                    numMembre=fd.getFactureIdFacture().getUtilisateurIdUtilisateur().getCodeBarreIdCB().getCodeBarre();
-                    flag=true;
+                    // Récup du membre pour d’autres flux (inchangé)
+                    numMembre = fd.getFactureIdFacture()
+                            .getUtilisateurIdUtilisateur()
+                            .getCodeBarreIdCB()
+                            .getCodeBarre();
+                    flag = true;
+                    break;
                 }
             }
-            if (flag)
-            {
-                flag=false;
-                facturesDetail.setDateRetour(timestampretour);
-                if (facturesDetail.getDateRetour().after(facturesDetail.getDateFin()) || tarifsPenalites.size()>=1)
-                {
 
+            if (flag) {
+                flag = false;
+
+                // Marquer le retour sur le détail
+                facturesDetail.setDateRetour(timestampretour);
+
+                // Pénalité si retard OU si une pénalité a déjà été identifiée côté "état"
+                if (facturesDetail.getDateRetour().after(facturesDetail.getDateFin()) || (tarifsPenalites != null && !tarifsPenalites.isEmpty())) {
                     newFactPena(facturesDetail);
                 }
-                for (FactureDetail fd: facturesDetail.getFactureIdFacture().getFactureDetails())
-                {
+
+                // Si TOUS les détails ont une DateRetour => facture terminée
+                for (FactureDetail fd : facturesDetail.getFactureIdFacture().getFactureDetails()) {
                     if (fd.getDateRetour() == null) {
                         flag = true;
                         break;
                     }
                 }
-                if (!flag){
+                if (!flag) {
                     fact = facturesDetail.getFactureIdFacture();
                     fact.setEtat(FactureEtatEnum.terminer);
                 }
-                SvcFacture service = new SvcFacture();
+
+                // Transaction pour sauver le retour + (éventuelle) promo de réservation
+                SvcFacture service   = new SvcFacture();
                 SvcFactureDetail serviceFD = new SvcFactureDetail();
+                // Partager le même EM
                 serviceEL.setEm(service.getEm());
                 serviceFD.setEm(service.getEm());
+                serviceR .setEm(service.getEm());
+
                 EntityTransaction transaction = service.getTransaction();
                 transaction.begin();
                 try {
+                    // Libérer l'exemplaire (retour)
                     exemplaireArticle.setLoue(false);
-                    if (exemplaireArticle.getEtat()== ExemplaireArticleEtatEnum.Mauvais)
-                    {
+                    if (exemplaireArticle.getEtat() == ExemplaireArticleEtatEnum.Mauvais) {
                         exemplaireArticle.setActif(false);
                     }
                     serviceEL.save(exemplaireArticle);
+
+                    // Sauver le détail mis à jour
                     serviceFD.save(facturesDetail);
-                    if (fact.getEtat()==FactureEtatEnum.terminer){
+
+                    // Sauver la facture si terminée
+                    if (fact.getEtat() == FactureEtatEnum.terminer) {
                         service.save(fact);
                     }
+
+                    // ----------------------------------------------------
+                    // Promotion d'une réservation FIFO (si présente)
+                    // ----------------------------------------------------
+                    try {
+                        Reservation next = serviceR.findNextByArticleMagasin(
+                                exemplaireArticle.getArticleIdArticle(),
+                                exemplaireArticle.getMagasinIdMagasin()
+                        );
+                        if (next != null) {
+                            // Mettre de côté l'exemplaire
+                            exemplaireArticle.setReserve(true);
+                            serviceEL.save(exemplaireArticle);
+
+                            // Passer la réservation en "prêt"
+                            Date nowDate = new Date();
+                            Calendar cal = Calendar.getInstance();
+                            cal.setTime(nowDate);
+                            cal.add(Calendar.DAY_OF_MONTH, 3);
+
+                            next.setStatut(ReservationStatutEnum.pret);
+                            next.setExemplaire(exemplaireArticle);
+                            next.setDateReady(nowDate);
+                            next.setHoldUntil(cal.getTime());
+                            next.setMailEnvoye(false);
+
+                            serviceR.save(next);
+
+                            // Pour l'envoi post-commit
+                            resPromo = next;
+                            mailDest = next.getUtilisateurIdUtilisateur().getCourriel();
+                        }
+                    } catch (Exception ignore) {
+                        // En cas d'erreur de promotion, ne pas bloquer le retour
+                    }
+
+                    // Commit global
                     transaction.commit();
+
+                    // --------------------------------------------
+                    // Après commit : envoyer l'email de retrait
+                    // --------------------------------------------
+                    if (resPromo != null && mailDest != null) {
+                        try {
+                            String sujet = "Votre réservation est prête";
+                            String corps = "Bonjour,\n\nVotre article réservé est disponible au magasin " + magasin.getNom() + " pendant 3 jours.\n"
+                                    + "Article : " + resPromo.getArticleIdArticle().getNom() + "\n"
+                                    + "Date limite : " + new java.text.SimpleDateFormat("dd/MM/yyyy").format(resPromo.getHoldUntil()) + "\n\n"
+                                    + "Merci de votre confiance.";
+                            MailUtils.sendText(mailDest, sujet, corps);
+
+                            // Marquer 'mailEnvoye = true' dans une petite transaction séparée
+                            EntityTransaction tx2 = service.getTransaction();
+                            tx2.begin();
+                            try {
+                                resPromo.setMailEnvoye(true);
+                                serviceR.save(resPromo);
+                                tx2.commit();
+                            } catch (Exception e2) {
+                                if (tx2.isActive()) tx2.rollback();
+                                FacesContext.getCurrentInstance().addMessage(null,
+                                        new FacesMessage(FacesMessage.SEVERITY_WARN,
+                                                "Mail envoyé mais l’indicateur 'mail envoyé' n’a pas pu être enregistré.", null));
+                            }
+                        } catch (Exception mailEx) {
+                            FacesContext.getCurrentInstance().addMessage(null,
+                                    new FacesMessage(FacesMessage.SEVERITY_WARN,
+                                            "Réservation mise de côté, mais l’envoi du mail a échoué.", null));
+                        }
+                    }
+
+                    // Message succès
                     FacesContext fc = FacesContext.getCurrentInstance();
                     fc.getExternalContext().getFlash().setKeepMessages(true);
-                    fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"retour accepté",null));
+                    fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "retour accepté", null));
+
                 } finally {
+                    // Gestion rollback si nécessaire
                     if (transaction.isActive()) {
                         transaction.rollback();
                         FacesContext fc = FacesContext.getCurrentInstance();
-                        fc.addMessage("Erreur", new FacesMessage("l'operation n'est pas reussie"));
+                        fc.addMessage("Erreur", new FacesMessage("l'opération n'a pas réussi"));
                     }
+                    // Fermeture des services + flush donees
+                    serviceR.close();
+                    serviceFD.close();
                     service.close();
                     init();
                 }
+
             }
-        }
-        else
-        {
+        } else {
+            // Cas : pas loué
             FacesContext fc = FacesContext.getCurrentInstance();
             fc.getExternalContext().getFlash().setKeepMessages(true);
-            fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"l'article n'est pas loue",null));
+            fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "l'article n'est pas loué", null));
             init();
         }
+
         return "/tableFactureLoca.xhtml?faces-redirect=true";
     }
+
+
+    public String createFromReservation(Reservation r, Date dateFin) {
+
+        final long MILLIS_PAR_JOUR = 24L * 3600L * 1000L;
+
+        long now = 0L;
+        long rounded = 0L;
+        int nbJours = 1;
+        Date today; // sera éventuellement recalé
+        String pdfPath;
+        String retour;
+
+        Timestamp tsDebut;
+        Timestamp tsRetour;
+        Tarif T;
+        Facture fact;
+        FactureDetail fd;
+        ModelFactLoca mfb;
+        ExemplaireArticle ea;
+        List<Tarif> tarifs;
+
+        // ------------------------------------------------------------
+        // Services  + partage du même EM
+        // ------------------------------------------------------------
+
+        SvcFacture           service   = new SvcFacture();
+        SvcFactureDetail     serviceFD = new SvcFactureDetail();
+        SvcExemplaireArticle serviceEA = new SvcExemplaireArticle();
+        SvcReservation       serviceR  = new SvcReservation();
+        SvcTarif             serviceT  = new SvcTarif();
+
+        serviceFD.setEm(service.getEm());
+        serviceEA.setEm(service.getEm());
+        serviceR .setEm(service.getEm());
+        serviceT .setEm(service.getEm());
+
+        // ------------------------------------------------------------
+        // Garde-fous basiques
+        // ------------------------------------------------------------
+
+        if (r == null || r.getUtilisateurIdUtilisateur() == null
+                || r.getMagasinIdMagasin() == null || r.getExemplaire() == null) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_WARN,
+                            "Réservation incomplète (utilisateur, magasin ou exemplaire manquant).", null));
+            serviceT.close(); serviceR.close(); serviceEA.close(); serviceFD.close(); service.close();
+            return null;
+        }
+        ea = r.getExemplaire();
+        if (Boolean.TRUE.equals(ea.getLoue())) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_WARN, "L’exemplaire est déjà loué.", null));
+            serviceT.close(); serviceR.close(); serviceEA.close(); serviceFD.close(); service.close();
+            return null;
+        }
+
+        // ------------------------------------------------------------
+        // Préparation temps & nb jours
+        // ------------------------------------------------------------
+        now     = System.currentTimeMillis();
+        rounded = now - (now % 60000);                 // arrondi à la minute
+        tsDebut = new Timestamp(rounded);
+
+        if (dateFin == null || dateFin.getTime() <= tsDebut.getTime()) {
+            // défaut : 1 jour si non fourni ou incohérent
+            dateFin = new Date(tsDebut.getTime() + MILLIS_PAR_JOUR);
+        }
+        long diffMillis = dateFin.getTime() - tsDebut.getTime();
+        nbJours = (int) Math.max(1L, (diffMillis + MILLIS_PAR_JOUR - 1) / MILLIS_PAR_JOUR);
+        today   = new Date(System.currentTimeMillis());
+
+        // ------------------------------------------------------------
+        // Tarif actif
+        // ------------------------------------------------------------
+        tarifs = serviceT.findTarifByMagasin(today, r.getMagasinIdMagasin());
+        if (tarifs == null || tarifs.isEmpty()) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_WARN,
+                            "Aucun tarif actif pour ce magasin aujourd’hui.", null));
+            serviceT.close(); serviceR.close(); serviceEA.close(); serviceFD.close(); service.close();
+            return null;
+        }
+        T = tarifs.get(0);
+
+        // ------------------------------------------------------------
+        // Transaction
+        // ------------------------------------------------------------
+        EntityTransaction tx = service.getTransaction();
+        tx.begin();
+        try {
+            // creation de la facture
+            fact = new Facture();
+            fact.setDateDebut(tsDebut);
+            fact.setNumeroFacture(createNumFact());
+            fact.setEtat(enumeration.FactureEtatEnum.en_cours);
+            fact.setType(enumeration.FactureTypeEnum.Location);
+            fact.setMagasinIdMagasin(r.getMagasinIdMagasin());
+            fact.setUtilisateurIdUtilisateur(r.getUtilisateurIdUtilisateur());
+
+            // Détail avec tarification (newRent calcule le prix)
+            tsRetour = new Timestamp(tsDebut.getTime() + (nbJours * MILLIS_PAR_JOUR));
+            serviceEA.loueExemplaire(ea);
+
+            fd = serviceFD.newRent(ea, fact, T, nbJours, tsRetour);
+            serviceFD.save(fd);
+
+            // MAJ exemplaire
+            ea.setReserve(false);
+            ea.setLoue(true);
+            serviceEA.save(ea);
+
+            // Total TVAC (un seul détail ici)
+            fact.setPrixTVAC(fd.getPrix());
+
+            // Sauvegarde & clôture réservation
+            service.save(fact);
+            serviceR.markValide(r);
+
+            tx.commit();
+
+            // PDF + mail (post-commit)
+            service.refreshEntity(fact);
+            mfb     = new ModelFactLoca();
+            pdfPath = mfb.creation(fact, fact.getMagasinIdMagasin());
+
+            try {
+                String dest = fact.getUtilisateurIdUtilisateur().getCourriel();
+                MailUtils.sendWithAttachment(dest,
+                        "Facture de location",
+                        "Vous trouverez en pièce jointe la facture concernant votre location.",
+                        pdfPath);
+            } catch (Exception mailEx) {
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_WARN,
+                                "Facture créée, mais l’envoi d’e-mail a échoué.", null));
+            }
+
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_INFO,
+                            "Réservation convertie en facture de location.", null));
+            retour = "/tableFactureLoca.xhtml?faces-redirect=true";
+
+        } catch (Exception e) {
+            if (tx.isActive()) tx.rollback();
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                            "Erreur lors de la validation de la réservation.", null));
+            retour = null;
+        } finally {
+            serviceT.close(); serviceR.close(); serviceEA.close(); serviceFD.close(); service.close();
+        }
+        return retour;
+    }
+
 
     /*Méthode permettant de créer un numéro de facture avec FRC (facture REVEcouture) suivi de l'année, le mois et un nombre a 4 chiffres*/
     public String createNumFact()

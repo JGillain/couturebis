@@ -1,12 +1,20 @@
 package entities;
 
+import enumeration.ReservationStatutEnum;
+
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.time.Instant;
+import java.util.Date;
 import java.util.Objects;
 
 @Entity
 @Table(name = "reservation")
+@NamedQueries({
+        @NamedQuery(name = "Reservation.findAllActif", query = "SELECT r FROM Reservation r WHERE r.actif = TRUE ORDER BY r.statut, r.dateDemande, r.id"),
+        @NamedQuery(name = "Reservation.findNextByArticleMagasin",query = "SELECT r FROM Reservation r WHERE r.articleIdArticle = :article AND r.magasinIdMagasin = :magasin AND r.actif = TRUE AND r.statut = enumeration.ReservationStatutEnum.file ORDER BY r.dateDemande ASC, r.id ASC")
+})
 public class Reservation implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -36,6 +44,29 @@ public class Reservation implements Serializable {
     @ManyToOne
     @JoinColumn(name = "ArticleIdArticle", nullable = false)
     private Article articleIdArticle;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name="Statut", length=20, nullable=false)
+    private ReservationStatutEnum statut = ReservationStatutEnum.file;
+
+    @NotNull
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name="DateDemande", nullable=false)
+    private Date dateDemande = new Date();
+
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="ExemplaireArticleIdEA")
+    private ExemplaireArticle exemplaire; // null while in file
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name="DateReady")
+    private Date dateReady;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name="HoldUntil")
+    private Date holdUntil;
+
 
     public Integer getId() {
         return id;
@@ -83,6 +114,46 @@ public class Reservation implements Serializable {
 
     public void setArticleIdArticle(Article articleIdArticle) {
         this.articleIdArticle = articleIdArticle;
+    }
+
+    public ReservationStatutEnum getStatut() {
+        return statut;
+    }
+
+    public void setStatut(ReservationStatutEnum statut) {
+        this.statut = statut;
+    }
+
+    public Date getDateDemande() {
+        return dateDemande;
+    }
+
+    public void setDateDemande(Date dateDemande) {
+        this.dateDemande = dateDemande;
+    }
+
+    public ExemplaireArticle getExemplaire() {
+        return exemplaire;
+    }
+
+    public void setExemplaire(ExemplaireArticle exemplaire) {
+        this.exemplaire = exemplaire;
+    }
+
+    public Date getDateReady() {
+        return dateReady;
+    }
+
+    public void setDateReady(Date dateReady) {
+        this.dateReady = dateReady;
+    }
+
+    public Date getHoldUntil() {
+        return holdUntil;
+    }
+
+    public void setHoldUntil(Date holdUntil) {
+        this.holdUntil = holdUntil;
     }
 
     @Override

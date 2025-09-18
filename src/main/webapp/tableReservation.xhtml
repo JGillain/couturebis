@@ -1,0 +1,179 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:shiro="http://shiro.apache.org/tags"
+      xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="Template/template.xhtml">
+
+    <ui:define name="title">#{I18N['application.reservation.title']}</ui:define>
+
+    <ui:define name="content">
+        <h:form prependId="false">
+
+            <p:panel layout="block" id="content">
+                <p:growl id="growl" showDetail="true" sticky="true" />
+                <h2 style="text-align:center">#{I18N['application.reservation.title']}</h2>
+
+                <p:dataTable value="#{reservationBean.rows}"
+                             var="res"
+                             id="tableReservation"
+                             widgetVar="resTbl"
+                             class="table"
+                             headerClass="table-header"
+                             rowClasses="table-odd-row,table-even-row"
+                             rowStyleClass="#{res.actif ? '' : 'highlight-row'}"
+                             paginator="true"
+                             rows="10"
+                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                             currentPageReportTemplate="Page {currentPage} sur {totalPages}">
+
+                    <!-- Article -->
+                    <p:column>
+                        <f:facet name="header">#{I18N['Articles.label.denomination']}</f:facet>
+                        <h:outputText value="#{res.articleIdArticle.nom}" />
+                    </p:column>
+
+                    <!-- Magasin -->
+                    <p:column>
+                        <f:facet name="header">#{I18N['Magasin.label.nom']}</f:facet>
+                        <h:outputText value="#{res.magasinIdMagasin.nom}" />
+                    </p:column>
+
+                    <!-- Client -->
+                    <p:column>
+                        <f:facet name="header">#{I18N['utilisateur.label.client']}</f:facet>
+                        <h:outputText value="#{res.utilisateurIdUtilisateur.nom} #{res.utilisateurIdUtilisateur.prenom}" />
+                        <br/>
+                        <h:outputText value="#{res.utilisateurIdUtilisateur.courriel}" />
+                    </p:column>
+
+                    <!-- Statut -->
+                    <p:column>
+                        <f:facet name="header">#{I18N['Reservation.label.statut']}</f:facet>
+                        <h:outputText value="#{res.statut}" />
+                    </p:column>
+
+                    <!-- Dates -->
+                    <p:column>
+                        <f:facet name="header">#{I18N['Reservation.label.dates']}</f:facet>
+                        <h:panelGroup layout="block">
+                            <h:outputText value="#{I18N['Reservation.label.dateDemande']}: " />
+                            <h:outputText value="#{res.dateDemande}">
+                                <f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+                            </h:outputText>
+                        </h:panelGroup>
+                        <h:panelGroup layout="block" rendered="#{res.dateReady ne null}">
+                            <h:outputText value="#{I18N['Reservation.label.dateReady']}: " />
+                            <h:outputText value="#{res.dateReady}">
+                                <f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+                            </h:outputText>
+                        </h:panelGroup>
+                        <h:panelGroup layout="block" rendered="#{res.holdUntil ne null}">
+                            <h:outputText value="#{I18N['Reservation.label.holdUntil']}: " />
+                            <h:outputText value="#{res.holdUntil}">
+                                <f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+                            </h:outputText>
+                        </h:panelGroup>
+                    </p:column>
+
+                    <!-- Exemplaire / Code-barres (si prêt) -->
+                    <p:column>
+                        <f:facet name="header">#{I18N['ExemplairesArticles.label.CodeBarre']}</f:facet>
+                        <h:outputText rendered="#{res.exemplaire ne null}"
+                                      value="#{res.exemplaire.codeBarreIdCB != null ? res.exemplaire.codeBarreIdCB.codeBarre : res.article.codeBarreIdCB.codeBarre}" />
+                        <h:outputText rendered="#{res.exemplaire eq null}" value="—" />
+                    </p:column>
+
+                    <!-- Actions -->
+                    <p:column>
+                        <!-- Valider (ouvre un petit dialogue pour choisir DateFin) -->
+                        <p:commandButton icon="pi pi-check-circle"
+                                         value="#{I18N['application.button.validate']}"
+                                         rendered="#{res.statut eq 'pret'}"
+                                         update=":dlgFulfill :growl"
+                                         oncomplete="PF('dlgFulfillWV').show()">
+                            <f:setPropertyActionListener target="#{reservationBean.selected}" value="#{res}" />
+                        </p:commandButton>
+
+                        <!-- Annuler -->
+                        <p:commandButton icon="pi pi-times"
+                                         value="#{I18N['application.button.cancel']}"
+                                         rendered="#{res.statut eq 'file' or res.statut eq 'pret'}"
+                                         actionListener="#{reservationBean.cancelReservation(res)}"
+                                         update="@form :growl" />
+
+                        <!-- Expirer -->
+                        <p:commandButton icon="pi pi-clock"
+                                         value="#{I18N['Reservation.button.expire']}"
+                                         rendered="#{res.statut eq 'pret'}"
+                                         actionListener="#{reservationBean.expireReservation(res)}"
+                                         update="@form :growl" />
+                    </p:column>
+
+                    <!-- Hidden/filterable columns if needed later -->
+                    <p:column id="statutCol"
+                              filterBy="#{res.statut}"
+                              filterMatchMode="exact"
+                              style="display:none"/>
+                    <p:column id="actifCol"
+                              filterBy="#{res.actif}"
+                              filterMatchMode="exact"
+                              style="display:none"/>
+                </p:dataTable>
+            </p:panel>
+
+            <!-- Fulfill dialog (choose DateFin, then call bean) -->
+            <p:dialog id="dlgFulfill" widgetVar="dlgFulfillWV" header="#{I18N['Reservation.dialog.fulfill.title']}"
+                      modal="true" closable="true" resizable="false" width="420">
+                <h:panelGrid columns="2" columnClasses="col1Newrec,col2Newrec" cellpadding="5">
+                    <h:outputText value="#{I18N['Reservation.label.dateFin']}" />
+                    <p:calendar value="#{reservationBean.dateFin}"
+                                pattern="dd/MM/yyyy HH:mm"
+                                showTime="true" hourFormat="24"
+                                required="true"
+                                requiredMessage="#{I18N['formulaire.message.required.date']}" />
+                </h:panelGrid>
+                <h:panelGroup layout="block" style="text-align:right; margin-top:1rem">
+                    <p:commandButton icon="pi pi-check"
+                                     value="#{I18N['application.button.validate']}"
+                                     actionListener="#{factureBean.createFromReservation(reservationBean.selected, reservationBean.dateFin)}"
+                                     update=":tableReservation :growl"
+                                     oncomplete="PF('dlgFulfillWV').hide()"/>
+                    <p:commandButton icon="pi pi-times"
+                                     type="button"
+                                     value="#{I18N['application.button.cancel']}"
+                                     onclick="PF('dlgFulfillWV').hide()" />
+                </h:panelGroup>
+            </p:dialog>
+
+            <h:panelGroup layout="block" styleClass="button-bar">
+                <h:panelGroup styleClass="left-buttons">
+                    <p:commandButton icon="pi pi-plus"
+                                     value="#{I18N['application.button.new']}"
+                                     action="formNewReservation.xhtml?faces-redirect=true" />
+                </h:panelGroup>
+                <h:panelGroup styleClass="right-buttons">
+                    <p:commandButton icon="pi pi-home"
+                                     value="#{I18N['application.button.returnbienvenue']}"
+                                     action="#{reservationBean.refresh}" ajax="false"/>
+                </h:panelGroup>
+            </h:panelGroup>
+
+            <h:outputScript target="body">
+                function setStatutFilter(val){
+                    var tbl = PF('resTbl');
+                    tbl.clearFilters();
+                    $(PrimeFaces.escapeClientId('tableReservation:statutCol:filter')).val(val);
+                    tbl.filter();
+                }
+            </h:outputScript>
+
+        </h:form>
+    </ui:define>
+</ui:composition>
+</html>

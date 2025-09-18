@@ -1,4 +1,4 @@
-package pdfTools;
+package tools;
 
 import entities.Facture;
 import entities.FactureDetail;
@@ -14,10 +14,8 @@ import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 
-import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
 
 public class ModelFactVente implements java.io.Serializable {
 
@@ -47,21 +45,21 @@ public class ModelFactVente implements java.io.Serializable {
             return "Erreur";
         }
 
-        String numfacture = safe(fact.getNumeroFacture());
+        String numfacture = PdfUtils.safe(fact.getNumeroFacture());
         String outputPdf  = OUT_DIR + numfacture + ".pdf";
         String today = new java.text.SimpleDateFormat("dd/MM/yyyy").format(new java.util.Date());
 
         // --- Infos client (compact, 3 lignes max) ---
         Utilisateur cli = fact.getUtilisateurIdUtilisateur();
-        String nomPrenom = (cli == null) ? "" : (safe(cli.getNom()) + " " + safe(cli.getPrenom())).trim();
+        String nomPrenom = (cli == null) ? "" : (PdfUtils.safe(cli.getNom()) + " " + PdfUtils.safe(cli.getPrenom())).trim();
         String adr1 = "", adr2 = "";
         if (cli != null && cli.getUtilisateurAdresse() != null) {
             for (UtilisateurAdresse ua : cli.getUtilisateurAdresse()) {
                 if (ua.getActif() != null && ua.getActif()) {
                     String boite = (ua.getAdresseIdAdresse().getBoite() == null) ? "" : (" " + ua.getAdresseIdAdresse().getBoite());
-                    adr1 = safe(ua.getAdresseIdAdresse().getRue()) + " " + safe(ua.getAdresseIdAdresse().getNumero()) + boite;
-                    adr2 = safe(String.valueOf(ua.getAdresseIdAdresse().getLocaliteIdLocalite().getCp())) + " "
-                            + safe(ua.getAdresseIdAdresse().getLocaliteIdLocalite().getVille());
+                    adr1 = PdfUtils.safe(ua.getAdresseIdAdresse().getRue()) + " " + PdfUtils.safe(ua.getAdresseIdAdresse().getNumero()) + boite;
+                    adr2 = PdfUtils.safe(String.valueOf(ua.getAdresseIdAdresse().getLocaliteIdLocalite().getCp())) + " "
+                            + PdfUtils.safe(ua.getAdresseIdAdresse().getLocaliteIdLocalite().getVille());
                     break;
                 }
             }
@@ -70,19 +68,19 @@ public class ModelFactVente implements java.io.Serializable {
         double total = (fact.getPrixTVAC() == null) ? 0d : fact.getPrixTVAC();
 
         // --- Constantes de mise en page ---
-        final float START_X        = 80f;
-        final float PRICE_COL_X    = 475f; // position du texte "Prix" et des montants
-        final float COL_LINE_X     = 450f; // position de la règle verticale
-        final float HEADER_Y_FIRST = 600f; // en-tête (page 1)
-        final float HEADER_Y_CONT  = 750f; // en-tête (pages suivantes)
-        final float Y_START_FIRST  = 455f; // "Articles vendus :" (page 1)
-        final float Y_START_CONT   = 680f; // "Articles vendus :" (pages suivantes)
-        final float COL_LINE_TOP_OFF = 12f; // démarre la règle 12pt sous le libellé
-        final float LINE_GAP       = 16f;
-        final float GUARD_INTER    = 60f;   // garde basse pour pages intermédiaires
-        final float FOOTER_TOP_Y   = 260f;  // Y du séparateur pied de page
-        final float FOOTER_RESERVE = 24f;   // marge de confort au-dessus du pied
-        final float ITEM_EXTRA_GAP = 8f;
+        final float START_X         = 80f;
+        final float PRICE_COL_X     = 475f; // colonne des montants
+        final float COL_LINE_X      = 450f; // règle verticale
+        final float HEADER_Y_FIRST  = 600f; // en-tête (page 1)
+        final float HEADER_Y_CONT   = 750f; // en-tête (pages suivantes)
+        final float Y_START_FIRST   = 455f; // "Articles vendus :" (page 1)
+        final float Y_START_CONT    = 680f; // "Articles vendus :" (pages suivantes)
+        final float COL_LINE_TOP_OFF= 12f;  // règle démarre 12pt sous le libellé
+        final float LINE_GAP        = 16f;
+        final float GUARD_INTER     = 60f;  // garde basse pour pages intermédiaires
+        final float FOOTER_TOP_Y    = 260f; // Y du séparateur pied de page
+        final float FOOTER_RESERVE  = 24f;  // marge de confort au-dessus du pied
+        final float ITEM_EXTRA_GAP  = 8f;
 
         try (PDDocument doc = new PDDocument()) {
             // Polices
@@ -115,21 +113,21 @@ public class ModelFactVente implements java.io.Serializable {
             cs.setNonStrokingColor(java.awt.Color.BLACK);
             cs.setLeading(24.5f);
             cs.newLineAtOffset(198, 725);
-            cs.showText(safe(magasin.getNom()));
+            cs.showText(PdfUtils.safe(magasin.getNom()));
             cs.newLine();
             cs.setFont(fontTitle, 10f);
             cs.setLeading(14.5f);
-            String l1 = safe(magasin.getAdresseIdAdresse().getRue()) + " "
-                    + safe(magasin.getAdresseIdAdresse().getNumero()) + " "
-                    + safe(String.valueOf(magasin.getAdresseIdAdresse().getLocaliteIdLocalite().getCp())) + " "
-                    + safe(magasin.getAdresseIdAdresse().getLocaliteIdLocalite().getVille());
+            String l1 = PdfUtils.safe(magasin.getAdresseIdAdresse().getRue()) + " "
+                    + PdfUtils.safe(magasin.getAdresseIdAdresse().getNumero()) + " "
+                    + PdfUtils.safe(String.valueOf(magasin.getAdresseIdAdresse().getLocaliteIdLocalite().getCp())) + " "
+                    + PdfUtils.safe(magasin.getAdresseIdAdresse().getLocaliteIdLocalite().getVille());
             cs.showText(l1);
             cs.newLine();
             cs.showText("TVA: BE0448.150.750 - Tel: 071 35 44 71");
             cs.endText();
 
             // Cadre client + libellés (wrap simple)
-            Encadrement.creation(cs, 350, 615, 200, 80);
+            PdfUtils.cadreCreation(cs, 350, 615, 200, 80);
             final float boxW = 200f, maxWidth = boxW - 16f;
             cs.beginText();
             cs.setLeading(12.5f);
@@ -140,7 +138,7 @@ public class ModelFactVente implements java.io.Serializable {
             cs.setFont(fontText, 10f);
             for (String src : new String[]{nomPrenom, adr1, adr2}) {
                 if (src == null || src.isEmpty()) continue;
-                for (String line : wrap(src, fontText, 10f, maxWidth)) {
+                for (String line : PdfUtils.wrap(src, fontText, 10f, maxWidth)) {
                     cs.showText(line);
                     cs.newLine();
                 }
@@ -157,7 +155,7 @@ public class ModelFactVente implements java.io.Serializable {
             cs.showText("créée le " + today);
             cs.endText();
 
-            // Libellés de colonnes (page 1)
+            // Libellés colonnes (page 1)
             cs.beginText();
             cs.setFont(fontBold, 12f);
             cs.newLineAtOffset(START_X, Y_START_FIRST);
@@ -167,57 +165,84 @@ public class ModelFactVente implements java.io.Serializable {
             cs.beginText();
             cs.setFont(fontBold, 12f);
             cs.newLineAtOffset(PRICE_COL_X, Y_START_FIRST);
-            cs.showText("Prix");
+            cs.showText("Prix (€)");
             cs.endText();
 
-            // On mémorise le haut de la règle pour cette page
             float currentYStart = Y_START_FIRST;
             float colLineTop = currentYStart - COL_LINE_TOP_OFF;
 
-            // Position courante d’écriture des lignes d’articles
             float y = currentYStart - (LINE_GAP * 2);
             float leftWidth = PRICE_COL_X - START_X - 12f;
 
-            // Itérateur des lignes
-            java.util.Iterator<FactureDetail> it =
-                    (fact.getFactureDetails() == null)
-                            ? java.util.Collections.<FactureDetail>emptyList().iterator()
-                            : fact.getFactureDetails().iterator();
+            // ============================================================
+            // REGROUPEMENT : clé = libellé "nom — modèle — fabricant"
+            // ============================================================
+            java.util.LinkedHashMap<String, int[]> qtyByKey   = new java.util.LinkedHashMap<>();
+            java.util.LinkedHashMap<String, Double> sumByKey  = new java.util.LinkedHashMap<>();
+            java.util.LinkedHashMap<String, String> descByKey = new java.util.LinkedHashMap<>();
+            java.util.List<FactureDetail> details = (fact.getFactureDetails() == null)
+                    ? java.util.Collections.<FactureDetail>emptyList()
+                    : new java.util.ArrayList<>(fact.getFactureDetails());
 
-            // --- Boucle d’impression avec pagination et deux gardes ---
-            while (it.hasNext()) {
-                FactureDetail fd = it.next();
-                boolean lastItem = !it.hasNext(); // vrai si c’est la DERNIÈRE ligne de toute la facture
-
-                // Prépare le descriptif (nom — modèle — fabricant)
+            for (FactureDetail fd : details) {
                 entities.Article a = fd.getExemplaireArticleIdEA().getArticleIdArticle();
-                String nom   = safe(a.getNom());
-                String model = safe(a.getNumSerie());
-                String fab   = (a.getFabricantIdFabricant() != null) ? safe(a.getFabricantIdFabricant().getNom()) : "";
-                String desc  = joinWithDash(nom, model, fab);
+                String nom   = PdfUtils.safe(a.getNom());
+                String model = PdfUtils.safe(a.getNumSerie());
+                String fab   = (a.getFabricantIdFabricant() != null) ? PdfUtils.safe(a.getFabricantIdFabricant().getNom()) : "";
+                String key   = PdfUtils.joinWithDash(nom, model, fab);
 
-                java.util.List<String> lines = wrap(desc, fontText, 11f, leftWidth);
-                if (lines.isEmpty()) lines = java.util.Collections.singletonList("");
+                double unit = (fd.getPrix() == null)
+                        ? ((a.getPrix() == null) ? 0d : a.getPrix())
+                        : fd.getPrix();
 
-                float needed = lines.size() * LINE_GAP + ITEM_EXTRA_GAP;
+                // quantité
+                int[] box = qtyByKey.get(key);
+                if (box == null) {
+                    qtyByKey.put(key, new int[]{1});
+                    sumByKey.put(key, unit);
+                    descByKey.put(key, key);
+                } else {
+                    box[0] += 1;
+                    sumByKey.put(key, sumByKey.get(key) + unit);
+                }
+            }
 
-                // --- Choisit la garde basse selon si on est sur la dernière ligne globale ---
+            // Liste ordonnée des clés (dans l’ordre d’insertion)
+            java.util.List<String> keys = new java.util.ArrayList<>(qtyByKey.keySet());
+
+            // ============================================================
+            // IMPRESSION des groupes (2 lignes par groupe + wraps)
+            // ============================================================
+            for (int idx = 0; idx < keys.size(); idx++) {
+                String key = keys.get(idx);
+                boolean lastItem = (idx == keys.size() - 1);
+
+                int qty = qtyByKey.get(key)[0];
+                double sum = sumByKey.get(key);
+                double unit = (qty > 0) ? (sum / qty) : 0d;
+
+                // Lignes de description (ligne 2, potentiellement multi-lignes)
+                java.util.List<String> descLines = PdfUtils.wrap(descByKey.get(key), fontText, 11f, leftWidth);
+                if (descLines.isEmpty()) descLines = java.util.Collections.singletonList("");
+
+                // Hauteur nécessaire : 1 ligne (Quantité) + nbLignes(desc) + marge
+                float needed = (1 + descLines.size()) * LINE_GAP + ITEM_EXTRA_GAP;
+
                 float guard = lastItem ? (FOOTER_TOP_Y + FOOTER_RESERVE) : GUARD_INTER;
-
-                // Pas assez de place -> on termine la page courante et on en ouvre une nouvelle
                 if (y - needed < guard) {
-                    // trace la règle de prix de cette page jusqu’à la bonne borne basse
+                    // Clore la règle verticale de cette page
                     cs.setLineWidth(1);
                     cs.moveTo(COL_LINE_X, colLineTop);
                     cs.lineTo(COL_LINE_X, GUARD_INTER);
                     cs.closeAndStroke();
 
+                    // Nouvelle page
                     cs.close();
                     page = new PDPage();
                     doc.addPage(page);
                     cs = new PDPageContentStream(doc, page);
 
-                    // Petit en-tête sur pages suivantes
+                    // Petit en-tête
                     cs.beginText();
                     cs.setFont(fontBold, 12f);
                     cs.setLeading(14.5f);
@@ -227,11 +252,11 @@ public class ModelFactVente implements java.io.Serializable {
                     cs.showText("créée le " + today);
                     cs.endText();
 
-                    // Libellés colonnes sur pages suivantes
+                    // Libellés colonnes
                     cs.beginText();
                     cs.setFont(fontBold, 12f);
                     cs.newLineAtOffset(START_X, Y_START_CONT);
-                    cs.showText("Articles vendus :");
+                    cs.showText("Articles vendus ");
                     cs.endText();
 
                     cs.beginText();
@@ -245,39 +270,53 @@ public class ModelFactVente implements java.io.Serializable {
                     y = currentYStart - (LINE_GAP * 2);
                 }
 
-                // Dessine la/les ligne(s) + prix (sur la première ligne seulement)
-                for (int i = 0; i < lines.size(); i++) {
+                // --- Ligne 1 : "Quantité : N"  |  "N × prix_unitaire"
+                cs.beginText();
+                cs.setFont(fontText, 11f);
+                cs.newLineAtOffset(START_X, y);
+                cs.showText("Quantité : " + qty);
+                cs.endText();
+
+                String right1 = qty + " \u00D7 " + String.format(java.util.Locale.US, "%.2f", unit);
+                cs.beginText();
+                cs.setFont(fontText, 11f);
+                cs.newLineAtOffset(PRICE_COL_X, y);
+                cs.showText(right1);
+                cs.endText();
+                y -= LINE_GAP;
+
+                // --- Ligne 2..n : description (wrap)  |  ligne 2 -> "= total"
+                for (int i = 0; i < descLines.size(); i++) {
                     cs.beginText();
                     cs.setFont(fontText, 11f);
                     cs.newLineAtOffset(START_X, y);
-                    cs.showText(lines.get(i));
+                    cs.showText(descLines.get(i));
                     cs.endText();
 
                     if (i == 0) {
+                        String right2 = "= " + String.format(java.util.Locale.US, "%.2f", sum);
                         cs.beginText();
                         cs.setFont(fontText, 11f);
                         cs.newLineAtOffset(PRICE_COL_X, y);
-                        cs.showText(String.format(java.util.Locale.US, "%.2f", (fd.getPrix() == null ? 0d : fd.getPrix())));
+                        cs.showText(right2);
                         cs.endText();
                     }
                     y -= LINE_GAP;
                 }
-                y -= ITEM_EXTRA_GAP; // petit espace entre items
+
+                y -= ITEM_EXTRA_GAP; // espace entre groupes
             }
 
-            // --- Fin de la dernière page : règle + pied + totaux ---
-            // Règle jusqu’au séparateur du pied de page
+            // --- Dernière page : règle + pied + totaux ---
             cs.setLineWidth(1);
             cs.moveTo(COL_LINE_X, colLineTop);
             cs.lineTo(COL_LINE_X, FOOTER_TOP_Y);
             cs.closeAndStroke();
 
-            // Séparateur horizontal du pied
             cs.setNonStrokingColor(java.awt.Color.BLACK);
             cs.addRect(57, FOOTER_TOP_Y, 500, 2);
             cs.fill();
 
-            // Total
             cs.beginText();
             cs.setFont(fontText, 12f);
             cs.setLeading(17.5f);
@@ -292,7 +331,6 @@ public class ModelFactVente implements java.io.Serializable {
             cs.showText(String.format(java.util.Locale.US, "%.2f €", total));
             cs.endText();
 
-            // Conditions
             cs.setNonStrokingColor(java.awt.Color.RED);
             cs.addRect(57, 100, 500, 2);
             cs.fill();
@@ -321,37 +359,7 @@ public class ModelFactVente implements java.io.Serializable {
         }
     }
 
+
     /* ---- local helpers (kept inside the class) ---- */
 
-    private static String safe(String s) {
-        return (s == null) ? "" : s;
-    }
-
-    private static List<String> wrap(String text, PDFont font, float fontSize, float maxWidth) throws IOException {
-        List<String> out = new ArrayList<>();
-        if (text == null) return out;
-        String[] words = text.split("\\s+");
-        StringBuilder line = new StringBuilder();
-        for (String w : words) {
-            String trial = (line.length() == 0) ? w : line + " " + w;
-            float wpt = font.getStringWidth(trial) / 1000f * fontSize;
-            if (wpt <= maxWidth) {
-                line.setLength(0);
-                line.append(trial);
-            } else {
-                if (line.length() > 0) out.add(line.toString());
-                line.setLength(0);
-                line.append(w);
-            }
-        }
-        if (line.length() > 0) out.add(line.toString());
-        if (out.isEmpty()) out.add("");
-        return out;
-    }
-
-    private static String joinWithDash(String... parts) {
-        List<String> list = new ArrayList<>();
-        for (String p : parts) if (p != null && !p.trim().isEmpty()) list.add(p.trim());
-        return String.join(" — ", list);
-    }
 }

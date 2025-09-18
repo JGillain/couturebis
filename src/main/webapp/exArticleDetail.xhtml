@@ -16,12 +16,15 @@
             <h:head>
                 <title>détails de l'exemplaire article</title>
             </h:head>
-            <h2 style="text-align:center">détails de de l'exemplaire article</h2>
+            <h2 style="text-align:center">détails de l'exemplaire article</h2>
 
             <p:panelGrid id="newrecform" columns="2" columnClasses="col1Newrec,col2Newrec">
 
                 <p:outputLabel value="#{I18N['ExemplairesArticles.label.Article']}"/>
                 <p:outputLabel value="#{exemplaireArticleBean.EA.articleIdArticle.nom}"/>
+
+                <p:outputLabel value="#{I18N['ExemplairesArticles.label.CodeBarre']}"/>
+                <p:outputLabel value="#{exemplaireArticleBean.EA.statut eq 'Vente' ? exemplaireArticleBean.EA.articleIdArticle.codeBarreIdCB.codeBarre : exemplaireArticleBean.EA.codeBarreIdCB.codeBarre}"/>
 
                 <p:outputLabel value="#{I18N['ExemplairesArticles.label.liste.Status']}"/>
                 <p:outputLabel value="#{exemplaireArticleBean.EA.statut.label}"/>
@@ -33,10 +36,10 @@
                 <p:outputLabel value = "#{exemplaireArticleBean.EA.commentaireEtat}"/>
 
                 <p:outputLabel value="#{I18N['ExemplairesArticles.label.Loue']}"/>
-                <p:outputLabel value="#{exemplaireArticleBean.EA.loue ? 'non' : 'oui'}"/>
+                <p:outputLabel value="#{exemplaireArticleBean.EA.loue ? 'oui' : 'non'}"/>
 
-                <p:outputLabel value="#{I18N['ExemplairesArticles.label.reserve']}"/>}
-                <p:outputLabel value="#{exemplaireArticleBean.EA.reserve ? 'non' : 'oui'}"/>
+                <p:outputLabel value="#{I18N['ExemplairesArticles.label.reserve']}"/>
+                <p:outputLabel value="#{exemplaireArticleBean.EA.reserve ? 'oui' : 'non'}"/>
 
             </p:panelGrid>
 

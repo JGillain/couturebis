@@ -17,9 +17,11 @@ import java.util.Objects;
                 @NamedQuery(name = "Article.findInactive", query = "SELECT A FROM Article A WHERE A.actif=FALSE"),
                 @NamedQuery(name = "Article.searchTri", query="SELECT A FROM Article A WHERE A.nom=:nom ORDER BY A.nom ASC"),//A verifier
                 @NamedQuery(name = "Article.findByFabricant", query = "SELECT A FROM Article A WHERE A.fabricantIdFabricant=:fab"),
+                @NamedQuery(name = "Article.findByCategorie", query = "SELECT A FROM Article A WHERE A.categorieIdCategorie=:cat"),
                 @NamedQuery(name = "Article.findByNumserie", query = "SELECT A FROM Article A WHERE A.numSerie=:numserie"),
                 @NamedQuery(name = "Article.findOneByCodeBarre", query="SELECT A FROM Article A WHERE A.codeBarreIdCB.codeBarre=:CB"),
                 @NamedQuery(name = "Article.search", query="SELECT A FROM Article A WHERE A.nom=:nom"),
+                @NamedQuery(name = "Article.findOneByDetails", query="SELECT A FROM Article A WHERE A.nom=:nom AND A.fabricantIdFabricant=:fabricant AND A.numSerie=:numSerie AND A.id<>:id"),
         })
 public class Article implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -35,7 +37,7 @@ public class Article implements Serializable {
 
     @NotNull
     @Column(name = "Actif", nullable = false)
-    private Boolean actif = false;
+    private Boolean actif = true;
 
     @NotNull
     @Column(name = "Prix", nullable = false)
@@ -142,7 +144,9 @@ public class Article implements Serializable {
     public Integer getStockMin() {
         return stockMin;
     }
-    public void setStockMin(Integer stockMin) {}
+    public void setStockMin(Integer stockMin) {
+        this.stockMin = stockMin;
+    }
 
     @Override
     public boolean equals(Object o) {

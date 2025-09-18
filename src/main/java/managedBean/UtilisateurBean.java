@@ -326,8 +326,7 @@ public class UtilisateurBean implements Serializable {
             // Normalisation du nom
             utilisateur.setNom(cap(utilisateur.getNom()));
             utilisateur.setPrenom(cap(utilisateur.getPrenom()));
-            // chiffrage du mot de passe
-            utilisateur.setMdp(SecurityManager.encryptPassword(utilisateur.getMdp()));
+
             // Duplicate checks
             boolean dupIdentity = !svcU.findDuplicate(utilisateur, adresses).isEmpty();
             boolean dupEmail = utilisateur.getCourriel() != null
@@ -340,6 +339,16 @@ public class UtilisateurBean implements Serializable {
                         dupEmail ? "L’e-mail est déjà utilisé." : "Un utilisateur identique existe déjà.",
                         null));
                 return null; //affiche erreur sans quitter la page
+            }
+            //verification supplementaires
+            if (role == null || role.getId() == null) {
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_WARN, "Choisissez un rôle (Employé ou Manager).", null));
+                return null;
+            }
+            // chiffrage du mot de passe
+            if (utilisateur.getId() == null) {
+                utilisateur.setMdp(SecurityManager.encryptPassword(utilisateur.getMdp()));
             }
 
             // 3) UA: reutilise si meme adresse, sinon cree nouveau. garde seulement l'adresse renseignee comme active
@@ -357,11 +366,7 @@ public class UtilisateurBean implements Serializable {
             UA.setActif(true); // others will be turned off in saveUtilisateur()
 
             // 4) UR: selected employment role (EMPLOYE or MANAGER)
-            if (role == null || role.getId() == null) {
-                FacesContext.getCurrentInstance().addMessage(null,
-                        new FacesMessage(FacesMessage.SEVERITY_WARN, "Choisissez un rôle (Employé ou Manager).", null));
-                return null;
-            }
+
             UR = null;
             if (utilisateur.getUtilisateurRole() != null) {
                 UR = utilisateur.getUtilisateurRole().stream()

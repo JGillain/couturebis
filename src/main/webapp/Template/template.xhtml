@@ -28,8 +28,42 @@
 		<ui:insert name="footer">
 			<ui:include src="footer.xhtml" />
 		</ui:insert>
-		
 
+        <h:outputScript target="body">
+            function toggleBoolFilter(tblWidgetVar, filterClientId, desiredVal, thisBtnId, otherBtnIds){
+                var $input = $(PrimeFaces.escapeClientId(filterClientId));
+                var isSame = $input.val() === String(desiredVal);
+
+                // toggle value
+                $input.val(isSame ? '' : String(desiredVal));
+                PF(tblWidgetVar).filter();
+
+                // toggle button highlight
+                var $thisBtn = $(PrimeFaces.escapeClientId(thisBtnId));
+                $thisBtn.toggleClass('ui-state-active', !isSame);
+
+                // clear highlight on the other buttons (optional array)
+                if (otherBtnIds &amp;&amp; otherBtnIds.length){
+                    otherBtnIds.forEach(function(id){
+                        $(PrimeFaces.escapeClientId(id)).removeClass('ui-state-active');
+                    });
+                }
+            }
+            function toggleEnumFilter(tblWidgetVar, filterClientId, desiredVal, thisBtnId, otherBtnIds){
+                var $input = $(PrimeFaces.escapeClientId(filterClientId));
+                var same  = $input.val() === String(desiredVal);
+                $input.val(same ? '' : String(desiredVal));
+                PF(tblWidgetVar).filter();
+
+                var $thisBtn = $(PrimeFaces.escapeClientId(thisBtnId));
+                $thisBtn.toggleClass('ui-state-active', !same);
+                if (otherBtnIds &amp;&amp; otherBtnIds.length){
+                    otherBtnIds.forEach(function(id){
+                        $(PrimeFaces.escapeClientId(id)).removeClass('ui-state-active');
+                    });
+                }
+            }
+        </h:outputScript>
 	</p:panel>
 </h:body>
 </html>

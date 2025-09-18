@@ -16,7 +16,7 @@
             <h:head>
                 <title>Modification de l'exemplaire article</title>
             </h:head>
-            <h2 style="text-align:center">Modification de l'exemplaire article</h2>
+            <h2 style="text-align:center">Modification de l'exemplaire article </h2>
 
             <p:panelGrid id="newrecform" columns="3" columnClasses="col1Newrec,col2Newrec,col3Newrec">
 
@@ -34,9 +34,8 @@
                 <h:message for="articleSelect" styleClass="errorMessage"/>
 
                 <p:outputLabel value="#{I18N['ExemplairesArticles.label.Etat']}"/>
-                <p:selectOneMenu id="etat" value="#{exemplaireArticleBean.flagVente}" required="true">
-                    <f:selectItem itemLabel="#{I18N['ExemplairesArticles.statut.location']}" itemValue="False"/>
-                    <f:selectItem itemLabel="#{I18N['ExemplairesArticles.statut.vente']}" itemValue="True"/>
+                <p:selectOneMenu disabled="true" id="etat" value="#{exemplaireArticleBean.EA.etat}" required="true">
+                    <f:selectItems value="#{exemplaireArticleEnumBean.etatEnum}" />
                 </p:selectOneMenu>
                 <h:message for="etat" styleClass="errorMessage"/>
 
@@ -52,9 +51,13 @@
                 <p:toggleSwitch id="loue" value="#{exemplaireArticleBean.EA.loue}" disabled="true"/>
                 <h:message for="loue" styleClass="errorMessage"/>
 
+                <p:outputLabel value="#{I18N['ExemplairesArticles.label.CodeBarre']}"/>
+                <p:outputLabel id="statut" value="#{exemplaireArticleBean.EA.statut eq 'Vente' ? exemplaireArticleBean.EA.articleIdArticle.codeBarreIdCB.codeBarre : exemplaireArticleBean.EA.codeBarreIdCB.codeBarre}"/>
+                <h:message for="statut" styleClass="errorMessage"/>
+
                 <p:outputLabel value="Reservé"/>
                 <p:toggleSwitch id="reserve" value="#{exemplaireArticleBean.EA.reserve}" disabled="true"/>
-                <h:message for="loue" styleClass="errorMessage"/>
+                <h:message for="reserve" styleClass="errorMessage"/>
 
                 <p:outputLabel value="#{I18N['ExemplairesArticles.label.Statut']}"/>
                 <p:selectOneMenu disabled="true" id="statut" value="#{exemplaireArticleBean.flagVente}" required="true">
@@ -74,7 +77,7 @@
 
                 <!-- Right aligned button -->
                 <h:panelGroup styleClass="right-buttons">
-                    <p:commandButton icon="pi pi-home" value="#{I18N['application.button.return']}" action="#{exemplaireArticleBean.flushBienv()}" immediate="true"/>
+                    <p:commandButton icon="pi pi-home" value="#{I18N['application.button.return']}" action="#{exemplaireArticleBean.flushExArt()}" immediate="true"/>
                 </h:panelGroup>
             </h:panelGroup>
 

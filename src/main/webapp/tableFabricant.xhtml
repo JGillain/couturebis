@@ -28,6 +28,7 @@
                              class="table"
                              headerClass="table-header"
                              rowClasses="table-odd-row,table-even-row"
+                             rowStyleClass="#{fab.actif ? '' : 'highlight-row'}"
                              paginator="true"
                              rows="10"
                              paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
@@ -47,6 +48,25 @@
                     <p:column>
                         <p:commandButton  icon="pi pi-box" value="Articles par fabricant" action="#{articleBean.readByFabricants}">
                             <f:setPropertyActionListener target="#{articleBean.fabricant}" value="#{fab}" />
+                        </p:commandButton>
+                    </p:column>
+
+                    <p:column>
+                        <p:commandButton rendered="#{fab.actif}"
+                                         icon="pi pi-power-off"
+                                         value ="Désactiver"
+                                         action="#{fabricantBean.activDesactivFab}">
+                            <f:setPropertyActionListener target="#{fabricantBean.fabricant}" value="#{fab}" />
+                            <p:confirm header="Confirmation"
+                                       message="Désactiver « #{fab.nom} » ? Cette action entraine la désactivation des articles et exemplaires lié à ce fabricant."
+                                       icon="pi pi-exclamation-triangle"/>
+                        </p:commandButton>
+
+                        <p:commandButton rendered="#{!fab.actif}"
+                                         icon="pi pi-check"
+                                         value ="Activer"
+                                         action="#{fabricantBean.activDesactivFab}">
+                            <f:setPropertyActionListener target="#{fabricantBean.fabricant}" value="#{fab}" />
                         </p:commandButton>
                     </p:column>
 
@@ -86,6 +106,13 @@
                 </h:panelGroup>
             </h:panelGroup>
 
+            <p:confirmDialog global="true" showEffect="fade" hideEffect="fade"
+                             closeOnEscape="true" responsive="true">
+                <p:commandButton value="#{I18N['commune.label.oui']}" type="button"
+                                 styleClass="ui-confirmdialog-yes" icon="pi pi-check"/>
+                <p:commandButton value="#{I18N['commune.label.non']}" type="button"
+                                 styleClass="ui-confirmdialog-no ui-button-secondary" icon="pi pi-times"/>
+            </p:confirmDialog>
         </h:form>
 
     </ui:define>

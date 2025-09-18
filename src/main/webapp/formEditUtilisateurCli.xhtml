@@ -9,15 +9,15 @@
       xmlns:p="http://primefaces.org/ui">
 <!-- todo a refaire -->
 <ui:composition template="Template/template.xhtml">
-    <ui:define name="title">#{I18N['utilisateur.form.modif.titre']}</ui:define>
+    <ui:define name="title">#{I18N['utilisateurcli.form.modif.titre']}</ui:define>
 
     <ui:define name="content">
         <p:growl id="growl" showDetail="true" sticky="true" />
         <h:form id="form" prependId="false">
             <h:head>
-                <title>#{I18N['utilisateur.form.modif.titre']}</title>
+                <title>#{I18N['utilisateurcli.form.modif.titre']}</title>
             </h:head>
-            <h2 style="text-align:center">#{I18N['utilisateur.form.modif.titre']}</h2>
+            <h2 style="text-align:center">#{I18N['utilisateurcli.form.modif.titre']}</h2>
             <p:panelGrid id="newrecform" columns="3" columnClasses="col1Newrec,col2Newrec,col3Newrec">
 
 
@@ -61,7 +61,7 @@
                 </p:inputText>
                 <h:message for="utilisateurCourriel" styleClass="errorMessage"/>
 
-                <p:outputLabel value = "#{I18N['adresse.label.Rue']}"/>
+                <p:outputLabel value = "#{I18N['utilisateur.label.adresse']}"/>
                 <p:selectOneMenu value = "#{utilisateurBean.adresses}" id="utiladress" required="true"
                                  requiredMessage="#{I18N['formulaire.message.required.adresse']}"
                                  converter="adressConverter">

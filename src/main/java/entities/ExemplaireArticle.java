@@ -43,7 +43,7 @@ public class ExemplaireArticle implements Serializable {
     @Size(max = 500)
     @NotNull
     @Column(name = "CommentaireEtat", nullable = false, length = 500)
-    private String commentaireEtat="";
+    private String commentaireEtat="neuf";
 
     @NotNull
     @Column(name = "Loue", nullable = false)

@@ -1,0 +1,113 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="Template/template.xhtml">
+    <ui:define name="title">#{I18N['tarif.form.consultation.titre']}</ui:define>
+
+    <ui:define name="content">
+        <p:growl id="growl" showDetail="true" sticky="true" />
+
+        <h:form id="viewTarif">
+            <h:head>
+                <title>#{I18N['tarif.form.consultation.titre']}</title>
+            </h:head>
+
+            <h2 style="text-align:center">#{I18N['tarif.form.consultation.titre']}</h2>
+
+            <!-- En-tête (lecture seule) -->
+            <h:panelGroup layout="block" styleClass="button-bar">
+                <h:panelGroup styleClass="left-buttons">
+                    <h:outputText value="#{I18N['tarif.label.dateDebutgrille']} : " />
+                    <h:outputText value="#{tarifBean.tarif.dateDebut}">
+                        <f:convertDateTime timeZone="Europe/Brussels" type="date" pattern="dd/MM/yyyy"/>
+                    </h:outputText>
+                </h:panelGroup>
+                <h:panelGroup styleClass="right-buttons">
+                    <h:outputText value="#{I18N['tarif.label.nom']} : " />
+                    <h:outputText value="#{tarifBean.tarif.denomination}" />
+                </h:panelGroup>
+            </h:panelGroup>
+
+            <!-- Ligne magasin -->
+            <h:panelGroup layout="block" style="margin-bottom:1rem">
+                <h:outputText value="#{I18N['magasin.label.Nom']} : " />
+                <h:outputText value="#{tarifBean.tarif.magasinIdMagasin != null ? tarifBean.tarif.magasinIdMagasin.nom : '-'}" />
+            </h:panelGroup>
+
+            <!-- Grille Jours (read-only) -->
+            <p:dataTable id="tarifJour"
+                         value="#{tarifBean.grilleJour}"
+                         var="J"
+                         paginator="true"
+                         rows="10"
+                         rowKey="#{J.id}">
+                <p:column headerText="#{I18N['tarifjour.label.article']}">
+                    <h:outputText value="#{J.article.nom}"/>
+                </p:column>
+                <p:column headerText="#{I18N['tarifjour.label.jour']}">
+                    <h:outputText value="#{J.nbrJours}"/>
+                </p:column>
+                <p:column headerText="#{I18N['tarifjour.label.Prix']}">
+                    <h:outputText value="#{J.prix}"/>
+                </p:column>
+                <p:column headerText="#{I18N['tarifjour.label.DateDebut']}">
+                    <h:outputText value="#{J.dateDebut}">
+                        <f:convertDateTime timeZone="Europe/Brussels" type="date" pattern="dd/MM/yyyy"/>
+                    </h:outputText>
+                </p:column>
+                <p:column headerText="#{I18N['tarifjour.label.DateFin']}">
+                    <h:outputText value="#{J.dateFin}">
+                        <f:convertDateTime timeZone="Europe/Brussels" type="date" pattern="dd/MM/yyyy"/>
+                    </h:outputText>
+                </p:column>
+            </p:dataTable>
+
+            <br/>
+
+            <!-- Grille Pénalités (read-only) -->
+            <p:dataTable id="tarifP"
+                         value="#{tarifBean.grillePena}"
+                         var="P"
+                         paginator="true"
+                         rows="10"
+                         rowKey="#{P.id}">
+                <p:column headerText="#{I18N['tarifpenalite.label.article']}">
+                    <h:outputText value="#{P.article.nom}"/>
+                </p:column>
+                <p:column headerText="#{I18N['tarifpenalite.label.Nom']}">
+                    <h:outputText value="#{P.name}"/>
+                </p:column>
+                <p:column headerText="#{I18N['tarifpenalite.label.Prix']}">
+                    <h:outputText value="#{P.prix}"/>
+                </p:column>
+                <p:column headerText="#{I18N['tarifpenalite.label.DateDebut']}">
+                    <h:outputText value="#{P.dateDebut}">
+                        <f:convertDateTime timeZone="Europe/Brussels" type="date" pattern="dd/MM/yyyy"/>
+                    </h:outputText>
+                </p:column>
+                <p:column headerText="#{I18N['tarifpenalite.label.DateFin']}">
+                    <h:outputText value="#{P.dateFin}">
+                        <f:convertDateTime timeZone="Europe/Brussels" type="date" pattern="dd/MM/yyyy"/>
+                    </h:outputText>
+                </p:column>
+            </p:dataTable>
+
+            <br/>
+            <h:panelGroup layout="block" styleClass="button-bar">
+                <h:panelGroup styleClass="right-buttons">
+                    <p:commandButton icon="pi pi-home"
+                                     value="#{I18N['application.button.return']}"
+                                     action="#{tarifBean.flushTarifs}"
+                                     immediate="true"/>
+                </h:panelGroup>
+            </h:panelGroup>
+
+        </h:form>
+    </ui:define>
+</ui:composition>
+</html>

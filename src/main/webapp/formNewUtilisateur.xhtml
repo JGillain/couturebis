@@ -14,8 +14,6 @@
         <shiro:hasAnyRoles name="1,2">
             <h:form id="formNewUtil" prependId="false">
 
-                <p:log />
-
                 <h:head>
                 <title>#{I18N['utilisateur.form.nouveau.titre']}</title>
                 </h:head>
@@ -101,7 +99,7 @@
                     </p:selectOneMenu>
                     <h:message for="roles" styleClass="errorMessage"/>
 
-                    <p:outputLabel value = "#{I18N['adresse.label.Rue']}"/>
+                    <p:outputLabel value = "#{I18N['utilisateur.label.adresse']}"/>
                     <p:selectOneMenu value = "#{utilisateurBean.adresses}" id="utiladress" required="true"
                                      requiredMessage="#{I18N['formulaire.message.required.adresse']}"
                                      converter="adressConverter">

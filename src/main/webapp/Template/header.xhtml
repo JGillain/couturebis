@@ -15,55 +15,55 @@
 					<h:form>
 						<p:menubar>
 							<p:submenu label="Gestion des Réservations" icon="pi pi-calendar pi-fw">
-								<p:menuitem value="Table des réservations" icon="pi pi-calendar pi-fw" action="tableReservations.xhtml?faces-redirect=true"/>
-								<p:menuitem value="Nouvelle réservation" icon="pi pi-fw pi-plus" action="formNewReservation.xhtml?faces-redirect=true" />
+								<p:menuitem value="Table des réservations" icon="pi pi-calendar pi-fw" action="tableReservation.xhtml?faces-redirect=true" actionListener="#{reservationBean.init}" ajax="false" immediate="true"/>
+								<p:menuitem value="Nouvelle réservation" icon="pi pi-fw pi-plus" action="formNewReservation.xhtml?faces-redirect=true" actionListener="#{reservationBean.init}" ajax="false" immediate="true"/>
 							</p:submenu>
 							<p:submenu label="Gestion du Magasin" icon="pi pi-briefcase pi-fw">
 								<p:submenu label="Voir les" icon="pi pi-eye pi-fw">
 									<p:submenu icon="pi pi-shopping-cart pi-fw" label="Articles">
-										<p:menuitem icon="pi pi-tag pi-fw" value="Références" action="tableArticle.xhtml?faces-redirect=true"/>
-										<p:menuitem icon="pi pi-clone pi-fw" value="Exemplaires" action="tableExArticle.xhtml?faces-redirect=true"/>
+										<p:menuitem icon="pi pi-tag pi-fw" value="Références" action="tableArticle.xhtml?faces-redirect=true" actionListener="#{articleBean.init}" ajax="false" immediate="true"/>
+										<p:menuitem icon="pi pi-clone pi-fw" value="Exemplaires" action="tableExArticle.xhtml?faces-redirect=true" actionListener="#{exemplaireArticleBean.init}" ajax="false" immediate="true"/>
 									</p:submenu>
-									<p:menuitem icon="pi pi-folder pi-fw" value="Catégories" action="tableCategorie.xhtml?faces-redirect=true"/>
-									<p:menuitem icon="pi pi-tag pi-fw" value="Fabricants" action="tableFabricant.xhtml?faces-redirect=true"/>
+									<p:menuitem icon="pi pi-folder pi-fw" value="Catégories" action="tableCategorie.xhtml?faces-redirect=true" actionListener="#{categorieBean.init}" ajax="false" immediate="true"/>
+									<p:menuitem icon="pi pi-tag pi-fw" value="Fabricants" action="tableFabricant.xhtml?faces-redirect=true" actionListener="#{fabricantBean.init}" ajax="false" immediate="true"/>
 								</p:submenu>
 								<p:submenu label="Ajouter" icon="pi pi-fw pi-plus">
 									<p:submenu icon="pi pi-shopping-cart pi-fw" label="Articles">
-										<p:menuitem icon="pi pi-tag pi-fw" value="Référence" action="formNewArticle.xhtml?faces-redirect=true"/>
-										<p:menuitem icon="pi pi-clone pi-fw" value="Exemplaire" action="formNewExArticle.xhtml?faces-redirect=true"/>
+										<p:menuitem icon="pi pi-tag pi-fw" value="Référence" action="formNewArticle.xhtml?faces-redirect=true" actionListener="#{articleBean.init}" ajax="false" immediate="true"/>
+										<p:menuitem icon="pi pi-clone pi-fw" value="Exemplaire" action="formNewExArticle.xhtml?faces-redirect=true" actionListener="#{exemplaireArticleBean.init}" ajax="false" immediate="true"/>
 									</p:submenu>
-									<p:menuitem icon="pi pi-folder pi-fw" value="Catégories" action="formNewCategorie.xhtml?faces-redirect=true"/>
-									<p:menuitem icon="pi pi-tag pi-fw" value="Fabricants" action="formNewFabricant.xhtml?faces-redirect=true"/>
+									<p:menuitem icon="pi pi-folder pi-fw" value="Catégories" action="formNewCategorie.xhtml?faces-redirect=true" actionListener="#{categorieBean.init}" ajax="false" immediate="true"/>
+									<p:menuitem icon="pi pi-tag pi-fw" value="Fabricants" action="formNewFabricant.xhtml?faces-redirect=true" actionListener="#{fabricantBean.init}" ajax="false" immediate="true"/>
 								</p:submenu>
 							</p:submenu>
                                 <p:submenu label="Gestion des factures" icon="pi pi-fw pi-file">
                                     <p:submenu label="Voir les" icon="pi pi-eye pi-fw">
-                                        <p:menuitem value="Factures de location" icon="pi pi-file pi-fw" action="tableFactureLoca.xhtml?faces-redirect=true"/>
-                                        <p:menuitem value="Factures de Vente" icon="pi pi-file pi-fw" action="tableFactureVente.xhtml?faces-redirect=true"/>
-                                        <p:menuitem value="Factures de Pénalité" icon="pi pi-file pi-fw" action="tableFacturePenalite.xhtml?faces-redirect=true"/>
+                                        <p:menuitem value="Factures de location" icon="pi pi-file pi-fw" action="tableFactureLoca.xhtml?faces-redirect=true" actionListener="#{factureBean.init}" ajax="false" immediate="true"/>
+                                        <p:menuitem value="Factures de Vente" icon="pi pi-file pi-fw" action="tableFactureVente.xhtml?faces-redirect=true" actionListener="#{factureBean.init}" ajax="false" immediate="true"/>
+                                        <p:menuitem value="Factures de Pénalité" icon="pi pi-file pi-fw" action="tableFacturePenalite.xhtml?faces-redirect=true" actionListener="#{factureBean.init}" ajax="false" immediate="true"/>
                                     </p:submenu>
                                 <p:submenu label="Ajouter" icon="pi pi-fw pi-plus">
-                                    <p:menuitem value="Nouvelle location" icon="pi pi-fw pi-plus" action="formNewFactLoca.xhtml?faces-redirect=true"/>
-                                    <p:menuitem value="Nouvelle vente" icon="pi pi-fw pi-plus" action="formNewFactVente.xhtml?faces-redirect=true"/>
+                                    <p:menuitem value="Nouvelle location" icon="pi pi-fw pi-plus" action="formNewFactLoca.xhtml?faces-redirect=true" actionListener="#{factureBean.init}" ajax="false" immediate="true"/>
+                                    <p:menuitem value="Nouvelle vente" icon="pi pi-fw pi-plus" action="formNewFactVente.xhtml?faces-redirect=true" actionListener="#{factureBean.init}" ajax="false" immediate="true"/>
                                 </p:submenu>
-                                    <p:menuitem value="Retour d'article" icon="pi pi-refresh pi-fw" action="formEtatQuestion.xhtml?faces-redirect=true"/>
+                                    <p:menuitem value="Retour d'article" icon="pi pi-refresh pi-fw" action="formEtatQuestion.xhtml?faces-redirect=true" actionListener="#{factureBean.init}" ajax="false" immediate="true"/>
                                 </p:submenu>
 							<p:submenu label="Gestion des Tarifs" icon="pi pi-euro pi-fw">
-								<p:menuitem value="Voir les tarifs" icon="pi pi-list pi-fw" action="tableTarifs.xhtml?faces-redirect=true"/>
-								<p:menuitem value="Nouvelle grille tarifaire" icon="pi pi-fw pi-plus" action="formNewTarif.xhtml?faces-redirect=true"/>
+								<p:menuitem value="Voir les tarifs" icon="pi pi-list pi-fw" action="tableTarifs.xhtml?faces-redirect=true" actionListener="#{tarifBean.init}" ajax="false" immediate="true"/>
+								<p:menuitem value="Nouvelle grille tarifaire" icon="pi pi-fw pi-plus" action="formNewTarif.xhtml?faces-redirect=true" actionListener="#{tarifBean.init}" ajax="false" immediate="true"/>
 							</p:submenu>
 							<p:submenu label="Gestion des Adresses" icon="pi pi-map-marker pi-fw">
-								<p:menuitem value="Table des Adresses" icon="pi pi-home pi-fw" action="tableAdresses.xhtml?faces-redirect=true"/>
-								<p:menuitem value="Nouvelle Adresse" icon="pi pi-fw pi-plus" action="formNewAdress.xhtml?faces-redirect=true" />
+								<p:menuitem value="Table des Adresses" icon="pi pi-home pi-fw" action="tableAdresses.xhtml?faces-redirect=true" actionListener="#{adresseBean.init}" ajax="false" immediate="true"/>
+								<p:menuitem value="Nouvelle Adresse" icon="pi pi-fw pi-plus" action="formNewAdress.xhtml?faces-redirect=true" actionListener="#{adresseBean.init}" ajax="false" immediate="true"/>
 							</p:submenu>
 							<p:submenu label="Gestion des Personnes" icon="pi pi-users pi-fw">
 								<p:submenu label="Voir les" icon="pi pi-eye pi-fw">
-									<p:menuitem icon="pi pi-user pi-fw" value="Clients" action="tableUtilisateursCli.xhtml?faces-redirect=true"/>
-									<p:menuitem icon="pi pi-users pi-fw" value="Utilisateurs" action="tableUtilisateurs.xhtml?faces-redirect=true"/>
+									<p:menuitem icon="pi pi-user pi-fw" value="Clients" action="tableUtilisateursCli.xhtml?faces-redirect=true" actionListener="#{utilisateurBean.init}" ajax="false" immediate="true"/>
+									<p:menuitem icon="pi pi-users pi-fw" value="Utilisateurs" action="tableUtilisateurs.xhtml?faces-redirect=true" actionListener="#{utilisateurBean.init}" ajax="false" immediate="true"/>
 								</p:submenu>
 								<p:submenu label="Ajouter" icon="pi pi-fw pi-plus">
-									<p:menuitem icon="pi pi-user pi-fw" value="Client" action="formNewUtilisateurCli.xhtml?faces-redirect=true"/>
-									<p:menuitem icon="pi pi-users pi-fw" value="Utilisateur" action="formNewUtilisateur.xhtml?faces-redirect=true"/>
+									<p:menuitem icon="pi pi-user pi-fw" value="Client" action="formNewUtilisateurCli.xhtml?faces-redirect=true" actionListener="#{utilisateurBean.init}" ajax="false" immediate="true"/>
+									<p:menuitem icon="pi pi-users pi-fw" value="Utilisateur" action="formNewUtilisateur.xhtml?faces-redirect=true" actionListener="#{utilisateurBean.init}" ajax="false" immediate="true"/>
 								</p:submenu>
 							</p:submenu>
 						</p:menubar>

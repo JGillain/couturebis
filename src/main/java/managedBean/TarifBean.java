@@ -76,27 +76,27 @@ public class TarifBean implements Serializable {
     }
     public String redirectEdit(){
         long dn = new Date().getTime();
-        if(tarif.getDateDebut().getTime() > dn){
-            grillePena.clear();
-            grilleJour.clear();
-            if (tarif.getTarifPenalite().size()!=0){
-                for (TarifPenalite TP: tarif.getTarifPenalite()) {
-                    grillePena.add(new PenaCustom(TP.getPenaliteIdPenalite().getDenomination(), TP.getPrix(), TP.getDateDebut(),TP.getDateFin(), TP.getArticleIdArticle()));
-                }
+        grillePena.clear();
+        grilleJour.clear();
+        if (tarif.getTarifPenalite().size()!=0){
+            for (TarifPenalite TP: tarif.getTarifPenalite()) {
+                grillePena.add(new PenaCustom(TP.getPenaliteIdPenalite().getDenomination(), TP.getPrix(), TP.getDateDebut(),TP.getDateFin(), TP.getArticleIdArticle()));
             }
+        }
+        if (tarif.getTarifJour().size()!=0){
             for (TarifJour TJ:tarif.getTarifJour()){
                 grilleJour.add(new JourCustom(TJ.getJourIdJour().getNbrJour(), TJ.getPrix(),TJ.getDateDebut(),TJ.getDateFin(),TJ.getArticleIdArticle()));
             }
+        }
+        if(tarif.getDateDebut().getTime() > dn){
             return "/formEditTarif.xhtml?faces-redirect=true";
         }
         else {
             FacesContext fc = FacesContext.getCurrentInstance();
             fc.getExternalContext().getFlash().setKeepMessages(true);
             fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"ce tarif ne peut être modifié",null));
-            init();
-            return "/tableTarifs.xhtml?faces-redirect=true";
+            return "/formViewTarif.xhtml?faces-redirect=true";
         }
-
     }
 
     public String newTarif()

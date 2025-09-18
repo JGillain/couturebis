@@ -12,7 +12,6 @@
     <ui:define name="header">
         <p:panel id="header">
             <p:panelGrid class="table-entete" columns="2">
-                <!--Pourquoi le p:graphicimage ne fonctionne pas-->
                 <p:graphicImage name="imgCouture.png" library="images" width="550" height="150"/>
             </p:panelGrid>
         </p:panel>
@@ -39,7 +38,7 @@
                                  maxlength="80">
                         <f:validateLength minimum ="4" maximum = "80" />
                     </p:inputText>
-                    <p:commandButton icon="pi pi-sign-in" value ="#{I18N['application.button.Envoyer.Mail']}" action="#{reinitialisationBean.reinitia}" update="growl" ajax="false"/>
+                    <p:commandButton icon="pi pi-sign-in" value ="#{I18N['application.button.Envoyer.Mail']}" action="#{reinitialisationBean.reinitialisation}" update="growl" ajax="false"/>
                 </p:panelGrid>
 
             </h:form>

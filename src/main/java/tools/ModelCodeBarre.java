@@ -1,4 +1,4 @@
-package pdfTools;
+package tools;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;

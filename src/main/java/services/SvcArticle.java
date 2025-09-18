@@ -2,7 +2,9 @@ package services;
 
 
 import entities.Article;
+import entities.Categorie;
 import entities.ExemplaireArticle;
+import entities.Fabricant;
 import org.apache.log4j.Logger;
 
 import java.io.Serializable;
@@ -40,9 +42,9 @@ public class SvcArticle extends Service<Article> implements Serializable {
         return finder.findByNamedQuery("Article.findOneByCodeBarre", param);
     }
 
-    public List<Article> getbyName(String titre) {
+    public List<Article> getbyName(String nom) {
         Map<String, String> param = new HashMap<>();
-        param.put("nom", titre);
+        param.put("nom", nom);
 
         return finder.findByNamedQuery("Article.search", param);
     }
@@ -59,4 +61,26 @@ public class SvcArticle extends Service<Article> implements Serializable {
         return finder.findByNamedQuery("Article.findInactive", null);
     }
 
+    public List<Article> findOneByDetails(Article article) {
+        int id = (article.getId() != null) ? article.getId() : 0 ;
+        Map<String, Object> param = new HashMap<>();
+        param.put("nom", article.getNom());
+        param.put("fabricant", article.getFabricantIdFabricant());
+        param.put("numSerie", article.getNumSerie());
+        param.put("id", id);
+        return finder.findByNamedQuery("Article.findOneByDetails", param);
+
+    }
+
+    public List<Article> findByFabricant(Fabricant fabricant) {
+        Map<String, Object> param = new HashMap<>();
+        param.put("fab", fabricant);
+        return finder.findByNamedQuery("Article.findByFabricant", param);
+    }
+
+    public List<Article> findByCategorie(Categorie categorie) {
+        Map<String, Object> param = new HashMap<>();
+        param.put("cat", categorie);
+        return finder.findByNamedQuery("Article.findByCategorie", param);
+    }
 }

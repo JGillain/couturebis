@@ -19,17 +19,19 @@
                 <h2 style="text-align:center">#{I18N['tarif.form.nouveau.titre']}</h2>
 
                 <p:outputLabel value="#{I18N['magasin.label.Nom']}" />
+                <h:panelGroup layout="block" styleClass="button-bar">
+                    <h:panelGroup styleClass="left-buttons">
 
-                <p:outputLabel value="#{I18N['tarif.label.dateDebutgrille']}" />
-                <p:calendar value="#{tarifBean.tarif.dateDebut}" showOn="button" required="true" requiredMessage="#{I18N['formulaire.message.required.date']}">
-                    <f:convertDateTime timeZone="Europe/Brussels" type="date" pattern="dd/MM/yyyy"/>
-                </p:calendar>
-
-
-
-                <p:outputLabel value="#{I18N['tarif.label.nom']}" />
-                <p:inputText id="nomGrille" value="#{tarifBean.tarif.denomination}" required="true" requiredMessage="#{I18N['formulaire.message.required.denomination']}" maxlength="255"/>
-
+                        <p:outputLabel value="#{I18N['tarif.label.dateDebutgrille']}" />
+                        <p:calendar value="#{tarifBean.tarif.dateDebut}" showOn="button" required="true" requiredMessage="#{I18N['formulaire.message.required.date']}">
+                            <f:convertDateTime timeZone="Europe/Brussels" type="date" pattern="dd/MM/yyyy"/>
+                        </p:calendar>
+                    </h:panelGroup>
+                    <h:panelGroup styleClass="right-buttons">
+                        <p:outputLabel value="#{I18N['tarif.label.nom']}" />
+                        <p:inputText id="nomGrille" value="#{tarifBean.tarif.denomination}" required="true" requiredMessage="#{I18N['formulaire.message.required.denomination']}" maxlength="255"/>
+                    </h:panelGroup>
+                </h:panelGroup>
 
                 <p:dataTable id="tarifJour"
                              value="#{tarifBean.grilleJour}"

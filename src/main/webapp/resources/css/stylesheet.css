@@ -302,3 +302,7 @@ body {
     display: inline-block;
     margin: auto;
 }
+.ui-datatable.hide-filters .ui-column-filter,
+.ui-datatable.hide-filters .ui-filter-column .ui-column-customfilter{
+    display: none !important;
+}
