@@ -96,23 +96,12 @@
                 </p:dataTable>
             </p:panel>
 
-            <h:outputScript target="body">
-                function setActifFilter(val){
-                    var tbl = PF('utcliTbl');
-                    tbl.clearFilters();
-                    $(PrimeFaces.escapeClientId('tableUtilisateursCli:actifCol:filter')).val(val);
-                    tbl.filter();
-                }
-            </h:outputScript>
-
             <h:panelGroup layout="block" styleClass="button-bar">
                 <h:panelGroup styleClass="left-buttons">
                     <p:commandButton icon="pi pi-plus" value="#{I18N['application.button.new']}"
                                      action="formNewUtilisateurCli.xhtml?faces-redirect=true" />
                 </h:panelGroup>
                 <h:panelGroup styleClass="center-buttons">
-                    <p:commandButton icon="pi pi-search" value="#{I18N['application.button.find']}"
-                                     action="formSearchUtilisateur.xhtml?faces-redirect=true"/>
                     <p:commandButton icon="pi pi-search-plus" value="#{I18N['application.button.utilActiv']}"
                                      onclick="toggleBoolFilter('utcliTbl','tableUtilisateursCli:actifCol:filter','true','btnUtCliActif',['btnUtCliInactif'])"/>
                     <p:commandButton icon="pi pi-search-minus" value="#{I18N['application.button.utilInactiv']}"

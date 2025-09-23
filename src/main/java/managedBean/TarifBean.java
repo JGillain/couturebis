@@ -10,6 +10,7 @@ import org.primefaces.event.RowEditEvent;
 import services.*;
 
 import javax.annotation.PostConstruct;
+import javax.el.MethodExpression;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
@@ -97,6 +98,24 @@ public class TarifBean implements Serializable {
             fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"ce tarif ne peut être modifié",null));
             return "/formViewTarif.xhtml?faces-redirect=true";
         }
+    }
+    public String redirectNew(){
+        long dn = new Date().getTime();
+        grillePena.clear();
+        grilleJour.clear();
+        if (tarif.getTarifPenalite().size()!=0){
+            for (TarifPenalite TP: tarif.getTarifPenalite()) {
+                grillePena.add(new PenaCustom(TP.getPenaliteIdPenalite().getDenomination(), TP.getPrix(), TP.getDateDebut(),TP.getDateFin(), TP.getArticleIdArticle()));
+            }
+        }
+        if (tarif.getTarifJour().size()!=0){
+            for (TarifJour TJ:tarif.getTarifJour()){
+                grilleJour.add(new JourCustom(TJ.getJourIdJour().getNbrJour(), TJ.getPrix(),TJ.getDateDebut(),TJ.getDateFin(),TJ.getArticleIdArticle()));
+            }
+        }
+        tarif = new Tarif();
+        return "/formNewTarif.xhtml?faces-redirect=true";
+
     }
 
     public String newTarif()
@@ -344,4 +363,6 @@ public class TarifBean implements Serializable {
         return articles;
     }
     public void setArticles(List<Article> articles) {this.articles = articles;}
+
+
 }

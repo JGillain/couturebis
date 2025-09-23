@@ -6,22 +6,16 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:shiro="http://shiro.apache.org/tags"
       xmlns:p="http://primefaces.org/ui">
-<!--TODO A refaire-->
 <ui:composition template="Template/template.xhtml">
     <ui:define name="title">#{I18N['fabricant.form.confirm']}</ui:define>
 
     <ui:define name="content">
         <p:growl id="growl" showDetail="true" sticky="true" />
-        <shiro:hasPermission name="Auteurs:ActivDesactiv">
         <h:form>
         <h2 style="text-align:center">#{I18N['fabricant.form.questionconfirm']}</h2>
-            <p:commandButton icon="pi pi-check-circle" value="#{I18N['commune.label.oui']}" action="#{auteursBean.activdesactivAut}"/>
-            <p:commandButton icon="pi pi-ban" value="#{I18N['commune.label.non']}" action="#{auteursBean.flushAut}" immediate="true"/>
+            <p:commandButton icon="pi pi-check-circle" value="#{I18N['commune.label.oui']}" action="#{fabricantBean.activDesactivFab}"/>
+            <p:commandButton icon="pi pi-ban" value="#{I18N['commune.label.non']}" action="#{fabricantBean.flushFab}" immediate="true"/>
     </h:form>
-        </shiro:hasPermission>
-        <shiro:lacksPermission name="Auteurs:ActivDesactiv">
-            <p:outputLabel value="#{I18N['application.page.accessrefuse']}"/>
-        </shiro:lacksPermission>
     </ui:define>
 </ui:composition>
 

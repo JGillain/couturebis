@@ -21,15 +21,13 @@ import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public class ModelFactLocaPena implements java.io.Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(ModelFactLocaPena.class);
 
-    // Chemins fixes (cohérents avec vos autres modèles)
+    // Chemins fixes
     private static final String BASE_DIR     = "C:\\REVECouture\\";
     private static final String OUT_DIR      = BASE_DIR + "facture\\";
     private static final String RES_DIR      = BASE_DIR + "resources\\";
@@ -58,7 +56,7 @@ public class ModelFactLocaPena implements java.io.Serializable {
         final String outputPdf  = OUT_DIR + numfacture + ".pdf";
         final String today      = new SimpleDateFormat("dd/MM/yyyy").format(new java.util.Date());
 
-        // --- Infos client (compact, 3 lignes max comme les autres) ---
+        // --- Infos client (compact, 3 lignes max) ---
         Utilisateur cli = fact.getUtilisateurIdUtilisateur();
         String nomPrenom = (cli == null) ? "" : (PdfUtils.safe(cli.getNom()) + " " + PdfUtils.safe(cli.getPrenom())).trim();
         String adr1 = "", adr2 = "";
@@ -66,7 +64,8 @@ public class ModelFactLocaPena implements java.io.Serializable {
             for (UtilisateurAdresse ua : cli.getUtilisateurAdresse()) {
                 if (ua.getActif() != null && ua.getActif()) {
                     String boite = (ua.getAdresseIdAdresse().getBoite() == null) ? "" : (" " + ua.getAdresseIdAdresse().getBoite());
-                    adr1 = PdfUtils.safe(ua.getAdresseIdAdresse().getRue()) + " " + PdfUtils.safe(ua.getAdresseIdAdresse().getNumero()) + boite;
+                    adr1 = PdfUtils.safe(ua.getAdresseIdAdresse().getRue()) + " " +
+                            PdfUtils.safe(ua.getAdresseIdAdresse().getNumero()) + boite;
                     adr2 = String.valueOf(ua.getAdresseIdAdresse().getLocaliteIdLocalite().getCp()) + " " +
                             PdfUtils.safe(ua.getAdresseIdAdresse().getLocaliteIdLocalite().getVille());
                     break;
@@ -74,10 +73,10 @@ public class ModelFactLocaPena implements java.io.Serializable {
             }
         }
 
-        // Total (déjà calculé côté métier)
+        // Total (déjà calculé)
         double total = (fact.getPrixTVAC() == null) ? 0d : fact.getPrixTVAC();
 
-        // --- Constantes de mise en page (identiques à ModelfactVente où pertinent) ---
+        // --- Constantes de mise en page ---
         final float START_X         = 80f;
         final float PRICE_COL_X     = 475f; // position des montants et du libellé “Prix”
         final float COL_LINE_X      = 450f; // règle verticale
@@ -217,7 +216,8 @@ public class ModelFactLocaPena implements java.io.Serializable {
             }
 
             // --- Impression des pénalités avec pagination ---
-            Iterator<TarifPenalite> it = (tp == null) ? java.util.Collections.<TarifPenalite>emptyList().iterator() : tp.iterator();
+            // anti-doublon : si 'retard' est fourni, on n’imprime PAS "Retard" depuis 'tp'
+            Iterator<TarifPenalite> it = (tp == null) ? Collections.<TarifPenalite>emptyList().iterator() : tp.iterator();
 
             while (it.hasNext()) {
                 TarifPenalite t = it.next();
@@ -227,26 +227,19 @@ public class ModelFactLocaPena implements java.io.Serializable {
                         ? PdfUtils.safe(t.getPenaliteIdPenalite().getDenomination())
                         : "Pénalité";
 
-                // prix: “Retard” → utiliser FactureDetail retard si fourni, sinon prix du TP
-                double prix = 0d;
-                if ("Retard".equalsIgnoreCase(lib)) {
-                    if (retard != null && retard.getPrix() != null) {
-                        prix = retard.getPrix();
-                    } else if (t.getPrix() != null) {
-                        prix = t.getPrix();
-                    }
-                } else {
-                    prix = (t.getPrix() == null) ? 0d : t.getPrix();
+                if (retard != null && "Retard".equalsIgnoreCase(lib)) {
+                    continue; // évite le doublon
                 }
 
-                // wrap du libellé
+                double prix = (t.getPrix() == null) ? 0d : t.getPrix();
+
                 List<String> lines = PdfUtils.wrap(lib, fontText, 11f, leftWidth);
-                if (lines.isEmpty()) lines = java.util.Collections.singletonList("");
+                if (lines.isEmpty()) lines = Collections.singletonList("");
 
                 float needed = lines.size() * LINE_GAP + ITEM_EXTRA_GAP;
                 float guard  = lastItem ? (FOOTER_TOP_Y + FOOTER_RESERVE) : GUARD_INTER;
 
-                // pas assez de place → nouvelle page
+                // nouvelle page si besoin
                 if (y - needed < guard) {
                     // règle verticale jusqu’à la garde intermédiaire
                     cs.setLineWidth(1);
@@ -287,7 +280,7 @@ public class ModelFactLocaPena implements java.io.Serializable {
                     y             = currentYStart - (LINE_GAP * 2);
                 }
 
-                // affichage des lignes de la pénalité + prix sur la 1re ligne
+                // lignes libellé + prix (sur la 1re ligne)
                 for (int iLine = 0; iLine < lines.size(); iLine++) {
                     cs.beginText();
                     cs.setFont(fontText, 11f);
@@ -299,7 +292,7 @@ public class ModelFactLocaPena implements java.io.Serializable {
                         cs.beginText();
                         cs.setFont(fontText, 11f);
                         cs.newLineAtOffset(PRICE_COL_X, y);
-                        cs.showText(String.format(java.util.Locale.US, "%.2f", prix));
+                        cs.showText(String.format(Locale.FRANCE, "%.2f", prix));
                         cs.endText();
                     }
                     y -= LINE_GAP;
@@ -307,7 +300,77 @@ public class ModelFactLocaPena implements java.io.Serializable {
                 y -= ITEM_EXTRA_GAP;
             }
 
-            // --- Dernière page : règle verticale jusqu’au pied + pied & totaux ---
+            // --- Si 'retard' est fourni : l'imprimer EN DERNIER (sans doublon) ---
+            if (retard != null) {
+                String lib = "Retard";
+                double prix = (retard.getPrix() == null) ? 0d : retard.getPrix();
+
+                List<String> lines = PdfUtils.wrap(lib, fontText, 11f, leftWidth);
+                if (lines.isEmpty()) lines = Collections.singletonList("");
+
+                float needed = lines.size() * LINE_GAP + ITEM_EXTRA_GAP;
+                float guard  = FOOTER_TOP_Y + FOOTER_RESERVE;
+
+                if (y - needed < guard) {
+                    // règle verticale
+                    cs.setLineWidth(1);
+                    cs.moveTo(COL_LINE_X, colLineTop);
+                    cs.lineTo(COL_LINE_X, GUARD_INTER);
+                    cs.closeAndStroke();
+
+                    cs.close();
+                    page = new PDPage();
+                    doc.addPage(page);
+                    cs = new PDPageContentStream(doc, page);
+
+                    // entête minimal (pages suivantes)
+                    cs.beginText();
+                    cs.setFont(fontBold, 12f);
+                    cs.setLeading(14.5f);
+                    cs.newLineAtOffset(START_X, HEADER_Y_CONT);
+                    cs.showText("Facture de pénalité n° : " + numfacture + " (suite)");
+                    cs.newLine();
+                    cs.showText("créée le " + today);
+                    cs.endText();
+
+                    // libellés
+                    cs.beginText();
+                    cs.setFont(fontBold, 12f);
+                    cs.newLineAtOffset(START_X, Y_START_CONT);
+                    cs.showText("Pénalités :");
+                    cs.endText();
+
+                    cs.beginText();
+                    cs.setFont(fontBold, 12f);
+                    cs.newLineAtOffset(PRICE_COL_X, Y_START_CONT);
+                    cs.showText("Prix (€)");
+                    cs.endText();
+
+                    currentYStart = Y_START_CONT;
+                    colLineTop    = currentYStart - COL_LINE_TOP_OFF;
+                    y             = currentYStart - (LINE_GAP * 2);
+                }
+
+                for (int iLine = 0; iLine < lines.size(); iLine++) {
+                    cs.beginText();
+                    cs.setFont(fontText, 11f);
+                    cs.newLineAtOffset(START_X, y);
+                    cs.showText(lines.get(iLine));
+                    cs.endText();
+
+                    if (iLine == 0) {
+                        cs.beginText();
+                        cs.setFont(fontText, 11f);
+                        cs.newLineAtOffset(PRICE_COL_X, y);
+                        cs.showText(String.format(Locale.FRANCE, "%.2f", prix));
+                        cs.endText();
+                    }
+                    y -= LINE_GAP;
+                }
+                y -= ITEM_EXTRA_GAP;
+            }
+
+            // --- Dernière page : règle verticale + pied & total ---
             cs.setLineWidth(1);
             cs.moveTo(COL_LINE_X, colLineTop);
             cs.lineTo(COL_LINE_X, FOOTER_TOP_Y);
@@ -318,7 +381,7 @@ public class ModelFactLocaPena implements java.io.Serializable {
             cs.addRect(57, FOOTER_TOP_Y, 500, 2);
             cs.fill();
 
-            // total
+            // Total
             cs.beginText();
             cs.setFont(fontText, 12f);
             cs.setLeading(17.5f);
@@ -330,7 +393,7 @@ public class ModelFactLocaPena implements java.io.Serializable {
             cs.setFont(fontText, 12f);
             cs.setLeading(17.5f);
             cs.newLineAtOffset(PRICE_COL_X, 235);
-            cs.showText(String.format(java.util.Locale.US, "%.2f €", total));
+            cs.showText(String.format(Locale.FRANCE, "%.2f €", total));
             cs.endText();
 
             // conditions
@@ -361,6 +424,7 @@ public class ModelFactLocaPena implements java.io.Serializable {
             return "erreur";
         }
     }
+
     //-------------------------------------------------------------------------------------------------------
 
     public static Logger getLog() {

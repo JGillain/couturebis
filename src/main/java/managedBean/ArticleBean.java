@@ -3,7 +3,6 @@ package managedBean;
 import entities.*;
 import org.apache.log4j.Logger;
 import services.SvcArticle;
-import services.SvcCategorie;
 import services.SvcCodeBarre;
 import services.SvcExemplaireArticle;
 
@@ -31,6 +30,9 @@ public class ArticleBean implements Serializable {
     private List<Article> listart = new ArrayList<Article>();
     private List<Article> searchResults = new ArrayList<Article>();
     private static final Logger log = Logger.getLogger(ArticleBean.class);
+    @Named
+    @Inject
+    private MagasinBean magasinBean;
 
     @PostConstruct
     public void init() {
@@ -145,6 +147,12 @@ public class ArticleBean implements Serializable {
         int stockLocation = service.countAvailableExArticlesRent(article);
         service.close();
         return stockLocation;
+    }
+    public int getStockReserve(Article article) {
+        SvcExemplaireArticle service = new SvcExemplaireArticle();
+        int stockReserve = service.countAvailableExArticlesRentReserved(article);
+        service.close();
+        return stockReserve;
     }
 
     public String stockFlag(Article art) {

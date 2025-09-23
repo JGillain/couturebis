@@ -28,7 +28,7 @@ public class PenaliteBean implements Serializable {
     }
 
     /*
-     * Méthode qui permet via le service de retourner la liste de tous les pénalités
+     * Méthode qui permet de sauvegarder une entité pénalité
      */
     public void save()
     {

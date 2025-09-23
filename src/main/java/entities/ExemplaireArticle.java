@@ -17,11 +17,13 @@ import java.util.Objects;
                 @NamedQuery(name = "ExArticle.findAllTri", query="SELECT EA FROM ExemplaireArticle EA ORDER BY EA.articleIdArticle.nom ASC"),
                 @NamedQuery(name = "ExArticle.findActive", query = "SELECT EA FROM ExemplaireArticle EA WHERE EA.actif=TRUE"),
                 @NamedQuery(name = "ExArticle.findInactive", query = "SELECT EA FROM ExemplaireArticle EA WHERE EA.actif=FALSE"),
-                @NamedQuery(name = "ExArticle.searchTri", query="SELECT EA FROM ExemplaireArticle EA WHERE EA.articleIdArticle.nom=:nom ORDER BY EA.articleIdArticle.nom ASC"),//A verifier
+                @NamedQuery(name = "ExArticle.searchTri", query="SELECT EA FROM ExemplaireArticle EA WHERE EA.articleIdArticle.nom=:nom ORDER BY EA.articleIdArticle.nom ASC"),
                 @NamedQuery(name = "ExArticle.search", query="SELECT EA FROM ExemplaireArticle EA WHERE EA.articleIdArticle.nom=:nom"),
                 @NamedQuery(name = "ExArticle.findByArticle", query="SELECT EA FROM ExemplaireArticle EA WHERE EA.articleIdArticle=:article"),
                 @NamedQuery(name = "ExArticle.findOneByCodeBarre", query="SELECT EA FROM ExemplaireArticle EA WHERE EA.codeBarreIdCB.codeBarre=:CB"),
                 @NamedQuery(name = "ExArticle.AvailableExArticlesRent", query="SELECT EA FROM ExemplaireArticle EA WHERE EA.articleIdArticle =:article AND EA.statut = enumeration.ExemplaireArticleStatutEnum.Location and EA.actif=true"),
+                @NamedQuery(name = "ExArticle.AvailableExArticlesRentNotReserved", query="SELECT EA FROM ExemplaireArticle EA WHERE EA.articleIdArticle =:article AND EA.statut = enumeration.ExemplaireArticleStatutEnum.Location and EA.actif=true and EA.reserve=false"),
+                @NamedQuery(name = "ExArticle.AvailableExArticlesRentReserved", query="SELECT EA FROM ExemplaireArticle EA WHERE EA.articleIdArticle =:article AND EA.statut = enumeration.ExemplaireArticleStatutEnum.Location and EA.actif=true and EA.reserve=true"),
                 @NamedQuery(name = "ExArticle.AvailableExArticlesSales", query="SELECT EA FROM ExemplaireArticle EA WHERE EA.articleIdArticle =:article AND EA.statut = enumeration.ExemplaireArticleStatutEnum.Vente and EA.actif=true and EA.loue=false and EA.reserve=false"),
         })
 public class ExemplaireArticle implements Serializable {

@@ -29,8 +29,8 @@ public class CategorieBean implements Serializable {
         categorie = new Categorie();
     }
 
-    // Méthode qui permet l'appel de save() qui créée une nouvelle adresse et envoi un message si jamais
-    // l'adresse se trouve déjà en base de donnée et nous renvoi sur la table des auteurs
+    // Méthode qui permet l'appel de save() qui créée une nouvelle categorie et envoi un message si jamais
+    // la categorie se trouve déjà en base de donnée et nous renvoi sur la table des categories
     public String newCategorie()
     {
         log.debug("test 1 ");
@@ -50,7 +50,7 @@ public class CategorieBean implements Serializable {
 
     }
 
-    // Méthode qui permet la sauvegarde d'une adresse en base de donnée
+    // Méthode qui permet la sauvegarde d'une categorie en base de donnée
     public void save()
     {
         SvcCategorie service = new SvcCategorie();
@@ -80,7 +80,7 @@ public class CategorieBean implements Serializable {
         }
     }
 
-    // Méthode qui vérifie qu'une adresse déjà ou pas dans la base de donnée
+    // Méthode qui vérifie qu'une categorie déjà ou pas dans la base de donnée
     public boolean verifCategorieExist(Categorie Ca)
     {
         SvcCategorie serviceC = new SvcCategorie();
@@ -98,18 +98,18 @@ public class CategorieBean implements Serializable {
 
     }
     /*
-     * Méthode qui permet de vider les variables et de revenir sur le table des Adresses .
+     * Méthode qui permet de vider les variables et de revenir sur la table des categorie.
      * */
     public String flushCat()
     {
         init();
-        return "/tableFabricant?faces-redirect=true";
+        return "/tableCategorie.xhtml?faces-redirect=true";
     }
 
 
     /*
      * Méthode qui permet via le service de retourner
-     * la liste des adresses
+     * la liste des categorie
      */
     public List<Categorie> getReadAll()
     {

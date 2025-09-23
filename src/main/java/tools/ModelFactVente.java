@@ -22,7 +22,7 @@ public class ModelFactVente implements java.io.Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(ModelFactVente.class);
 
-    // Fixed paths as requested
+    // chemin fixe
     private static final String BASE_DIR = "C:\\REVECouture\\";
     private static final String OUT_DIR = BASE_DIR + "facture\\";
     private static final String RES_DIR = BASE_DIR + "resources\\";
@@ -358,8 +358,4 @@ public class ModelFactVente implements java.io.Serializable {
             return "Erreur";
         }
     }
-
-
-    /* ---- local helpers (kept inside the class) ---- */
-
 }

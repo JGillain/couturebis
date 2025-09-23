@@ -34,11 +34,11 @@ public class ModelCodeBarre implements java.io.Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(ModelCodeBarre.class);
 
-    // --- Dossiers fixes (comme vos autres modèles) ---
+    // --- Dossiers fixes  ---
     private static final String BASE_DIR = "C:\\REVECouture\\";
     private static final String OUT_DIR  = BASE_DIR + "barcodes\\";
 
-    // --- Mise en page (A4 en points: 595 x 842) ---
+    // --- Mise en page (A4 estime en points: 595 x 842) ---
     // Tout est en millimètres ici, puis converti en points.
     private static final float PAGE_MARGIN_MM = 10f;
     private static final float LABEL_W_MM     = 50f;   // largeur d’une étiquette

@@ -29,7 +29,7 @@ public class Fabricant implements Serializable {
 
     @NotNull
     @Column(name = "Actif", nullable = false)
-    private Boolean actif = false;
+    private Boolean actif = true;
 
     @OneToMany(mappedBy = "fabricantIdFabricant")
     private Collection<Article> articles;

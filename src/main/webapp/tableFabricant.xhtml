@@ -96,8 +96,17 @@
 
                 <!-- Center aligned buttons -->
                 <h:panelGroup styleClass="center-buttons">
-                    <p:commandButton icon="pi pi-search-plus" value="#{I18N['application.button.fabricActiv']}" onclick="setActifFilter('true')"/>
-                    <p:commandButton icon="pi pi-search-minus" value="#{I18N['application.button.fabricInactiv']}" onclick="setActifFilter('false')"/>
+                    <p:commandButton id="btnFabActif"
+                                     type="button"
+                                     icon="pi pi-search-plus"
+                                     value="#{I18N['application.button.fabricActiv']}"
+                                     onclick="toggleBoolFilter('fabTbl','tableFabricant:actifCol:filter','true','btnFabActif',['btnFabInactif'])"/>
+
+                    <p:commandButton id="btnFabInactif"
+                                     type="button"
+                                     icon="pi pi-search-minus"
+                                     value="#{I18N['application.button.fabricInactiv']}"
+                                     onclick="toggleBoolFilter('fabTbl','tableFabricant:actifCol:filter','false','btnFabInactif',['btnFabActif'])"/>
                 </h:panelGroup>
 
                 <!-- Right aligned button -->

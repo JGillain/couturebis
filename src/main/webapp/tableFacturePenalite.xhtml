@@ -4,8 +4,6 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:c="http://java.sun.com/jsp/jstl/core"
-      xmlns:shiro="http://shiro.apache.org/tags"
       xmlns:p="http://primefaces.org/ui">
 
 <ui:composition template="Template/template.xhtml">
@@ -15,60 +13,78 @@
             <p:panel layout="block" id="content">
                 <p:growl id="growl" showDetail="true" sticky="true" />
                 <h2 style="text-align:center">#{I18N['application.fact.penalite.title']}</h2>
-                <p:dataTable value="#{factureBean.readAllPenalite}" var="fa" id="tableFacturePena" paginator="true" rows="10"
+
+                <p:dataTable value="#{factureBean.readAllPenalite}"
+                             var="fa"
+                             id="tableFacturePena"
+                             widgetVar="facPenaTbl"
+                             class="table hide-filters"
+                             headerClass="table-header"
+                             rowClasses="table-odd-row,table-even-row"
+                             paginator="true" rows="10"
                              paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
                              currentPageReportTemplate="Page {currentPage} sur {totalPages}">
-                             Class="table" headerClass="table-header" rowClasses="table-odd-row,table-even-row" >
-                    <p:column>
-                        <!-- column header -->
+
+                    <!-- Numéro de facture (filter) -->
+                    <p:column filterBy="#{fa.numeroFacture}"
+                              filterMatchMode="contains">
                         <f:facet name="header">#{I18N['factures.label.NumeroFacture']}</f:facet>
-                        <!-- row record -->
-                        <p:outputLabel value ="#{fa.numeroFacture}"/>
+                        <h:outputText value ="#{fa.numeroFacture}"/>
                     </p:column>
-                    <p:column>
-                        <!-- column header -->
+
+                    <!-- Numéro client / code-barres (filter) -->
+                    <p:column filterBy="#{fa.utilisateurIdUtilisateur.codeBarreIdCB.codeBarre}"
+                              filterMatchMode="contains">
                         <f:facet name="header">#{I18N['factures.label.NumeroClient']}</f:facet>
-                        <!-- row record -->
-                        <p:outputLabel value ="#{fa.utilisateurIdUtilisateur.codeBarreIdCB.codeBarre}"/>
+                        <h:outputText value ="#{fa.utilisateurIdUtilisateur.codeBarreIdCB.codeBarre}"/>
                     </p:column>
+
+                    <!-- Lien PDF -->
                     <p:column>
-                        <!-- column header -->
                         <f:facet name="header">#{I18N['factures.label.lien']}</f:facet>
-                        <!-- row record -->
                         <h:commandLink action="#{factureBean.downloadPdfFacture}" immediate="true">
                             <f:param name="numFacture" value="#{fa.numeroFacture}" />
                             <h:graphicImage library="images" name="pdf.png" />
                         </h:commandLink>
                     </p:column>
-                    <p:column>
-                        <!-- column header -->
+
+                    <!-- Date début (simple text filter on formatted value) -->
+                    <p:column filterBy="#{fa.dateDebut}"
+                              filterMatchMode="contains">
                         <f:facet name="header">#{I18N['factures.label.DateDebut']}</f:facet>
-                        <!-- row record -->
-                        <p:outputLabel value ="#{fa.dateDebut}">
+                        <h:outputText value ="#{fa.dateDebut}">
                             <f:convertDateTime pattern="dd/MM/yyyy HH:mm" timeZone="Europe/Brussels"/>
-                        </p:outputLabel>
+                        </h:outputText>
+                    </p:column>
+
+                    <!-- Tools: show/hide filters + clear (header) -->
+                    <p:column>
+                        <f:facet name="header">
+                            <h:panelGroup style="display:flex;gap:.5rem;align-items:center;justify-content:flex-end">
+                                <p:commandButton type="button" icon="pi pi-filter"
+                                                 onclick="PF('facPenaTbl').jq.toggleClass('hide-filters');" />
+                                <p:commandButton type="button" icon="pi pi-times"
+                                                 onclick="PF('facPenaTbl').clearFilters();" />
+                            </h:panelGroup>
+                        </f:facet>
                     </p:column>
 
                 </p:dataTable>
             </p:panel>
 
             <h:panelGroup layout="block" styleClass="button-bar">
-                <!-- Left aligned buttons -->
                 <h:panelGroup styleClass="left-buttons">
-                    <p:commandButton icon=" pi pi-plus" value="#{I18N['application.button.returnarticle']}" action="formEtatQuestion.xhtml?faces-redirect=true"/>
+                    <p:commandButton icon="pi pi-plus"
+                                     value="#{I18N['application.button.returnarticle']}"
+                                     action="formEtatQuestion.xhtml?faces-redirect=true"/>
                 </h:panelGroup>
-
-                <!-- Right aligned button -->
                 <h:panelGroup styleClass="right-buttons">
-                    <p:commandButton icon="pi pi-home" value="#{I18N['application.button.returnbienvenue']}" action="bienvenue.xhtml?faces-redirect=true"/>
+                    <p:commandButton icon="pi pi-home"
+                                     value="#{I18N['application.button.returnbienvenue']}"
+                                     action="bienvenue.xhtml?faces-redirect=true"/>
                 </h:panelGroup>
             </h:panelGroup>
-
-
-
-
         </h:form>
-
     </ui:define>
 </ui:composition>
 </html>

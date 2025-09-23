@@ -46,6 +46,8 @@
                          paginator="true"
                          rows="10"
                          rowKey="#{J.id}">
+                <p:column headerText="#{I18N['tarif.label.detail']}">
+                </p:column>
                 <p:column headerText="#{I18N['tarifjour.label.article']}">
                     <h:outputText value="#{J.article.nom}"/>
                 </p:column>
@@ -76,6 +78,8 @@
                          paginator="true"
                          rows="10"
                          rowKey="#{P.id}">
+                <p:column headerText="#{I18N['penalite.label.Grille']}">
+                </p:column>
                 <p:column headerText="#{I18N['tarifpenalite.label.article']}">
                     <h:outputText value="#{P.article.nom}"/>
                 </p:column>
@@ -99,11 +103,16 @@
 
             <br/>
             <h:panelGroup layout="block" styleClass="button-bar">
+                <h:panelGroup styleClass="left-buttons">
+                    <p:commandButton icon="pi pi-copy"
+                                     value="#{I18N['tarif.button.useAsTemplate']}"
+                                     action="#{tarifBean.redirectNew}"
+                                     ajax="false"/>
+                </h:panelGroup>
                 <h:panelGroup styleClass="right-buttons">
                     <p:commandButton icon="pi pi-home"
                                      value="#{I18N['application.button.return']}"
-                                     action="#{tarifBean.flushTarifs}"
-                                     immediate="true"/>
+                                     action="#{tarifBean.flushTarifs}" immediate="true"/>
                 </h:panelGroup>
             </h:panelGroup>
 

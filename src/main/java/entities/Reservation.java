@@ -12,7 +12,7 @@ import java.util.Objects;
 @Entity
 @Table(name = "reservation")
 @NamedQueries({
-        @NamedQuery(name = "Reservation.findAllActif", query = "SELECT r FROM Reservation r WHERE r.actif = TRUE ORDER BY r.statut, r.dateDemande, r.id"),
+        @NamedQuery(name = "Reservation.findAll", query = "SELECT r FROM Reservation r ORDER BY r.statut, r.dateDemande, r.id"),
         @NamedQuery(name = "Reservation.findNextByArticleMagasin",query = "SELECT r FROM Reservation r WHERE r.articleIdArticle = :article AND r.magasinIdMagasin = :magasin AND r.actif = TRUE AND r.statut = enumeration.ReservationStatutEnum.file ORDER BY r.dateDemande ASC, r.id ASC")
 })
 public class Reservation implements Serializable {
@@ -24,7 +24,7 @@ public class Reservation implements Serializable {
 
     @NotNull
     @Column(name = "Actif", nullable = false)
-    private Boolean actif;
+    private Boolean actif = true;
 
     @NotNull
     @Column(name = "MailEnvoye", nullable = false)
@@ -57,7 +57,7 @@ public class Reservation implements Serializable {
 
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="ExemplaireArticleIdEA")
-    private ExemplaireArticle exemplaire; // null while in file
+    private ExemplaireArticle exemplaire;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name="DateReady")

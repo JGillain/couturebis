@@ -19,7 +19,7 @@
                 <p:growl id="growl" showDetail="true" sticky="true" />
                 <h2 style="text-align:center">#{I18N['application.reservation.title']}</h2>
 
-                <p:dataTable value="#{reservationBean.rows}"
+                <p:dataTable value="#{reservationBean.listeReservation}"
                              var="res"
                              id="tableReservation"
                              widgetVar="resTbl"
@@ -38,15 +38,10 @@
                         <h:outputText value="#{res.articleIdArticle.nom}" />
                     </p:column>
 
-                    <!-- Magasin -->
-                    <p:column>
-                        <f:facet name="header">#{I18N['Magasin.label.nom']}</f:facet>
-                        <h:outputText value="#{res.magasinIdMagasin.nom}" />
-                    </p:column>
 
                     <!-- Client -->
                     <p:column>
-                        <f:facet name="header">#{I18N['utilisateur.label.client']}</f:facet>
+                        <f:facet name="header">#{I18N['utilisateur.label.Nom']}</f:facet>
                         <h:outputText value="#{res.utilisateurIdUtilisateur.nom} #{res.utilisateurIdUtilisateur.prenom}" />
                         <br/>
                         <h:outputText value="#{res.utilisateurIdUtilisateur.courriel}" />
@@ -61,31 +56,30 @@
                     <!-- Dates -->
                     <p:column>
                         <f:facet name="header">#{I18N['Reservation.label.dates']}</f:facet>
-                        <h:panelGroup layout="block">
+
+                        <h:panelGrid columns="2" columnClasses="col-label,col-value" styleClass="w-full">
                             <h:outputText value="#{I18N['Reservation.label.dateDemande']}: " />
                             <h:outputText value="#{res.dateDemande}">
-                                <f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+                                <f:convertDateTime timeZone="Europe/Brussels" pattern="dd/MM/yyyy HH:mm"/>
                             </h:outputText>
-                        </h:panelGroup>
-                        <h:panelGroup layout="block" rendered="#{res.dateReady ne null}">
-                            <h:outputText value="#{I18N['Reservation.label.dateReady']}: " />
-                            <h:outputText value="#{res.dateReady}">
-                                <f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+
+                            <h:outputText rendered="#{res.dateReady ne null}" value="#{I18N['Reservation.label.dateReady']}: " />
+                            <h:outputText rendered="#{res.dateReady ne null}" value="#{res.dateReady}">
+                                <f:convertDateTime timeZone="Europe/Brussels" pattern="dd/MM/yyyy HH:mm"/>
                             </h:outputText>
-                        </h:panelGroup>
-                        <h:panelGroup layout="block" rendered="#{res.holdUntil ne null}">
-                            <h:outputText value="#{I18N['Reservation.label.holdUntil']}: " />
-                            <h:outputText value="#{res.holdUntil}">
-                                <f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+
+                            <h:outputText rendered="#{res.holdUntil ne null}" value="#{I18N['Reservation.label.holdUntil']}: " />
+                            <h:outputText rendered="#{res.holdUntil ne null}" value="#{res.holdUntil}">
+                                <f:convertDateTime timeZone="Europe/Brussels" pattern="dd/MM/yyyy HH:mm"/>
                             </h:outputText>
-                        </h:panelGroup>
+                        </h:panelGrid>
                     </p:column>
 
                     <!-- Exemplaire / Code-barres (si prêt) -->
                     <p:column>
                         <f:facet name="header">#{I18N['ExemplairesArticles.label.CodeBarre']}</f:facet>
                         <h:outputText rendered="#{res.exemplaire ne null}"
-                                      value="#{res.exemplaire.codeBarreIdCB != null ? res.exemplaire.codeBarreIdCB.codeBarre : res.article.codeBarreIdCB.codeBarre}" />
+                                      value="#{res.exemplaire.codeBarreIdCB != null ? res.exemplaire.codeBarreIdCB.codeBarre : res.articleIdArticle.codeBarreIdCB.codeBarre}" />
                         <h:outputText rendered="#{res.exemplaire eq null}" value="—" />
                     </p:column>
 
@@ -96,6 +90,8 @@
                                          value="#{I18N['application.button.validate']}"
                                          rendered="#{res.statut eq 'pret'}"
                                          update=":dlgFulfill :growl"
+                                         immediate="true"
+                                         process="@this"
                                          oncomplete="PF('dlgFulfillWV').show()">
                             <f:setPropertyActionListener target="#{reservationBean.selected}" value="#{res}" />
                         </p:commandButton>
@@ -104,6 +100,8 @@
                         <p:commandButton icon="pi pi-times"
                                          value="#{I18N['application.button.cancel']}"
                                          rendered="#{res.statut eq 'file' or res.statut eq 'pret'}"
+                                         immediate="true"
+                                         process="@this"
                                          actionListener="#{reservationBean.cancelReservation(res)}"
                                          update="@form :growl" />
 
@@ -111,6 +109,8 @@
                         <p:commandButton icon="pi pi-clock"
                                          value="#{I18N['Reservation.button.expire']}"
                                          rendered="#{res.statut eq 'pret'}"
+                                         immediate="true"
+                                         process="@this"
                                          actionListener="#{reservationBean.expireReservation(res)}"
                                          update="@form :growl" />
                     </p:column>
@@ -132,11 +132,18 @@
                       modal="true" closable="true" resizable="false" width="420">
                 <h:panelGrid columns="2" columnClasses="col1Newrec,col2Newrec" cellpadding="5">
                     <h:outputText value="#{I18N['Reservation.label.dateFin']}" />
-                    <p:calendar value="#{reservationBean.dateFin}"
-                                pattern="dd/MM/yyyy HH:mm"
-                                showTime="true" hourFormat="24"
+                    <p:calendar id="finResa"
+                                value="#{reservationBean.dateFin}"
+                                pattern="dd/MM/yyyy"
+                                showIcon="true"
+                                navigator="true"
+                                showButtonBar="true"
                                 required="true"
-                                requiredMessage="#{I18N['formulaire.message.required.date']}" />
+                                requiredMessage="#{I18N['formulaire.message.required.date']}"
+                                mindate="#{reservationBean.tomorrow}">
+                        <f:convertDateTime timeZone="Europe/Brussels" type="date" pattern="dd/MM/yyyy"/>
+                    </p:calendar>
+
                 </h:panelGrid>
                 <h:panelGroup layout="block" style="text-align:right; margin-top:1rem">
                     <p:commandButton icon="pi pi-check"
@@ -146,6 +153,7 @@
                                      oncomplete="PF('dlgFulfillWV').hide()"/>
                     <p:commandButton icon="pi pi-times"
                                      type="button"
+                                     immediate="true"
                                      value="#{I18N['application.button.cancel']}"
                                      onclick="PF('dlgFulfillWV').hide()" />
                 </h:panelGroup>
@@ -155,12 +163,12 @@
                 <h:panelGroup styleClass="left-buttons">
                     <p:commandButton icon="pi pi-plus"
                                      value="#{I18N['application.button.new']}"
-                                     action="formNewReservation.xhtml?faces-redirect=true" />
+                                     action="formNewReservation.xhtml?faces-redirect=true" immediate="true"/>
                 </h:panelGroup>
                 <h:panelGroup styleClass="right-buttons">
                     <p:commandButton icon="pi pi-home"
                                      value="#{I18N['application.button.returnbienvenue']}"
-                                     action="#{reservationBean.refresh}" ajax="false"/>
+                                     action="#{reservationBean.flushBienvenue}" immediate="true"/>
                 </h:panelGroup>
             </h:panelGroup>
 

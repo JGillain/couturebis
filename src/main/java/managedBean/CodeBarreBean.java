@@ -33,7 +33,7 @@ public class CodeBarreBean implements Serializable {
     {
         log.info("CodeBarreBean init");
     }
-
+    // methode qui permet de lancer un download du pdf contenant les code barres
     public void downloadBarcode() {
         FacesContext fc = FacesContext.getCurrentInstance();
         ExternalContext ec = fc.getExternalContext();
@@ -68,7 +68,7 @@ public class CodeBarreBean implements Serializable {
             bounceWithError(ec, fc, fileName);
         }
     }
-
+    // methode extraite du downloadBarcode, permet l'affichage d'un bouton de téléchargement si erreur
     private void bounceWithError(ExternalContext ec, FacesContext fc, String fileName) {
         try {
             String base = ec.getRequestContextPath() + "/formNewExArticle.xhtml";

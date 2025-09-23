@@ -12,16 +12,11 @@
 
     <ui:define name="content">
         <p:growl id="growl" showDetail="true" sticky="true" />
-        <shiro:hasPermission name="Exemplaires:ActivDesactiv">
         <h:form>
         <h2 style="text-align:center">#{I18N['ExemplairesArticles.form.questionconfirm']}</h2>
-        <p:commandButton icon="pi pi-check-circle" value="#{I18N['commune.label.oui']}" action="#{exemplaireArticleBean.activdesactivExLiv}"/>
-        <p:commandButton icon="pi pi-ban" value="#{I18N['commune.label.non']}" action="tableExemplaireLivres" immediate="true"/>
+        <p:commandButton icon="pi pi-check-circle" value="#{I18N['commune.label.oui']}" action="#{exemplaireArticleBean.activdesactivExArt()}"/>
+        <p:commandButton icon="pi pi-ban" value="#{I18N['commune.label.non']}" action="tableExArticle.xhtml?faces-redirect=true" immediate="true"/>
         </h:form>
-        </shiro:hasPermission>
-        <shiro:lacksPermission name="Exemplaires:ActivDesactiv">
-            <p:outputLabel value="#{I18N['application.page.accessrefuse']}"/>
-        </shiro:lacksPermission>
     </ui:define>
 </ui:composition>
 

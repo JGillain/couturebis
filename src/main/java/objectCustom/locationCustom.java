@@ -7,20 +7,24 @@ public class locationCustom {
     private static final Logger log = Logger.getLogger(locationCustom.class);
     private int nbrJours;
     private String CB;
+    private String articleNom;
     public locationCustom(){
         nbrJours=0;
         CB="";
+        articleNom="";
     }
-    public locationCustom(int nbrJours, String CB) {
+    public locationCustom(int nbrJours, String CB, String articleNom) {
         this.nbrJours = nbrJours;
         this.CB = CB;
+        this.articleNom = articleNom;
     }
 
     @Override
     public String toString() {
         return "locationCustom{" +
                 "CB='" + CB + '\'' +
-                ", nbrJours=" + nbrJours +
+                ", nbrJours=" + nbrJours +'\'' +
+                ", articleNom=" + articleNom +
                 '}';
     }
 
@@ -42,6 +46,14 @@ public class locationCustom {
     public void setCB(String CB) {
         log.debug("setCB : " + CB);
         this.CB = CB;
+    }
+
+    public String getArticleNom() {
+        return articleNom;
+    }
+
+    public void setArticleNom(String articleNom) {
+        this.articleNom = articleNom;
     }
 
 

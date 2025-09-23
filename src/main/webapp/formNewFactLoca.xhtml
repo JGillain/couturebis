@@ -18,7 +18,7 @@
                 </h:head>
                 <h2 style="text-align:center">#{I18N['fact.form.location.nouveau.titre']}</h2>
 
-                <p:outputLabel value="numéro de membre?" />
+                <p:outputLabel value="#{I18N['utilisateur.label.NumMembre']}" />
                 <p:inputText value="#{factureBean.numMembre}" id="numMembre"
                              required="true"
                              requiredMessage="#{I18N['formulaire.message.required.numero']}"
@@ -35,7 +35,7 @@
                              editMode="row">
 
                     <!-- Code barre -->
-                    <p:column headerText="Code barre">
+                    <p:column headerText="#{I18N['ExemplairesArticles.label.CodeBarre']}">
                         <p:cellEditor>
                             <f:facet name="output">
                                 <h:outputText value="#{LC.CB}"/>
@@ -55,7 +55,7 @@
                     </p:column>
 
                     <!-- Nombre de jours -->
-                    <p:column headerText="Nombre de jours">
+                    <p:column headerText="#{I18N['tarifjour.label.jour']}">
                         <p:cellEditor>
                             <f:facet name="output">
                                 <h:outputText value="#{LC.nbrJours}"/>
@@ -94,7 +94,7 @@
 
                     <!-- Right aligned button -->
                     <h:panelGroup styleClass="right-buttons">
-                        <p:commandButton icon="pi pi-check-circle" value="#{I18N['application.button.validate']}" action="#{factureBean.newFactLoca}" ajax="false"/>
+                        <p:commandButton icon="pi pi-check-circle" value="#{I18N['application.button.validate']}" action="#{factureBean.preparerLocation}" ajax="false"/>
                         <p:commandButton icon="pi pi-home" value="#{I18N['application.button.return']}" action="tableFactureLoca.xhtml?faces-redirect=true" immediate="true"/>
                     </h:panelGroup>
                 </h:panelGroup>

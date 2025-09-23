@@ -28,8 +28,8 @@ public class SvcReservation extends Service<Reservation> implements Serializable
     }
 
     // --- Finders
-    public List<Reservation> findAllActif() {
-        return finder.findByNamedQuery("Reservation.findAllActif", null);
+    public List<Reservation> findAll() {
+        return finder.findByNamedQuery("Reservation.findAll", null);
     }
 
     public Reservation findNextByArticleMagasin(Article article, Magasin magasin) {

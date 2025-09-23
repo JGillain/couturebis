@@ -15,7 +15,7 @@ import java.util.Objects;
                 @NamedQuery(name = "Article.findAllTri", query="SELECT A FROM Article A ORDER BY A.nom ASC"),
                 @NamedQuery(name = "Article.findActive", query = "SELECT A FROM Article A WHERE A.actif=TRUE"),
                 @NamedQuery(name = "Article.findInactive", query = "SELECT A FROM Article A WHERE A.actif=FALSE"),
-                @NamedQuery(name = "Article.searchTri", query="SELECT A FROM Article A WHERE A.nom=:nom ORDER BY A.nom ASC"),//A verifier
+                @NamedQuery(name = "Article.searchTri", query="SELECT A FROM Article A WHERE A.nom=:nom ORDER BY A.nom ASC"),
                 @NamedQuery(name = "Article.findByFabricant", query = "SELECT A FROM Article A WHERE A.fabricantIdFabricant=:fab"),
                 @NamedQuery(name = "Article.findByCategorie", query = "SELECT A FROM Article A WHERE A.categorieIdCategorie=:cat"),
                 @NamedQuery(name = "Article.findByNumserie", query = "SELECT A FROM Article A WHERE A.numSerie=:numserie"),

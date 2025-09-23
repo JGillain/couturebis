@@ -56,20 +56,26 @@
                         <p:outputLabel value ="#{art.prix}"/>
                     </p:column>
                     <p:column>
-                    <!-- column header -->
-                    <f:facet name="header">#{I18N['Articles.label.nombre.location']}</f:facet>
-                    <!-- row record -->
-                    <p:outputLabel value ="#{articleBean.getStockLocation(art)}"/>
-                </p:column><p:column>
-                    <!-- column header -->
-                    <f:facet name="header">#{I18N['Articles.label.nombre.vente']}</f:facet>
-                    <!-- row record -->
-                    <p:outputLabel value ="#{articleBean.getStockVente(art)}"/>
-                </p:column>
+                        <!-- column header -->
+                        <f:facet name="header">#{I18N['Articles.label.nombre.location']}</f:facet>
+                        <!-- row record -->
+                        <p:outputLabel value ="#{articleBean.getStockLocation(art)}"/>
+                    </p:column>
+                    <p:column>
+                        <!-- column header -->
+                        <f:facet name="header">#{I18N['Articles.label.nombre.location']}</f:facet>
+                        <!-- row record -->
+                        <p:outputLabel value ="#{articleBean.getStockReserve(art)}"/>
+                    </p:column>
+                    <p:column>
+                        <!-- column header -->
+                        <f:facet name="header">#{I18N['Articles.label.nombre.vente']}</f:facet>
+                        <!-- row record -->
+                        <p:outputLabel value ="#{articleBean.getStockVente(art)}"/>
+                    </p:column>
 
                     <p:column>
                         <p:commandButton  icon="pi pi-book" value="exemplaires associés" action="#{exemplaireArticleBean.getExArticleByArticle}">
-                            <!--todo remettre les valeurs quand form fini -->
                             <f:setPropertyActionListener target="#{exemplaireArticleBean.article}" value="#{art}" />
                         </p:commandButton>
                     </p:column>

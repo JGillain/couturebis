@@ -81,7 +81,6 @@
                     <p:column>
                         <f:facet name="header">
                             <h:panelGroup style="display:flex;gap:.5rem;align-items:center;justify-content:flex-end">
-                                <h:outputText value="#{I18N['application.button.filters']}" />
                                 <p:commandButton type="button" icon="pi pi-filter"
                                                  title="#{I18N['application.button.filters']}"
                                                  onclick="PF('arTbl').jq.toggleClass('hide-filters');" />
@@ -91,13 +90,20 @@
                             </h:panelGroup>
                         </f:facet>
 
-                        <p:commandButton rendered="#{art.actif}" icon="pi pi-power-off" value ="Désactiver" action="formConfirmationArticle">
+                        <p:commandButton rendered="#{art.actif}"
+                                         icon="pi pi-power-off"
+                                         value ="Désactiver"
+                                         action="#{articleBean.activdesactivArt}">
                             <f:setPropertyActionListener target="#{articleBean.article}" value="#{art}" />
+                            <p:confirm header="Confirmation"
+                                       message="#{I18N['Articles.form.questionconfirm']}"
+                                       icon="pi pi-exclamation-triangle"/>
                         </p:commandButton>
 
                         <p:commandButton rendered="#{!art.actif}" icon="pi pi-check" value ="Activer" action="#{articleBean.activdesactivArt}">
                             <f:setPropertyActionListener target="#{articleBean.article}" value="#{art}" />
                         </p:commandButton>
+
                     </p:column>
 
                     <p:column id="actifCol" filterBy="#{art.actif}" filterMatchMode="exact" style="display:none"/>

@@ -3,6 +3,7 @@ package services;
 
 import entities.Article;
 import entities.ExemplaireArticle;
+import entities.Magasin;
 import org.apache.log4j.Logger;
 
 import java.io.Serializable;
@@ -55,6 +56,17 @@ public class SvcExemplaireArticle extends Service<ExemplaireArticle> implements 
         Map<String, Object> param = new HashMap<>();
         param.put("article", article);
         return finder.findByNamedQuery("ExArticle.AvailableExArticlesRent", param).size();
+    }
+
+    public int countAvailableExArticlesRentNotReserved(Article article, Magasin  magasin) {
+        Map<String, Object> param = new HashMap<>();
+        param.put("article", article);
+        return finder.findByNamedQuery("ExArticle.AvailableExArticlesRentNotReserved", param).size();
+    }
+    public int countAvailableExArticlesRentReserved(Article article) {
+        Map<String, Object> param = new HashMap<>();
+        param.put("article", article);
+        return finder.findByNamedQuery("ExArticle.AvailableExArticlesRentReserved", param).size();
     }
 
     public int countAvailableExArticlesSales(Article article) {

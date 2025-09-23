@@ -2,9 +2,9 @@ package managedBean;
 
 import entities.*;
 import enumeration.ExemplaireArticleEtatEnum;
+import enumeration.ExemplaireArticleStatutEnum;
 import enumeration.FactureEtatEnum;
 import enumeration.FactureTypeEnum;
-import enumeration.ReservationStatutEnum;
 import objectCustom.locationCustom;
 import objectCustom.venteCustom;
 import org.apache.log4j.Logger;
@@ -49,6 +49,8 @@ public class FactureBean implements Serializable {
     private double montant;
     @Inject
     private MagasinBean magasinBean;
+    @Inject
+    private ReservationBean reservationBean;
     private Magasin magasin;
     private ExemplaireArticle exemplaireArticle;
 
@@ -182,11 +184,17 @@ public class FactureBean implements Serializable {
         }
     }
 
-    // Méthode qui permet de créer une facture de location
-    public String newFactLoca()
-    {
-        //verification si doublons presents
+    //début du flux de la facture de location; avant payement.
+    public String preparerLocation() {
+        // --- doublons CB ---
         List<String> dupCbs = new ArrayList<>();
+        if (listLC == null || listLC.isEmpty()) {
+            FacesContext fc = FacesContext.getCurrentInstance();
+            fc.getExternalContext().getFlash().setKeepMessages(true);
+            fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN,
+                    "Aucun article", "Ajoutez au moins une ligne."));
+            return "";
+        }
         for (int i = 0; i < listLC.size(); i++) {
             String cbi = listLC.get(i).getCB();
             if (cbi == null) continue;
@@ -205,213 +213,447 @@ public class FactureBean implements Serializable {
                     "Doublon",
                     "Les codes-barres suivants sont saisis plusieurs fois : " + String.join(", ", dupCbs)
             ));
-            return "/formNewFactLoca.xhtml?faces-redirect=true";
+            return "";
         }
-        //initialisation des services requis
-        SvcFacture service =new SvcFacture();
-        SvcFactureDetail serviceFD = new SvcFactureDetail();
-        SvcExemplaireArticle serviceEA = new SvcExemplaireArticle();
-        SvcUtilisateur serviceU = new SvcUtilisateur();
-        SvcTarif serviceT = new SvcTarif();
-        SvcJours serviceJ = new SvcJours();
 
-        //rassemblement des entity managers pour la transaction
+        // --- services ---
+        SvcFacture           service   = new SvcFacture();
+        SvcFactureDetail     serviceFD = new SvcFactureDetail();
+        SvcExemplaireArticle serviceEA = new SvcExemplaireArticle();
+        SvcTarif             serviceT  = new SvcTarif();
+        SvcUtilisateur       serviceU  = new SvcUtilisateur();
+
         serviceFD.setEm(service.getEm());
         serviceEA.setEm(service.getEm());
+        serviceT .setEm(service.getEm());
+        serviceU .setEm(service.getEm());
 
-        //initialisation des object et variables
-        double prixTVAC = 0;
-        long now =  System.currentTimeMillis();
-        long rounded = now - now % 60000;
-        Timestamp timestampdebut = new Timestamp(rounded);
-        Date date = new Date();
-        Facture fact = new Facture();
-        Tarif T = new Tarif();
-        ModelFactLoca MFB =new ModelFactLoca();
-        Utilisateur u = serviceU.getByNumMembre(numMembre).get(0);
-        boolean noTarif = false;
-        boolean missingMagasin = (magasin == null);
-        boolean alreadyLoue = false;
-        boolean missingExemplaire = false;
-
-        Date today = new Date(System.currentTimeMillis());
-        List<Tarif> tarifs = Collections.emptyList();
-
-        if (!missingMagasin) {
-            tarifs = serviceT.findTarifByMagasin(today, magasin);
-            noTarif = (tarifs == null || tarifs.isEmpty());
-        }
-
-        for (locationCustom lc : listLC) {
-            List<ExemplaireArticle> found = serviceEA.findOneByCodeBarre(lc.getCB());
-            if (found == null || found.isEmpty()) {
-                missingExemplaire = true;
-                break;
-            }
-            if (Boolean.TRUE.equals(found.get(0).getLoue())) {
-                alreadyLoue = true;
-                break;
-            }
-        }
-
-        boolean flag = missingMagasin || noTarif || missingExemplaire || alreadyLoue;
-
-        if (!flag) {
-            T=tarifs.get(0);
-            //initialisation de la transaction
-            EntityTransaction transaction = service.getTransaction();
-            transaction.begin();
-            try {
-                //crÃ©ation de la facture
-                fact.setDateDebut(timestampdebut);
-                fact.setNumeroFacture(createNumFact());
-                fact.setEtat(FactureEtatEnum.en_cours);
-                fact.setType(FactureTypeEnum.Location);
-                fact.setMagasinIdMagasin(magasin);
-                fact.setUtilisateurIdUtilisateur(u);
-                // parcour de la liste des location a inscrire dans la facture
-                for (locationCustom lc : listLC) {
-                    //crÃ©ation des dÃ©tails de la facture
-                    ExemplaireArticle ea = serviceEA.findOneByCodeBarre(lc.getCB()).get(0);
-                    serviceEA.loueExemplaire(ea);
-                    Timestamp timestampretour = new Timestamp(rounded + (lc.getNbrJours() * 24 * 3600 * 1000));
-                    FactureDetail Factdet = serviceFD.newRent(ea, fact, T, lc.getNbrJours(), timestampretour);
-                    serviceFD.save(Factdet);
-                    serviceEA.save(ea);
-                    prixTVAC = prixTVAC + Factdet.getPrix();
-                }
-
-                fact.setPrixTVAC(prixTVAC);
-
-                // sauvegarde de la facture et commit de transaction
-                service.save(fact);
-                transaction.commit();
-                service.refreshEntity(fact);
-                String path=MFB.creation(fact, magasin);
-                MailUtils.sendWithAttachment(fact.getUtilisateurIdUtilisateur().getCourriel(),"Facture de location","vous trouverez la facture concernant votre location en piece jointe",path);
-                return "/tableFactureLoca.xhtml?faces-redirect=true";
-            }catch (Exception e){
-                log.error("Erreur pendant la creation de la facture ", e);
+        try {
+            // magasin déjà injecté dans @PostConstruct : this.magasin = magasinBean.getMagasin();
+            if (magasin == null) {
+                FacesContext fc = FacesContext.getCurrentInstance();
+                fc.getExternalContext().getFlash().setKeepMessages(true);
+                fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN,
+                        "Magasin manquant", null));
                 return "";
             }
-            finally {
-                //bloc pour gérer les erreurs lors de la transactions
-                if (transaction.isActive()) {
 
-                    transaction.rollback();
+            // client via numMembre
+            List<Utilisateur> lu = serviceU.getByNumMembre(numMembre);
+            if (lu == null || lu.isEmpty()) {
+                FacesContext fc = FacesContext.getCurrentInstance();
+                fc.getExternalContext().getFlash().setKeepMessages(true);
+                fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN,
+                        "Client introuvable", "Vérifiez le code membre."));
+                return "";
+            }
+            Utilisateur u = lu.get(0);
+
+            // tarif actif aujourd’hui
+            Date today = new Date(System.currentTimeMillis());
+            List<Tarif> tarifs = serviceT.findTarifByMagasin(today, magasin);
+            if (tarifs == null || tarifs.isEmpty()) {
+                FacesContext fc = FacesContext.getCurrentInstance();
+                fc.getExternalContext().getFlash().setKeepMessages(true);
+                fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN,
+                        "Aucun tarif actif pour ce magasin aujourd’hui.", null));
+                return "";
+            }
+            Tarif T = tarifs.get(0);
+
+            // horodatage arrondi à la minute
+            long now = System.currentTimeMillis();
+            long rounded = now - (now % 60000);
+            Timestamp tsDebut = new Timestamp(rounded);
+
+            facture.setDateDebut(tsDebut);
+            facture.setEtat(enumeration.FactureEtatEnum.en_cours);
+            facture.setType(enumeration.FactureTypeEnum.Location);
+            facture.setMagasinIdMagasin(magasin);
+            facture.setUtilisateurIdUtilisateur(u);
+
+            // estimation du total (sans persist) en réutilisant newRent(...)
+            double total = 0d;
+            for (locationCustom lc : listLC) {
+                String cb = (lc.getCB() == null) ? "" : lc.getCB().trim();
+                if (cb.isEmpty()) {
                     FacesContext fc = FacesContext.getCurrentInstance();
                     fc.getExternalContext().getFlash().setKeepMessages(true);
-                    fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"l'operation n'a pas reussie",null));
+                    fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN,
+                            "Code-barres manquant", "Veuillez compléter la ligne."));
+                    return "";
                 }
-                //fermeture des service
-                service.close();
-                serviceJ.close();
-                serviceU.close();
-                serviceT.close();
+
+                List<ExemplaireArticle> found = serviceEA.findOneByCodeBarre(cb);
+                if (found == null || found.isEmpty()) {
+                    FacesContext fc = FacesContext.getCurrentInstance();
+                    fc.getExternalContext().getFlash().setKeepMessages(true);
+                    fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN,
+                            "Exemplaire introuvable", "CB: " + cb));
+                    return "";
+                }
+                ExemplaireArticle ea = found.get(0);
+
+                if (!ea.getStatut().equals(ExemplaireArticleStatutEnum.Location)) {
+                    FacesContext fc = FacesContext.getCurrentInstance();
+                    fc.getExternalContext().getFlash().setKeepMessages(true);
+                    fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN,
+                            "Statut invalide", "L’exemplaire n’est pas en Location (CB: " + cb + ")"));
+                    return "";
+                }
+                if (!Boolean.TRUE.equals(ea.getActif()) || Boolean.TRUE.equals(ea.getLoue())) {
+                    FacesContext fc = FacesContext.getCurrentInstance();
+                    fc.getExternalContext().getFlash().setKeepMessages(true);
+                    fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN,
+                            "Indisponible", "Exemplaire inactif ou déjà loué (CB: " + cb + ")"));
+                    return "";
+                }
+
+                int nbJours = Math.max(1, lc.getNbrJours());
+                Timestamp tsFin = new Timestamp(tsDebut.getTime() + (long) nbJours * 24L * 3600L * 1000L);
+
+                //
+                FactureDetail fdPreview = serviceFD.newRent(ea, facture, T, nbJours, tsFin);
+                total += (fdPreview != null ? fdPreview.getPrix() : 0d);
+
+                if (ea.getArticleIdArticle() != null) {
+                    lc.setArticleNom(ea.getArticleIdArticle().getNom());
+                }
             }
+
+            // total affiché sur confirmLoca.xhtml
+            montant = total;
+
+            // go confirmation
+            FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
+            return "/confirmLoca.xhtml?faces-redirect=true";
+        } finally {
+            service.close();
         }
-        else {
-            FacesContext fc = FacesContext.getCurrentInstance();
-            fc.getExternalContext().getFlash().setKeepMessages(true);
-            fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"une erreur est survenue, soit l'article est déjà loué ou une information est manquante (tarif, magasin)",null));
-            return "/formNewFactLoca.xhtml?faces-redirect=true";
+    }
+    // continuation du flux apres confirmation du payement.
+    public String finaliserLocation() {
+        // services
+        SvcFacture           service   = new SvcFacture();
+        SvcFactureDetail     serviceFD = new SvcFactureDetail();
+        SvcExemplaireArticle serviceEA = new SvcExemplaireArticle();
+        SvcTarif             serviceT  = new SvcTarif();
+
+        serviceFD.setEm(service.getEm());
+        serviceEA.setEm(service.getEm());
+        serviceT .setEm(service.getEm());
+
+        try {
+            // sécurités minimales
+            if (facture == null || facture.getUtilisateurIdUtilisateur() == null || magasin == null) {
+                FacesContext fc = FacesContext.getCurrentInstance();
+                fc.getExternalContext().getFlash().setKeepMessages(true);
+                fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN,
+                        "Contexte incomplet", "Relancez la préparation."));
+                return "";
+            }
+
+            // numéro de facture au dernier moment
+            facture.setNumeroFacture(createNumFact());
+            facture.setType(enumeration.FactureTypeEnum.Location);
+            facture.setEtat(enumeration.FactureEtatEnum.en_cours);
+            facture.setMagasinIdMagasin(magasin);
+
+            // tarif actif
+            Date today = new Date(System.currentTimeMillis());
+            List<Tarif> tarifs = serviceT.findTarifByMagasin(today, magasin);
+            if (tarifs == null || tarifs.isEmpty()) {
+                FacesContext fc = FacesContext.getCurrentInstance();
+                fc.getExternalContext().getFlash().setKeepMessages(true);
+                fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN,
+                        "Aucun tarif actif pour ce magasin aujourd’hui.", null));
+                return "";
+            }
+            Tarif T = tarifs.get(0);
+
+            // date début : on garde celle fixée en préparation (si null, on recalcule)
+            if (facture.getDateDebut() == null) {
+                long now = System.currentTimeMillis();
+                long rounded = now - (now % 60000);
+                facture.setDateDebut(new Timestamp(rounded));
+            }
+            Timestamp tsDebut = facture.getDateDebut();
+
+            double total = 0d;
+
+            EntityTransaction tx = service.getTransaction();
+            tx.begin();
+            try {
+                for (locationCustom lc : listLC) {
+                    String cb = lc.getCB();
+                    int nbJours = Math.max(1, lc.getNbrJours());
+
+                    List<ExemplaireArticle> found = serviceEA.findOneByCodeBarre(cb);
+                    if (found == null || found.isEmpty()) {
+                        tx.rollback();
+                        FacesContext fc = FacesContext.getCurrentInstance();
+                        fc.getExternalContext().getFlash().setKeepMessages(true);
+                        fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN,
+                                "Exemplaire introuvable au moment de la validation", "CB: " + cb));
+                        return "";
+                    }
+                    ExemplaireArticle ea = found.get(0);
+
+                    if (!ExemplaireArticleStatutEnum.Location.equals(ea.getStatut()) ||
+                            !Boolean.TRUE.equals(ea.getActif()) ||
+                            Boolean.TRUE.equals(ea.getLoue())) {
+                        tx.rollback();
+                        FacesContext fc = FacesContext.getCurrentInstance();
+                        fc.getExternalContext().getFlash().setKeepMessages(true);
+                        fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN,
+                                "Indisponible", "Exemplaire non louable/actif/déjà loué (CB: " + cb + ")"));
+                        return "";
+                    }
+
+                    // marquer loué
+                    serviceEA.loueExemplaire(ea);
+
+                    Timestamp tsFin = new Timestamp(tsDebut.getTime() + (long) nbJours * 24L * 3600L * 1000L);
+                    FactureDetail fd = serviceFD.newRent(ea, facture, T, nbJours, tsFin);
+                    serviceFD.save(fd);
+
+                    ea.setReserve(false);
+                    ea.setLoue(true);
+                    serviceEA.save(ea);
+
+                    total += fd.getPrix();
+                }
+
+                facture.setPrixTVAC(total);
+                service.save(facture);
+                tx.commit();
+
+                // post-commit : PDF + mail
+                service.refreshEntity(facture);
+                ModelFactLoca mfb = new ModelFactLoca();
+                String path = mfb.creation(facture, magasin);
+                try {
+                    MailUtils.sendWithAttachment(
+                            facture.getUtilisateurIdUtilisateur().getCourriel(),
+                            "Facture de location",
+                            "Vous trouverez la facture concernant votre location en pièce jointe.",
+                            path
+                    );
+                } catch (Exception mailEx) {
+                    FacesContext.getCurrentInstance().addMessage(null,
+                            new FacesMessage(FacesMessage.SEVERITY_WARN,
+                                    "Facture créée, mais l’envoi d’e-mail a échoué.", null));
+                }
+
+                FacesContext fc = FacesContext.getCurrentInstance();
+                fc.getExternalContext().getFlash().setKeepMessages(true);
+                fc.addMessage(null, new FacesMessage(
+                        FacesMessage.SEVERITY_INFO,
+                        "Location finalisée",
+                        "Facture " + facture.getNumeroFacture() + " créée."));
+
+                // nettoyage et retour
+                init();
+                return "/tableFactureLoca.xhtml?faces-redirect=true";
+
+            } catch (Exception e) {
+                FacesContext fc = FacesContext.getCurrentInstance();
+                log.error("Erreur finaliserLocation()", e);
+                if (tx.isActive()) {
+                    tx.rollback();
+                    fc.addMessage(null, new FacesMessage(
+                            FacesMessage.SEVERITY_ERROR,
+                            "Erreur fatale",
+                            "La location n'a pas pu être enregistrée."));
+                } else {
+                    fc.addMessage(null, new FacesMessage(
+                            FacesMessage.SEVERITY_ERROR,
+                            "Erreur",
+                            "La génération du pdf ou de l'email n'a pas réussie."));
+                }
+                return "";
+            }
+        } finally {
+            service.close();
         }
     }
 
     // Méthode qui permet de créer une facture pénalité
-    public void newFactPena(FactureDetail facturesDetail)
-    {
+    public void newFactPena(FactureDetail facturesDetail) {
 
-        //initialisation des services requis
-
-        SvcFacture service =new SvcFacture();
-        SvcFactureDetail serviceFD = new SvcFactureDetail();
+        // --- Services ---
+        SvcFacture           service   = new SvcFacture();
+        SvcFactureDetail     serviceFD = new SvcFactureDetail();
         SvcExemplaireArticle serviceEA = new SvcExemplaireArticle();
-        SvcUtilisateur serviceU = new SvcUtilisateur();
-        SvcTarif serviceT = new SvcTarif();
-        SvcPenalite serviceP = new SvcPenalite();
-        SvcTarifPenalite serviceTP = new SvcTarifPenalite();
+        SvcUtilisateur       serviceU  = new SvcUtilisateur();
+        SvcTarif             serviceT  = new SvcTarif();
+        SvcPenalite          serviceP  = new SvcPenalite();
+        SvcTarifPenalite     serviceTP = new SvcTarifPenalite();
 
-        //rassemblement des entity managers pour la transaction
-
+        // Partage EM
         serviceFD.setEm(service.getEm());
         serviceEA.setEm(service.getEm());
 
-        //initialisation des object et variables
-        double prixTVAC = 0;
-        long now =  System.currentTimeMillis();
+        // --- Temps ---
+        long now     = System.currentTimeMillis();
         long rounded = now - now % 60000;
-        Timestamp timestampfacture = new Timestamp(rounded);
+        Timestamp tsFacture = new Timestamp(rounded);
 
-        Date date = new Date();
+        // --- Contexte magasin / utilisateur / tarif ---
+        Magasin magasinUse = (magasin != null)
+                ? magasin
+                : (facturesDetail != null && facturesDetail.getFactureIdFacture() != null
+                ? facturesDetail.getFactureIdFacture().getMagasinIdMagasin()
+                : null);
 
+
+        Utilisateur u = facturesDetail.getFactureIdFacture().getUtilisateurIdUtilisateur();
+
+        Date dateDebutOrigin = Date.from(facturesDetail.getFactureIdFacture().getDateDebut().toInstant());
+
+        Tarif T = serviceT.findTarifByMagasin(dateDebutOrigin, magasinUse).get(0);
+
+        // Lignes à imprimer dans le PDF (TP sélectionnées + Retard si appliqué)
+        List<TarifPenalite> lignesPDF = new ArrayList<>();
+        if (tarifsPenalites != null && !tarifsPenalites.isEmpty()) {
+            lignesPDF.addAll(tarifsPenalites);
+        }
+
+        double total = 0d;
         Facture fact = new Facture();
-        FactureDetail factdet= new FactureDetail();
-        FactureDetail factdetretard= null;
-        ModelFactLocaPena MFB =new ModelFactLocaPena();
-        Tarif T = serviceT.findTarifByMagasin(Date.from(facturesDetail.getFactureIdFacture().getDateDebut().toInstant()), magasin).get(0);
-        Utilisateur u = serviceU.getByNumMembre(numMembre).get(0);
+        FactureDetail fdRetard = null;
 
-
-
-        //initialisation de la transaction
-        EntityTransaction transaction = service.getTransaction();
-        transaction.begin();
+        EntityTransaction tx = service.getTransaction();
+        tx.begin();
         try {
-            //création de la facture
-            fact.setDateDebut(timestampfacture);
+            // 1) Créer la facture Pénalité
+            fact.setDateDebut(tsFacture);
             fact.setNumeroFacture(createNumFact());
             fact.setEtat(FactureEtatEnum.terminer);
             fact.setType(FactureTypeEnum.Penalite);
-            fact.setMagasinIdMagasin(magasin);
+            fact.setMagasinIdMagasin(magasinUse);
             fact.setUtilisateurIdUtilisateur(u);
 
-            //création des facture dÃ©tails
-            if (tarifsPenalites.size() >= 1){
-                for (TarifPenalite tp: tarifsPenalites)
-                {
-                    factdet=serviceFD.newPena(facturesDetail.getExemplaireArticleIdEA(),fact,T, tp.getPenaliteIdPenalite(), Date.from(facturesDetail.getFactureIdFacture().getDateDebut().toInstant()),timestampfacture);
-                    prixTVAC=prixTVAC+factdet.getPrix();
-                    serviceFD.save(factdet);
+            // 2) Pénalités choisies (SAUF "Retard" qui est calculé à part)
+            if (!tarifsPenalites.isEmpty()) {
+                for (TarifPenalite tp : tarifsPenalites) {
+                    String lib = (tp.getPenaliteIdPenalite() != null)
+                            ? tp.getPenaliteIdPenalite().getDenomination() : null;
+                    if (lib != null && lib.equalsIgnoreCase("Retard")) {
+                        continue; // géré au point 3
+                    }
+                    FactureDetail fd = serviceFD.newPena(
+                            facturesDetail.getExemplaireArticleIdEA(),
+                            fact, T,
+                            tp.getPenaliteIdPenalite(),
+                            dateDebutOrigin,
+                            tsFacture
+                    );
+                    total += (fd.getPrix() == null ? 0d : fd.getPrix());
+                    serviceFD.save(fd);
                 }
             }
 
-            if (facturesDetail.getDateRetour().after(facturesDetail.getDateFin())){
-                int nbjour = (int)((facturesDetail.getDateRetour().getTime() - facturesDetail.getDateFin().getTime())/(1000*60*60*24));
+            // 3) Ajouter "Retard" si applicable (jours entamés → 1 jour min)
+            if (facturesDetail.getDateRetour().after(facturesDetail.getDateFin())) {
 
-                if (serviceTP.findByPenalitesByArticle(T,serviceP.findByName("Retard").get(0),Date.from(facturesDetail.getFactureIdFacture().getDateDebut().toInstant()),facturesDetail.getExemplaireArticleIdEA().getArticleIdArticle()).size() >= 1){
-                    factdetretard= serviceFD.newPenaretard(facturesDetail.getExemplaireArticleIdEA() , fact , T , serviceP.findByName("Retard").get(0) , nbjour , Date.from(facturesDetail.getFactureIdFacture().getDateDebut().toInstant()),timestampfacture);
-                    prixTVAC=prixTVAC+factdetretard.getPrix();
-                    serviceFD.save(factdetretard);
+                long MILLIS_PAR_JOUR = 24L * 3600L * 1000L;
+                long diff = facturesDetail.getDateRetour().getTime() - facturesDetail.getDateFin().getTime();
+                int nbjours = (int) Math.max(1L, (diff + (MILLIS_PAR_JOUR - 1)) / MILLIS_PAR_JOUR);
+
+                List<Penalite> retardRef = serviceP.findByName("Retard");
+                if (!retardRef.isEmpty()) {
+                    List<TarifPenalite> tpsRetard = serviceTP.findByPenalitesByArticle(
+                            T, retardRef.get(0), dateDebutOrigin,
+                            facturesDetail.getExemplaireArticleIdEA().getArticleIdArticle());
+
+                    if (tpsRetard != null && !tpsRetard.isEmpty()) {
+                        fdRetard = serviceFD.newPenaretard(
+                                facturesDetail.getExemplaireArticleIdEA(),
+                                fact,
+                                T,
+                                retardRef.get(0),
+                                nbjours,
+                                dateDebutOrigin,
+                                tsFacture
+                        );
+                        total += (fdRetard.getPrix() == null ? 0d : fdRetard.getPrix());
+                        serviceFD.save(fdRetard);
+
+                        // S’assurer que "Retard" figure dans les lignes PDF (sans doublon)
+                        boolean present = false;
+                        for (TarifPenalite t : lignesPDF) {
+                            if (t.getPenaliteIdPenalite().getDenomination().equalsIgnoreCase("Retard")) {
+                                present = true;
+                                break;
+                            }
+                        }
+                        if (!present) {
+                            lignesPDF.add(tpsRetard.get(0));
+                        }
+                    }
                 }
-
             }
 
-            fact.setPrixTVAC(prixTVAC);
-            // sauvegarde de la facture et commit de transaction
+            // 4) Total facture + save
+            fact.setPrixTVAC(total);
             service.save(fact);
-            transaction.commit();
-            //refresh pour récupérer les collections associÃ©es
+            tx.commit();
+
+            // 5) PDF + mail
             service.refreshEntity(fact);
-            String path = MFB.creation(fact,tarifsPenalites,factdetretard, magasin);
-            MailUtils.sendWithAttachment(fact.getUtilisateurIdUtilisateur().getCourriel(),"Facture de pénalité","vous trouverez la facture concernant les pénalités suite a votre location en piece jointe",path);
-        }
-        finally {
-            //bloc pour gérer les erreurs lors de la transactions
-            if (transaction.isActive()) {
-                transaction.rollback();
-                FacesContext fc = FacesContext.getCurrentInstance();
-                fc.getExternalContext().getFlash().setKeepMessages(true);
-                fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Erreur fatale",null));
+            ModelFactLocaPena builder = new ModelFactLocaPena();
+            String pdfPath = builder.creation(fact, lignesPDF, fdRetard, magasinUse);
+
+            try {
+                MailUtils.sendWithAttachment(
+                        fact.getUtilisateurIdUtilisateur().getCourriel(),
+                        "Facture de pénalité",
+                        "Vous trouverez la facture concernant les pénalités suite à votre location en pièce jointe.",
+                        pdfPath
+                );
+            } catch (Exception mailEx) {
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_WARN,
+                                "Facture créée, mais l’e-mail n’a pas pu être envoyé.", null));
             }
-            //fermeture des service
+
+            FacesContext fc = FacesContext.getCurrentInstance();
+            fc.getExternalContext().getFlash().setKeepMessages(true);
+            fc.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_INFO,
+                    "Facture de pénalité créée",
+                    "Total à payer : " + String.format(Locale.FRANCE, "%.2f €", fact.getPrixTVAC())
+            ));
+
+        } catch (Exception e) {
+            FacesContext fc = FacesContext.getCurrentInstance();
+            if (tx.isActive()) {
+                tx.rollback();
+                fc.getExternalContext().getFlash().setKeepMessages(true);
+                fc.addMessage(null, new FacesMessage(
+                        FacesMessage.SEVERITY_ERROR,
+                        "Erreur fatale", "La facture de pénalité n’a pas pu être enregistrée."
+                ));
+            }
+            else  {
+                fc.getExternalContext().getFlash().setKeepMessages(true);
+                fc.addMessage(null, new FacesMessage(
+                        FacesMessage.SEVERITY_ERROR,
+                        "Erreur fatale", "La facture de pénalité a été enregistrée mais le pdf n'a pa pu être créé. Total à payer : " + String.format(Locale.FRANCE, "%.2f €", fact.getPrixTVAC())
+                ));
+            }
+        } finally {
+            // FD/EA partagent l’EM de 'service' → ne ferme que 'service'
             service.close();
-            serviceP.close();
+            // Ces services ont leur propre EM
             serviceU.close();
             serviceT.close();
+            serviceP.close();
             serviceTP.close();
         }
     }
+
 
     public String preparerVente() {
         SvcArticle serviceA = new SvcArticle();
@@ -471,7 +713,7 @@ public class FactureBean implements Serializable {
 
             // On passe à la page de confirmation de paiement
             FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
-            return "/venteConfirm.xhtml?faces-redirect=true";
+            return "/confirmVente.xhtml?faces-redirect=true";
 
         } finally {
             serviceEA.close();
@@ -635,8 +877,18 @@ public class FactureBean implements Serializable {
                     Date dateDebutFacture = facture1.get(0).getDateDebut();
                     List<Tarif> tarifs = serviceT.findTarifByMagasin(dateDebutFacture, magasin);
                     if (tarifs != null && !tarifs.isEmpty()) {
-                        tarifsPenalites = serviceTP.FindTarifPenaByTarifByArticle(
+                        List<TarifPenalite> tmp = serviceTP.FindTarifPenaByTarifByArticle(
                                 dateDebutFacture, tarifs.get(0), exemplaireArticle.getArticleIdArticle());
+                        for  (TarifPenalite penalite : tmp) {
+                            if (!penalite.getPenaliteIdPenalite().getDenomination().equalsIgnoreCase("Retard")){
+                                tarifsPenalites.add(penalite);
+                            }
+                        }
+                    }
+                    else{
+                        FacesContext fc = FacesContext.getCurrentInstance();
+                        fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "erreur", "grille tarifaire liée à la facture non trouvée"));
+                        return "";
                     }
                     return "/formEtatArticle.xhtml?faces-redirect=true";
                 }
@@ -653,28 +905,22 @@ public class FactureBean implements Serializable {
 
 
     // Méthode qui gere le retour des articles en location
-    public String retourArticleLoca() {
-        // Variables locales
-        FactureDetail        facturesDetail = null;
-        SvcExemplaireArticle serviceEL      = new SvcExemplaireArticle();
-        SvcReservation       serviceR       = new SvcReservation();     // service pour les réservations (FIFO)
-        Facture              fact           = new Facture();
-        long now = System.currentTimeMillis();
+    public String retourArticleLoca(){
+        FactureDetail facturesDetail = new FactureDetail();
+        SvcExemplaireArticle serviceEL = new SvcExemplaireArticle();
+        Facture fact = new Facture();
+        long now =  System.currentTimeMillis();
         long rounded = now - now % 60000;
         Timestamp timestampretour = new Timestamp(rounded);
         boolean flag = false;
 
-        // Réservation promue (pour envoi mail après commit)
-        Reservation resPromo = null;
-        String mailDest = null;
+        // exemplaireArticle est alimenté par redirectChoix()
 
-        // Vérifications de base
-        if (Boolean.TRUE.equals(exemplaireArticle.getLoue())) {
-            // Trouver le détail "ouvert" (sans DateRetour)
-            for (FactureDetail fd : exemplaireArticle.getFactureDetails()) {
+        if (exemplaireArticle.getLoue()) {
+            // prendre le FD ouvert pour cet exemplaire
+            for (FactureDetail fd : exemplaireArticle.getFactureDetails()){
                 if (fd.getDateRetour() == null) {
                     facturesDetail = fd;
-                    // Récup du membre pour d’autres flux (inchangé)
                     numMembre = fd.getFactureIdFacture()
                             .getUtilisateurIdUtilisateur()
                             .getCodeBarreIdCB()
@@ -686,19 +932,17 @@ public class FactureBean implements Serializable {
 
             if (flag) {
                 flag = false;
-
-                // Marquer le retour sur le détail
                 facturesDetail.setDateRetour(timestampretour);
 
-                // Pénalité si retard OU si une pénalité a déjà été identifiée côté "état"
-                if (facturesDetail.getDateRetour().after(facturesDetail.getDateFin()) || (tarifsPenalites != null && !tarifsPenalites.isEmpty())) {
+                // pénalité si en retard OU si une pénalité a été choisie (tarifsPenalites)
+                if (facturesDetail.getDateRetour().after(facturesDetail.getDateFin()) || !tarifsPenalites.isEmpty()) {
                     newFactPena(facturesDetail);
                 }
 
-                // Si TOUS les détails ont une DateRetour => facture terminée
-                for (FactureDetail fd : facturesDetail.getFactureIdFacture().getFactureDetails()) {
+                // si tous les détails sont rendus → facture terminée
+                for (FactureDetail fd: facturesDetail.getFactureIdFacture().getFactureDetails()){
                     if (fd.getDateRetour() == null) {
-                        flag = true;
+                        flag = true; // il en reste au moins un en cours
                         break;
                     }
                 }
@@ -707,136 +951,60 @@ public class FactureBean implements Serializable {
                     fact.setEtat(FactureEtatEnum.terminer);
                 }
 
-                // Transaction pour sauver le retour + (éventuelle) promo de réservation
-                SvcFacture service   = new SvcFacture();
+                // === Persistance
+                SvcFacture service = new SvcFacture();
                 SvcFactureDetail serviceFD = new SvcFactureDetail();
-                // Partager le même EM
                 serviceEL.setEm(service.getEm());
                 serviceFD.setEm(service.getEm());
-                serviceR .setEm(service.getEm());
 
                 EntityTransaction transaction = service.getTransaction();
                 transaction.begin();
                 try {
-                    // Libérer l'exemplaire (retour)
                     exemplaireArticle.setLoue(false);
                     if (exemplaireArticle.getEtat() == ExemplaireArticleEtatEnum.Mauvais) {
                         exemplaireArticle.setActif(false);
                     }
                     serviceEL.save(exemplaireArticle);
-
-                    // Sauver le détail mis à jour
                     serviceFD.save(facturesDetail);
-
-                    // Sauver la facture si terminée
                     if (fact.getEtat() == FactureEtatEnum.terminer) {
                         service.save(fact);
                     }
-
-                    // ----------------------------------------------------
-                    // Promotion d'une réservation FIFO (si présente)
-                    // ----------------------------------------------------
-                    try {
-                        Reservation next = serviceR.findNextByArticleMagasin(
-                                exemplaireArticle.getArticleIdArticle(),
-                                exemplaireArticle.getMagasinIdMagasin()
-                        );
-                        if (next != null) {
-                            // Mettre de côté l'exemplaire
-                            exemplaireArticle.setReserve(true);
-                            serviceEL.save(exemplaireArticle);
-
-                            // Passer la réservation en "prêt"
-                            Date nowDate = new Date();
-                            Calendar cal = Calendar.getInstance();
-                            cal.setTime(nowDate);
-                            cal.add(Calendar.DAY_OF_MONTH, 3);
-
-                            next.setStatut(ReservationStatutEnum.pret);
-                            next.setExemplaire(exemplaireArticle);
-                            next.setDateReady(nowDate);
-                            next.setHoldUntil(cal.getTime());
-                            next.setMailEnvoye(false);
-
-                            serviceR.save(next);
-
-                            // Pour l'envoi post-commit
-                            resPromo = next;
-                            mailDest = next.getUtilisateurIdUtilisateur().getCourriel();
-                        }
-                    } catch (Exception ignore) {
-                        // En cas d'erreur de promotion, ne pas bloquer le retour
-                    }
-
-                    // Commit global
                     transaction.commit();
 
-                    // --------------------------------------------
-                    // Après commit : envoyer l'email de retrait
-                    // --------------------------------------------
-                    if (resPromo != null && mailDest != null) {
-                        try {
-                            String sujet = "Votre réservation est prête";
-                            String corps = "Bonjour,\n\nVotre article réservé est disponible au magasin " + magasin.getNom() + " pendant 3 jours.\n"
-                                    + "Article : " + resPromo.getArticleIdArticle().getNom() + "\n"
-                                    + "Date limite : " + new java.text.SimpleDateFormat("dd/MM/yyyy").format(resPromo.getHoldUntil()) + "\n\n"
-                                    + "Merci de votre confiance.";
-                            MailUtils.sendText(mailDest, sujet, corps);
-
-                            // Marquer 'mailEnvoye = true' dans une petite transaction séparée
-                            EntityTransaction tx2 = service.getTransaction();
-                            tx2.begin();
-                            try {
-                                resPromo.setMailEnvoye(true);
-                                serviceR.save(resPromo);
-                                tx2.commit();
-                            } catch (Exception e2) {
-                                if (tx2.isActive()) tx2.rollback();
-                                FacesContext.getCurrentInstance().addMessage(null,
-                                        new FacesMessage(FacesMessage.SEVERITY_WARN,
-                                                "Mail envoyé mais l’indicateur 'mail envoyé' n’a pas pu être enregistré.", null));
-                            }
-                        } catch (Exception mailEx) {
-                            FacesContext.getCurrentInstance().addMessage(null,
-                                    new FacesMessage(FacesMessage.SEVERITY_WARN,
-                                            "Réservation mise de côté, mais l’envoi du mail a échoué.", null));
-                        }
-                    }
-
-                    // Message succès
                     FacesContext fc = FacesContext.getCurrentInstance();
                     fc.getExternalContext().getFlash().setKeepMessages(true);
-                    fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "retour accepté", null));
+                    fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"retour accepté",null));
+
+                    // === verif si reservation applicable
+                    reservationBean.promouvoirSiPossible(exemplaireArticle);
 
                 } finally {
-                    // Gestion rollback si nécessaire
                     if (transaction.isActive()) {
                         transaction.rollback();
                         FacesContext fc = FacesContext.getCurrentInstance();
-                        fc.addMessage("Erreur", new FacesMessage("l'opération n'a pas réussi"));
+                        fc.addMessage("Erreur", new FacesMessage("l'operation n'est pas reussie"));
                     }
-                    // Fermeture des services + flush donees
-                    serviceR.close();
-                    serviceFD.close();
+
                     service.close();
                     init();
                 }
-
             }
         } else {
-            // Cas : pas loué
             FacesContext fc = FacesContext.getCurrentInstance();
             fc.getExternalContext().getFlash().setKeepMessages(true);
-            fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "l'article n'est pas loué", null));
+            fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"l'article n'est pas loue",null));
             init();
         }
-
         return "/tableFactureLoca.xhtml?faces-redirect=true";
     }
 
-
     public String createFromReservation(Reservation r, Date dateFin) {
-
+        log.debug(r.toString());
+        log.debug(dateFin.toString());
+        log.debug(r.getId());
+        log.debug(r.getUtilisateurIdUtilisateur());
+        log.debug(r.getStatut());
+        log.debug(r.getHoldUntil());
         final long MILLIS_PAR_JOUR = 24L * 3600L * 1000L;
 
         long now = 0L;
@@ -879,14 +1047,14 @@ public class FactureBean implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_WARN,
                             "Réservation incomplète (utilisateur, magasin ou exemplaire manquant).", null));
-            serviceT.close(); serviceR.close(); serviceEA.close(); serviceFD.close(); service.close();
+            service.close();
             return null;
         }
         ea = r.getExemplaire();
         if (Boolean.TRUE.equals(ea.getLoue())) {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_WARN, "L’exemplaire est déjà loué.", null));
-            serviceT.close(); serviceR.close(); serviceEA.close(); serviceFD.close(); service.close();
+            service.close();
             return null;
         }
 
@@ -901,6 +1069,7 @@ public class FactureBean implements Serializable {
             // défaut : 1 jour si non fourni ou incohérent
             dateFin = new Date(tsDebut.getTime() + MILLIS_PAR_JOUR);
         }
+        dateFin = mergeChosenDateWithNow(dateFin);
         long diffMillis = dateFin.getTime() - tsDebut.getTime();
         nbJours = (int) Math.max(1L, (diffMillis + MILLIS_PAR_JOUR - 1) / MILLIS_PAR_JOUR);
         today   = new Date(System.currentTimeMillis());
@@ -942,7 +1111,6 @@ public class FactureBean implements Serializable {
 
             // MAJ exemplaire
             ea.setReserve(false);
-            ea.setLoue(true);
             serviceEA.save(ea);
 
             // Total TVAC (un seul détail ici)
@@ -978,12 +1146,13 @@ public class FactureBean implements Serializable {
 
         } catch (Exception e) {
             if (tx.isActive()) tx.rollback();
+            e.printStackTrace();
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR,
                             "Erreur lors de la validation de la réservation.", null));
             retour = null;
         } finally {
-            serviceT.close(); serviceR.close(); serviceEA.close(); serviceFD.close(); service.close();
+            service.close();
         }
         return retour;
     }
@@ -1064,7 +1233,30 @@ public class FactureBean implements Serializable {
         service.close();
         return listFact;
     }
+    /*
+     * Méthode qui permet le formatage des dates pour le filtre dans l'UI
+     */
+    public String fmtDate(Date d) {
+        if (d == null) return "";
+        java.text.SimpleDateFormat f = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm");
+        f.setTimeZone(java.util.TimeZone.getTimeZone("Europe/Brussels"));
+        return f.format(d);
+    }
+    //méthode qui colle l'heure actuelle a la date fournie.
+    public static Date mergeChosenDateWithNow(Date chosenDate) {
+        if (chosenDate == null) return null;
+        TimeZone tz = TimeZone.getTimeZone("Europe/Brussels");
 
+        Calendar now = Calendar.getInstance(tz);      // heure/minute/… actuelles
+        Calendar cal = Calendar.getInstance(tz);
+        cal.setTime(chosenDate);                      // 00:00 au jour choisi
+
+        cal.set(Calendar.HOUR_OF_DAY, now.get(Calendar.HOUR_OF_DAY));
+        cal.set(Calendar.MINUTE,      now.get(Calendar.MINUTE));
+        cal.set(Calendar.SECOND,      now.get(Calendar.SECOND));
+        cal.set(Calendar.MILLISECOND, now.get(Calendar.MILLISECOND));
+        return cal.getTime();
+    }
 
     /*
      * Méthode qui permet de vider les variables et retourne sur la table des factures associée

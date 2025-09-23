@@ -7,27 +7,27 @@
       xmlns:p="http://primefaces.org/ui">
 
 <ui:composition template="Template/template.xhtml">
-    <ui:define name="title">#{I18N['adresse.form.nouveau.titre']}</ui:define>
+    <ui:define name="title">#{I18N['ExemplairesArticles.form.etat.titre']}</ui:define>
 
     <ui:define name="content">
         <p:growl id="growl" showDetail="true" sticky="true" />
             <h:form id="form" prependId="false">
                 <h:head>
-                    <title>#{I18N['etatlivre.form.titre']}</title>
+                    <title>#{I18N['ExemplairesArticles.form.etat.titre']}</title>
                 </h:head>
-                <h2 style="text-align:center">#{I18N['etatlivre.form.titre']}</h2>
+                <h2 style="text-align:center">#{I18N['ExemplairesArticles.form.etat.titre']}</h2>
                 <p:panelGrid id="newrecform" columns="3" columnClasses="col1Newrec,col2Newrec,col3Newrec">
 
-                    <p:outputLabel value = "#{I18N['exemplaireslivres.label.Etat']}"/>
+                    <p:outputLabel value = "#{I18N['ExemplairesArticles.label.Etat']}"/>
                     <p:selectOneRadio id="exetat" value="#{factureBean.exemplaireArticle.etat}" required="true">
                         <f:selectItems value="#{exemplaireArticleEnumBean.etatEnum}"/>
                     </p:selectOneRadio>
 
-                    <p:outputLabel value = "#{I18N['exemplaireslivres.label.CommentaireEtat']}"/>
+                    <p:outputLabel value = "#{I18N['ExemplairesArticles.label.CommentaireEtat']}"/>
                     <p:inputTextarea id="CommentaireEtat"
                                      value="#{factureBean.exemplaireArticle.commentaireEtat}" cols="25" rows="5"
                                      maxlength="500"
-                                     required="true" requiredMessage="#{I18N['formulaire.message.required.exemplairelivreetat']}">
+                                     required="true" requiredMessage="#{I18N['formulaire.message.required.exemplaireArticleEtat']}">
                     </p:inputTextarea>
                     <h:message for="CommentaireEtat" styleClass="errorMessage"/>
 

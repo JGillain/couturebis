@@ -52,15 +52,15 @@
                 <h:message for="loue" styleClass="errorMessage"/>
 
                 <p:outputLabel value="#{I18N['ExemplairesArticles.label.CodeBarre']}"/>
-                <p:outputLabel id="statut" value="#{exemplaireArticleBean.EA.statut eq 'Vente' ? exemplaireArticleBean.EA.articleIdArticle.codeBarreIdCB.codeBarre : exemplaireArticleBean.EA.codeBarreIdCB.codeBarre}"/>
-                <h:message for="statut" styleClass="errorMessage"/>
+                <p:outputLabel id="CB" value="#{exemplaireArticleBean.EA.statut eq 'Vente' ? exemplaireArticleBean.EA.articleIdArticle.codeBarreIdCB.codeBarre : exemplaireArticleBean.EA.codeBarreIdCB.codeBarre}"/>
+                <h:message for="CB" styleClass="errorMessage"/>
 
                 <p:outputLabel value="Reservé"/>
                 <p:toggleSwitch id="reserve" value="#{exemplaireArticleBean.EA.reserve}" disabled="true"/>
                 <h:message for="reserve" styleClass="errorMessage"/>
 
                 <p:outputLabel value="#{I18N['ExemplairesArticles.label.Statut']}"/>
-                <p:selectOneMenu disabled="true" id="statut" value="#{exemplaireArticleBean.flagVente}" required="true">
+                <p:selectOneMenu disabled="true" id="statut" value="#{exemplaireArticleBean.EA.statut}" required="true">
                     <f:selectItem itemLabel="#{I18N['ExemplairesArticles.statut.location']}" itemValue="False"/>
                     <f:selectItem itemLabel="#{I18N['ExemplairesArticles.statut.vente']}" itemValue="True"/>
                 </p:selectOneMenu>

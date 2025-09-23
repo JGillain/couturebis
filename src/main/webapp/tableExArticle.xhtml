@@ -24,7 +24,7 @@
                              var="ex"
                              id="tableExArticle"
                              widgetVar="exTbl"
-                             class="table"
+                             class="table hide-filters"
                              headerClass="table-header"
                              rowClasses="table-odd-row,table-even-row"
                              rowStyleClass="#{ex.actif ? '' : 'highlight-row'}"
@@ -36,8 +36,7 @@
 
                     <!-- Article name (filter) -->
                     <p:column filterBy="#{ex.articleIdArticle.nom}"
-                              filterMatchMode="contains"
-                              filterPlaceholder="#{I18N['application.search.placeholder']}">
+                              filterMatchMode="contains">
                         <f:facet name="header">#{I18N['Articles.label.denomination']}</f:facet>
                         <p:outputLabel value ="#{ex.articleIdArticle.nom}"/>
                     </p:column>
@@ -45,8 +44,7 @@
                     <!-- Barcode (filter) -->
                     <p:column
                             filterBy="#{ex.codeBarreIdCB != null ? ex.codeBarreIdCB.codeBarre : (ex.articleIdArticle.codeBarreIdCB != null ? ex.articleIdArticle.codeBarreIdCB.codeBarre : '')}"
-                            filterMatchMode="contains"
-                            filterPlaceholder="#{I18N['application.search.placeholder']}">
+                            filterMatchMode="contains">
                         <f:facet name="header">#{I18N['ExemplairesArticles.label.CodeBarre']}</f:facet>
                         <p:outputLabel styleClass="barcode"
                                        value ="#{ex.codeBarreIdCB != null ? ex.codeBarreIdCB.codeBarre : ex.articleIdArticle.codeBarreIdCB.codeBarre}"/>
@@ -55,7 +53,7 @@
                     <!-- Statut (filter exact) -->
                     <p:column id="statutCol"
                               filterBy="#{ex.statut}"
-                              filterMatchMode="exact">
+                              filterMatchMode="contains">
                         <f:facet name="header">#{I18N['ExemplairesArticles.label.liste.Status']}</f:facet>
                         <p:outputLabel value ="#{ex.statut}"/>
                     </p:column>
@@ -81,24 +79,26 @@
 
                     <p:column>
                         <f:facet name="header">
-                            <!-- Quick status filter toggles -->
                             <h:panelGroup style="display:flex;gap:.5rem;align-items:center;justify-content:flex-end">
-                                <p:commandButton id="btnStatutLoc" type="button" icon="pi pi-filter"
-                                                 value="Location"
-                                                 onclick="toggleEnumFilter('exTbl','tableExArticle:statutCol:filter','Location','btnStatutLoc',['btnStatutVente'])"/>
-                                <p:commandButton id="btnStatutVente" type="button" icon="pi pi-filter"
-                                                 value="Vente"
-                                                 onclick="toggleEnumFilter('exTbl','tableExArticle:statutCol:filter','Vente','btnStatutVente',['btnStatutLoc'])"/>
+                                <p:commandButton type="button"
+                                                 icon="pi pi-filter"
+                                                 title="#{I18N['application.button.filters']}"
+                                                 onclick="PF('exTbl').jq.toggleClass('hide-filters');" />
+                                <p:commandButton type="button"
+                                                 icon="pi pi-times"
+                                                 title="#{I18N['application.button.clear']}"
+                                                 onclick="PF('exTbl').clearFilters();" />
                             </h:panelGroup>
                         </f:facet>
-
                         <p:commandButton rendered="#{ex.actif}"
                                          icon="pi pi-power-off"
                                          value ="Désactiver"
                                          action="#{exemplaireArticleBean.activdesactivExArt}">
                             <f:setPropertyActionListener target="#{exemplaireArticleBean.EA}" value="#{ex}" />
+                            <p:confirm header="Confirmation"
+                                       message="#{I18N['ExemplairesArticles.form.questionconfirm']}"
+                                       icon="pi pi-exclamation-triangle"/>
                         </p:commandButton>
-
                         <p:commandButton rendered="#{!ex.actif}"
                                          icon="pi pi-check"
                                          value ="Activer"
@@ -135,6 +135,12 @@
                                      icon="pi pi-search-minus"
                                      value="#{I18N['application.button.artInactiv']}"
                                      onclick="toggleBoolFilter('exTbl','tableExArticle:actifCol:filter','false','btnExInactif',['btnExActif'])"/>
+                    <p:commandButton id="btnStatutLoc" type="button" icon="pi pi-filter"
+                                     value="Location"
+                                     onclick="toggleEnumFilter('exTbl','tableExArticle:statutCol:filter','Location','btnStatutLoc',['btnStatutVente'])"/>
+                    <p:commandButton id="btnStatutVente" type="button" icon="pi pi-filter"
+                                     value="Vente"
+                                     onclick="toggleEnumFilter('exTbl','tableExArticle:statutCol:filter','Vente','btnStatutVente',['btnStatutLoc'])"/>
                 </h:panelGroup>
 
                 <!-- Right aligned button -->

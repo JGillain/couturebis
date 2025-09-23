@@ -10,6 +10,7 @@
 
 <ui:composition template="Template/template.xhtml">
     <ui:define name="title">#{I18N['application.fact.location.title']}</ui:define>
+
     <ui:define name="content">
         <h:form prependId="false">
             <p:panel layout="block" id="content">
@@ -19,65 +20,91 @@
                 <p:dataTable value="#{factureBean.readAllLocation}"
                              var="fa"
                              id="tableFactureLoca"
-                             class="table"
+                             widgetVar="facTbl"
+                             class="table hide-filters"
                              headerClass="table-header"
                              rowClasses="table-odd-row,table-even-row"
                              paginator="true"
                              rows="10"
                              paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
                              currentPageReportTemplate="Page {currentPage} sur {totalPages}">
-                    <p:column>
-                        <!-- column header -->
+
+                    <!-- Numéro de facture (filter) -->
+                    <p:column filterBy="#{fa.numeroFacture}"
+                              filterMatchMode="contains">
                         <f:facet name="header">#{I18N['factures.label.NumeroFacture']}</f:facet>
-                        <!-- row record -->
-                        <p:outputLabel value ="#{fa.numeroFacture}"/>
+                        <h:outputText value="#{fa.numeroFacture}"/>
                     </p:column>
-                    <p:column>
-                        <!-- column header -->
+
+                    <!-- Numéro client / Code-barres (filter) -->
+                    <p:column filterBy="#{fa.utilisateurIdUtilisateur.codeBarreIdCB.codeBarre}"
+                              filterMatchMode="contains">
                         <f:facet name="header">#{I18N['factures.label.NumeroClient']}</f:facet>
-                        <!-- row record -->
-                        <p:outputLabel value ="#{fa.utilisateurIdUtilisateur.codeBarreIdCB.codeBarre}"/>
+                        <h:outputText value="#{fa.utilisateurIdUtilisateur.codeBarreIdCB.codeBarre}"/>
                     </p:column>
+
+                    <!-- Lien PDF -->
                     <p:column>
-                        <!-- column header -->
                         <f:facet name="header">#{I18N['factures.label.lien']}</f:facet>
-                        <!-- row record -->
                         <h:commandLink action="#{factureBean.downloadPdfFacture}" immediate="true">
                             <f:param name="numFacture" value="#{fa.numeroFacture}" />
                             <h:graphicImage library="images" name="pdf.png" />
                         </h:commandLink>
                     </p:column>
-                    <p:column>
-                        <!-- column header -->
-                        <f:facet name="header">#{I18N['factures.label.DateDebut']}</f:facet>
-                        <!-- row record -->
-                        <p:outputLabel value ="#{fa.dateDebut}">
+
+                    <!-- Date début-->
+                    <p:column headerText="#{I18N['factures.label.DateDebut']}"
+                              sortBy="#{fa.dateDebut}"
+                              filterBy="#{factureBean.fmtDate(fa.dateDebut)}"
+                              filterMatchMode="contains">
+                        <h:outputText value="#{fa.dateDebut}">
                             <f:convertDateTime pattern="dd/MM/yyyy HH:mm" timeZone="Europe/Brussels"/>
-                        </p:outputLabel>
+                        </h:outputText>
                     </p:column>
-                    <p:column>
-                        <!-- column header -->
+
+                    <!-- Etat (enum exact filter via options) -->
+                    <p:column filterBy="#{fa.etat}"
+                              filterMatchMode="contains">
                         <f:facet name="header">#{I18N['factures.label.Etat']}</f:facet>
-                        <!-- row record -->
-                        <p:outputLabel value ="#{fa.etat}"/>
+                        <h:outputText value ="#{fa.etat}"/>
                     </p:column>
+
+                    <!-- Header tools: show/hide filters + clear -->
+                    <p:column>
+                        <f:facet name="header">
+                            <h:panelGroup style="display:flex;gap:.5rem;align-items:center;justify-content:flex-end">
+                                <p:commandButton type="button" icon="pi pi-filter"
+                                                 onclick="PF('facTbl').jq.toggleClass('hide-filters');" />
+                                <p:commandButton type="button" icon="pi pi-times"
+                                                 onclick="PF('facTbl').clearFilters();" />
+                            </h:panelGroup>
+                        </f:facet>
+                        <!-- body intentionally empty -->
+                    </p:column>
+
                 </p:dataTable>
             </p:panel>
 
             <h:panelGroup layout="block" styleClass="button-bar">
                 <!-- Left aligned buttons -->
                 <h:panelGroup styleClass="left-buttons">
-                    <p:commandButton icon="pi pi-plus" value="#{I18N['application.button.new']}" action="formNewFactLoca.xhtml?faces-redirect=true" />
+                    <p:commandButton icon="pi pi-plus"
+                                     value="#{I18N['application.button.new']}"
+                                     action="formNewFactLoca.xhtml?faces-redirect=true" />
                 </h:panelGroup>
 
                 <!-- Center aligned buttons -->
                 <h:panelGroup styleClass="center-buttons">
-                    <p:commandButton icon="pi pi-refresh pi-fw" value="#{I18N['application.button.returnarticle']}" action="formEtatQuestion.xhtml?faces-redirect=true"/>
+                    <p:commandButton icon="pi pi-refresh pi-fw"
+                                     value="#{I18N['application.button.returnarticle']}"
+                                     action="formEtatQuestion.xhtml?faces-redirect=true"/>
                 </h:panelGroup>
 
                 <!-- Right aligned button -->
                 <h:panelGroup styleClass="right-buttons">
-                    <p:commandButton icon="pi pi-home" value="#{I18N['application.button.returnbienvenue']}" action="bienvenue.xhtml?faces-redirect=true"/>
+                    <p:commandButton icon="pi pi-home"
+                                     value="#{I18N['application.button.returnbienvenue']}"
+                                     action="bienvenue.xhtml?faces-redirect=true"/>
                 </h:panelGroup>
             </h:panelGroup>
         </h:form>

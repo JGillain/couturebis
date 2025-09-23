@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="Template/template.xhtml">
+    <ui:define name="title">Confirmation de paiement</ui:define>
+
+    <ui:define name="content">
+        <p:growl id="growl" showDetail="true" sticky="true" />
+
+        <h:form id="confirmLoca" prependId="false">
+            <h:head>
+                <title>Confirmation de paiement</title>
+            </h:head>
+
+            <h2 style="text-align:center">Confirmation de paiement</h2>
+
+            <!-- Récapitulatif des lignes -->
+            <p:dataTable id="resume" value="#{factureBean.listLC}" var="l" emptyMessage="Aucune ligne.">
+                <p:column headerText="Article">
+                    <h:outputText value="#{l.articleNom}" />
+                    <br/><small>(CB : <h:outputText value="#{l.CB}"/>)</small>
+                </p:column>
+                <p:column headerText="pour " style="text-align:center; width:120px">
+                    <h:outputText value="#{l.nbrJours} jours" />
+                </p:column>
+            </p:dataTable>
+
+            <br/>
+
+            <!-- Montant total -->
+            <p:panel style="max-width:500px;margin:0 auto;">
+                <h3 style="text-align:center;margin:0;">Montant à payer</h3>
+                <h2 style="text-align:center;margin:6px 0 0 0;">
+                    <h:outputText value="#{factureBean.montant}">
+                        <f:convertNumber type="number" maxFractionDigits="2" minFractionDigits="2" groupingUsed="true" />
+                    </h:outputText>
+                </h2>
+            </p:panel>
+
+            <br/>
+
+            <!-- Boutons d'action -->
+            <div style="display:flex;gap:10px;justify-content:center;">
+                <p:commandButton icon="pi pi-check-circle"
+                                 value="#{I18N['application.button.validate.payement']}"
+                                 action="#{factureBean.finaliserLocation()}"
+                                 ajax="false" />
+                <p:commandButton icon="pi pi-home"
+                                 value="#{I18N['application.button.return']}"
+                                 action="#{factureBean.flushFactLoca()}"
+                                 immediate="true"
+                                 ajax="false" />
+            </div>
+        </h:form>
+    </ui:define>
+</ui:composition>
+</html>
