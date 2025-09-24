@@ -47,7 +47,7 @@ public class TarifJourBean implements Serializable {
     }
 
     /*
-     * Méthode qui permet via le service de retourner la liste de toutes les tarifs journalier
+     * Méthode qui permet via le service de retourner la liste de tout les tarifs journalier
      */
 
     public List<TarifJour> getReadAll()

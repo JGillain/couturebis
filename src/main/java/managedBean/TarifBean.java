@@ -4,13 +4,11 @@ package managedBean;
 import entities.*;
 import objectCustom.JourCustom;
 import objectCustom.PenaCustom;
-import objectCustom.locationCustom;
 import org.apache.log4j.Logger;
 import org.primefaces.event.RowEditEvent;
 import services.*;
 
 import javax.annotation.PostConstruct;
-import javax.el.MethodExpression;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
@@ -18,18 +16,16 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityTransaction;
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 
 @Named
 @SessionScoped
 public class TarifBean implements Serializable {
-    // Déclaration des variables globales
-    private static final Logger log = Logger.getLogger(TarifBean.class);
     private static final long serialVersionUID = 1L;
+    private static final Logger log = Logger.getLogger(TarifBean.class);
+
     private Tarif tarif;
 
     @Inject
@@ -124,8 +120,7 @@ public class TarifBean implements Serializable {
         //si tarif denom exist ou que dans jourcustom il ny as pas le 1 jour => erreur;
         boolean flagJ=false;
         boolean flagD1=false;
-        boolean flagD2=false;
-        boolean flagD3;
+        boolean flagD2;
         boolean flagV1;
         SvcTarif service = new SvcTarif();
 
@@ -140,28 +135,23 @@ public class TarifBean implements Serializable {
             if (j.getNbrJours() == 1) {
                 flagJ = true;
             }
-            if (j.getDateDebut().getTime()<tarif.getDateDebut().getTime()){
-                flagD1 = true;
-            }
             if (j.getDateFin().getTime()<tarif.getDateDebut().getTime() || j.getDateFin().getTime()<j.getDateDebut().getTime()){
-                flagD2 = true;
+                flagD1 = true;
             }
         }
         for (PenaCustom p:grillePena) {
-            if (p.getDateDebut().getTime()<tarif.getDateDebut().getTime()){
-                flagD1 = true;
-            }
             if (p.getDateFin().getTime()<p.getDateDebut().getTime()){
-                flagD2 = true;
+                flagD1 = true;
+                break;
             }
         }
         if(tarif.getId() != null && tarif.getId() != 0){
-            flagD3=false;
+            flagD2=false;
         }
-        else {flagD3=service.findOneTarifByDateDebut(tarif).size()!=0;}
+        else {flagD2=!service.findOneTarifByDateDebut(tarif).isEmpty();}
 
 
-        if (flagJ && !flagD1 && !flagD2 && flagV1 && !flagD3) {
+        if (flagJ && !flagD1 && flagV1 && !flagD2) {
 
             SvcTarifJour serviceTJ = new SvcTarifJour();
             SvcTarifPenalite serviceTP = new SvcTarifPenalite();
@@ -242,16 +232,10 @@ public class TarifBean implements Serializable {
             else if (flagD1){
                 FacesContext fc = FacesContext.getCurrentInstance();
                 fc.getExternalContext().getFlash().setKeepMessages(true);
-                fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "les dates encodées dans les tableaux ne peuvent être antérieure à la date de début du tarif, veuillez corriger", null));
-                return "";
-            }
-            else if (flagD2){
-                FacesContext fc = FacesContext.getCurrentInstance();
-                fc.getExternalContext().getFlash().setKeepMessages(true);
                 fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "les dates de fin encodées dans les tableaux ne peuvent être antérieure à leur date de début correspondante, veuillez corriger", null));
                 return "";
             }
-            else if (flagD3){
+            else if (flagD2){
                 FacesContext fc = FacesContext.getCurrentInstance();
                 fc.getExternalContext().getFlash().setKeepMessages(true);
                 fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "la dates de debut du tarif doit être unique, veuillez corriger", null));

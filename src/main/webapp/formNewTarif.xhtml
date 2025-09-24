@@ -16,6 +16,7 @@
             <h:head>
                 <title>#{I18N['tarif.form.nouveau.titre']}</title>
             </h:head>
+
             <h2 style="text-align:center">#{I18N['tarif.form.nouveau.titre']}</h2>
 
             <p:outputLabel value="#{I18N['magasin.label.Nom']}" />
@@ -36,7 +37,7 @@
                 </h:panelGroup>
             </h:panelGroup>
 
-            <!-- ====== TABLE TARIF / JOUR ====== -->
+            <!-- ===== Grille Jours ===== -->
             <p:dataTable id="tarifJour"
                          value="#{tarifBean.grilleJour}"
                          var="J"
@@ -48,15 +49,19 @@
                          editMode="row"
                          paginator="true"
                          rows="10"
+                         sortMode="multiple"
                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
                          currentPageReportTemplate="Page {currentPage} sur {totalPages}">
 
-                <!-- Libellé (non-editable, filter) -->
+                <!-- Libellé -->
                 <p:column headerText="#{I18N['tarif.label.detail']}">
                 </p:column>
 
-                <!-- Article (filter on nom) -->
+                <!-- Article -->
                 <p:column headerText="#{I18N['tarifjour.label.article']}"
+                          sortBy="#{J.article.nom}"
+                          sortOrder="ascending"
+                          sortPriority="1"
                           filterBy="#{J.article.nom}"
                           filterMatchMode="contains">
                     <p:cellEditor>
@@ -69,18 +74,18 @@
                                              converter="articleConverter"
                                              required="true"
                                              requiredMessage="#{I18N['formulaire.message.required.article']}">
-                                <f:selectItems value="#{tarifBean.articles}"
-                                               var="a"
-                                               itemValue="#{a}"
-                                               itemLabel="#{a.nom}"/>
+                                <f:selectItems value="#{tarifBean.articles}" var="a" itemValue="#{a}" itemLabel="#{a.nom}"/>
                             </p:selectOneMenu>
                             <p:message for="art" display="tooltip"/>
                         </f:facet>
                     </p:cellEditor>
                 </p:column>
 
-                <!-- Nombre de jours (filter) -->
+                <!-- Nombre de jours -->
                 <p:column headerText="#{I18N['tarifjour.label.jour']}"
+                          sortBy="#{J.nbrJours}"
+                          sortOrder="ascending"
+                          sortPriority="2"
                           filterBy="#{J.nbrJours}"
                           filterMatchMode="contains">
                     <p:cellEditor>
@@ -102,7 +107,7 @@
                     </p:cellEditor>
                 </p:column>
 
-                <!-- Prix (filter) -->
+                <!-- Prix -->
                 <p:column headerText="#{I18N['tarifjour.label.Prix']}"
                           filterBy="#{J.prix}"
                           filterMatchMode="contains">
@@ -123,7 +128,7 @@
                     </p:cellEditor>
                 </p:column>
 
-                <!-- Date début (filter on value text) -->
+                <!-- Date début -->
                 <p:column headerText="#{I18N['tarifjour.label.DateDebut']}"
                           filterBy="#{J.dateDebut}"
                           filterMatchMode="contains"
@@ -147,7 +152,7 @@
                     </p:cellEditor>
                 </p:column>
 
-                <!-- Date fin (filter) -->
+                <!-- Date fin -->
                 <p:column headerText="#{I18N['tarifjour.label.DateFin']}"
                           filterBy="#{J.dateFin}"
                           filterMatchMode="contains"
@@ -183,7 +188,11 @@
                     </f:facet>
                 </p:column>
 
-                <!-- Ajax callbacks -->
+                <!-- Contrôles -->
+                <p:column style="width:6rem">
+                    <p:rowEditor/>
+                </p:column>
+
                 <p:ajax event="rowEdit" listener="#{tarifBean.onJourRowEdit}" update="growl tarifJour"/>
                 <p:ajax event="rowEditCancel" listener="#{tarifBean.onJourRowCancel}"/>
             </p:dataTable>
@@ -197,7 +206,7 @@
                 </h:panelGroup>
             </h:panelGroup>
 
-            <!-- ====== TABLE TARIF / PENALITE ====== -->
+            <!-- ===== Grille Pénalités ===== -->
             <p:dataTable id="tarifP"
                          value="#{tarifBean.grillePena}"
                          var="P"
@@ -216,6 +225,7 @@
                 </p:column>
 
                 <p:column headerText="#{I18N['tarifpenalite.label.article']}"
+                          sortBy="#{P.article.nom}"
                           filterBy="#{P.article.nom}"
                           filterMatchMode="contains">
                     <p:cellEditor>
@@ -321,6 +331,10 @@
 
                 <!-- Tools: show/hide + clear filters -->
                 <p:column>
+
+                </p:column>
+
+                <p:column style="width:6rem">
                     <f:facet name="header">
                         <h:panelGroup style="display:flex;gap:.5rem;align-items:center;justify-content:flex-end">
                             <p:commandButton type="button" icon="pi pi-filter"
@@ -329,6 +343,7 @@
                                              onclick="PF('tpTbl').clearFilters();" />
                         </h:panelGroup>
                     </f:facet>
+                    <p:rowEditor/>
                 </p:column>
 
                 <p:ajax event="rowEdit" listener="#{tarifBean.onPenaRowEdit}" update="growl tarifP"/>
@@ -341,14 +356,10 @@
 
             <h:panelGroup layout="block" styleClass="button-bar">
                 <h:panelGroup styleClass="left-buttons">
-                    <p:commandButton icon="pi pi-plus"
-                                     value="#{I18N['application.button.ajouterretard']}"
-                                     action="#{tarifBean.addNewPenaRow}"
-                                     update="tarifP" immediate="true"/>
-                    <p:commandButton icon="pi pi-minus"
-                                     value="#{I18N['application.button.supprimeretard']}"
-                                     action="#{tarifBean.delPenaRow}"
-                                     update="tarifP" immediate="true"/>
+                    <p:commandButton icon="pi pi-plus"  value="#{I18N['application.button.ajouterretard']}"
+                                     action="#{tarifBean.addNewPenaRow}" update="tarifP" immediate="true"/>
+                    <p:commandButton icon="pi pi-minus" value="#{I18N['application.button.supprimeretard']}"
+                                     action="#{tarifBean.delPenaRow}" update="tarifP" immediate="true"/>
                 </h:panelGroup>
 
                 <h:panelGroup styleClass="right-buttons">

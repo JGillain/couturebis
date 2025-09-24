@@ -23,12 +23,11 @@
                     <p:outputLabel value = "#{I18N['utilisateur.label.Nom']}"/>
                     <p:inputText id="utilisateurNom"
                                  value="#{utilisateurBean.utilisateur.nom}"
-                                 validatorMessage="La valeur doit être compris entre 1 et 100 caracteres"
                                  required="true"
                                  requiredMessage="#{I18N['formulaire.message.required.nom']}"
                                  validator="nomPrenomValidator"
                                  maxlength="100">
-                        <f:validateLength minimum="1" maximum="100"/>
+                        <f:validateLength minimum="2" maximum="100"/>
                     </p:inputText>
                     <h:message for="utilisateurNom" styleClass="errorMessage"/>
 
@@ -39,7 +38,7 @@
                                  requiredMessage="#{I18N['formulaire.message.required.prenom']}"
                                  validator="nomPrenomValidator"
                                  maxlength="100">
-                        <f:validateLength minimum="1" maximum="100"/>
+                        <f:validateLength minimum="2" maximum="100"/>
                     </p:inputText>
                     <h:message for="utilisateurPrenom" styleClass="errorMessage"/>
 

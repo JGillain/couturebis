@@ -12,7 +12,6 @@
 
     <ui:define name="content">
         <p:growl id="growl" showDetail="true" sticky="true" />
-
         <h:form id="editTarif">
             <h:head>
                 <title>#{I18N['tarif.form.modif.titre']}</title>
@@ -45,15 +44,19 @@
                          editMode="row"
                          paginator="true"
                          rows="10"
+                         sortMode="multiple"
                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
                          currentPageReportTemplate="Page {currentPage} sur {totalPages}">
 
-                <!-- Libellé (non editable) -->
+                <!-- Libellé -->
                 <p:column headerText="#{I18N['tarif.label.detail']}">
                 </p:column>
 
                 <!-- Article -->
                 <p:column headerText="#{I18N['tarifjour.label.article']}"
+                          sortBy="#{J.article.nom}"
+                          sortOrder="ascending"
+                          sortPriority="1"
                           filterBy="#{J.article.nom}"
                           filterMatchMode="contains">
                     <p:cellEditor>
@@ -75,6 +78,9 @@
 
                 <!-- Nombre de jours -->
                 <p:column headerText="#{I18N['tarifjour.label.jour']}"
+                          sortBy="#{J.nbrJours}"
+                          sortOrder="ascending"
+                          sortPriority="2"
                           filterBy="#{J.nbrJours}"
                           filterMatchMode="contains">
                     <p:cellEditor>
@@ -165,8 +171,8 @@
                     </p:cellEditor>
                 </p:column>
 
-                <!-- Tools: show/hide + clear filters -->
-                <p:column>
+                <!-- Contrôles -->
+                <p:column style="width:6rem">
                     <f:facet name="header">
                         <h:panelGroup style="display:flex;gap:.5rem;align-items:center;justify-content:flex-end">
                             <p:commandButton type="button" icon="pi pi-filter"
@@ -175,10 +181,6 @@
                                              onclick="PF('tjEditTbl').clearFilters();" />
                         </h:panelGroup>
                     </f:facet>
-                </p:column>
-
-                <!-- Contrôles -->
-                <p:column style="width:6rem">
                     <p:rowEditor/>
                 </p:column>
 
@@ -188,7 +190,7 @@
 
             <h:panelGroup layout="block" styleClass="button-bar">
                 <h:panelGroup styleClass="left-buttons">
-                    <p:commandButton icon="pi pi-plus"  value="#{I18N['tarifjour.label.add']}"
+                    <p:commandButton icon="pi pi-plus" value="#{I18N['tarifjour.label.add']}"
                                      action="#{tarifBean.addNewJourRow}" update="tarifJour" immediate="true"/>
                     <p:commandButton icon="pi pi-minus" value="#{I18N['tarifjour.label.del']}"
                                      action="#{tarifBean.delJourRow}" update="tarifJour" immediate="true"/>
@@ -214,6 +216,7 @@
                 </p:column>
 
                 <p:column headerText="#{I18N['tarifpenalite.label.article']}"
+                          sortBy="#{P.article.nom}"
                           filterBy="#{P.article.nom}"
                           filterMatchMode="contains">
                     <p:cellEditor>

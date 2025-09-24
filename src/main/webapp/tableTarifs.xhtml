@@ -21,12 +21,20 @@
 
                 <h2 style="text-align:center">#{I18N['application.tarifs.title']}</h2>
 
-                <p:dataTable value="#{tarifBean.readAll}" var="tar" id="tableTarifs"
-                             Class="table" headerClass="table-header" rowClasses="table-odd-row,table-even-row" paginator="true" rows="10"
+                <p:dataTable value="#{tarifBean.readAll}"
+                             var="tar"
+                             id="tableTarifs"
+                             widgetVar="tarTbl"
+                             styleClass="table hide-filters"
+                             headerClass="table-header"
+                             rowClasses="table-odd-row,table-even-row"
+                             paginator="true"
+                             rows="10"
                              paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
                              currentPageReportTemplate="Page {currentPage} sur {totalPages}">
 
-                    <p:column>
+                    <p:column filterBy="#{tar.denomination}"
+                              filterMatchMode="contains">
                         <!-- column header -->
                         <f:facet name="header">#{I18N['commune.label.denomination']}</f:facet>
 
@@ -45,6 +53,14 @@
                     </p:column>
 
                     <p:column>
+                        <f:facet name="header">
+                            <h:panelGroup style="display:flex;gap:.5rem;align-items:center;justify-content:flex-end">
+                                <p:commandButton type="button" icon="pi pi-filter"
+                                                 onclick="PF('tarTbl').jq.toggleClass('hide-filters');" />
+                                <p:commandButton type="button" icon="pi pi-times"
+                                                 onclick="PF('tarTbl').clearFilters();" />
+                            </h:panelGroup>
+                        </f:facet>
                         <p:commandButton icon="pi pi-pencil" value="Modifier" action="#{tarifBean.redirectEdit}">		<!-- u minuscule -->
                             <f:setPropertyActionListener target="#{tarifBean.tarif}" value="#{tar}" /><!-- u minuscule -->
                         </p:commandButton>

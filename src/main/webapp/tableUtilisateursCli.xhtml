@@ -13,7 +13,7 @@
     <ui:define name="content">
         <h:form prependId="false">
             <p:panel layout="block" id="content">
-                <p:growl id="growl" showDetail="true" sticky="true" />
+                <p:growl id="growl" showDetail="true" sticky="true" life="4000"/>
                 <h2 style="text-align:center">#{I18N['application.utilisateurCli.title']}</h2>
 
                 <p:dataTable value="#{utilisateurBean.listCli}"
@@ -73,9 +73,9 @@
                     <p:column>
                         <f:facet name="header">
                             <h:panelGroup style="display:flex;gap:.5rem;align-items:center;justify-content:flex-end">
-                                <p:commandButton type="button" icon="pi pi-filter" title="#{I18N['application.button.filters']}"
+                                <p:commandButton type="button" icon="pi pi-filter"
                                                  onclick="PF('utcliTbl').jq.toggleClass('hide-filters');" />
-                                <p:commandButton type="button" icon="pi pi-times" title="#{I18N['application.button.clear']}"
+                                <p:commandButton type="button" icon="pi pi-times"
                                                  onclick="PF('utcliTbl').clearFilters();" />
                             </h:panelGroup>
                         </f:facet>
@@ -102,9 +102,9 @@
                                      action="formNewUtilisateurCli.xhtml?faces-redirect=true" />
                 </h:panelGroup>
                 <h:panelGroup styleClass="center-buttons">
-                    <p:commandButton icon="pi pi-search-plus" value="#{I18N['application.button.utilActiv']}"
+                    <p:commandButton icon="pi pi-search-plus" value="#{I18N['application.button.utilCliActiv']}"
                                      onclick="toggleBoolFilter('utcliTbl','tableUtilisateursCli:actifCol:filter','true','btnUtCliActif',['btnUtCliInactif'])"/>
-                    <p:commandButton icon="pi pi-search-minus" value="#{I18N['application.button.utilInactiv']}"
+                    <p:commandButton icon="pi pi-search-minus" value="#{I18N['application.button.utilCliInactiv']}"
                                      onclick="toggleBoolFilter('utcliTbl','tableUtilisateursCli:actifCol:filter','false','btnUtCliInactif',['btnUtCliActif'])"/>
                 </h:panelGroup>
                 <h:panelGroup styleClass="right-buttons">

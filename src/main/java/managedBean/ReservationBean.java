@@ -229,7 +229,7 @@ public class ReservationBean implements Serializable {
      * ========================================================= */
 
     /**
-     * Promo autonome (cas unitaire, post-commit ailleurs).
+     * Promotion autonome (cas unitaire, post-commit ailleurs).
      * - transaction pour pose des drapeaux (reserve=true, statut=pret, dates)
      * - Envoie le mail après commit
      * - Pose mailEnvoye=true dans une mini transaction si mail envoyé
@@ -345,7 +345,7 @@ public class ReservationBean implements Serializable {
     }
 
     /**
-     * Promo FIFO à utiliser DANS une transaction existante (batch création, EM partagé).
+     * Promotion à utiliser DANS une transaction existante (batch création, EM partagé).
      * Pas de mail ni growl ici : le caller traite post-commit.
      */
     public void promouvoirInTx(ExemplaireArticle ea,

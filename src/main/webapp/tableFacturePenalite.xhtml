@@ -18,28 +18,25 @@
                              var="fa"
                              id="tableFacturePena"
                              widgetVar="facPenaTbl"
-                             class="table hide-filters"
+                             styleClass="table hide-filters"
                              headerClass="table-header"
                              rowClasses="table-odd-row,table-even-row"
                              paginator="true" rows="10"
                              paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
                              currentPageReportTemplate="Page {currentPage} sur {totalPages}">
 
-                    <!-- Numéro de facture (filter) -->
                     <p:column filterBy="#{fa.numeroFacture}"
                               filterMatchMode="contains">
                         <f:facet name="header">#{I18N['factures.label.NumeroFacture']}</f:facet>
                         <h:outputText value ="#{fa.numeroFacture}"/>
                     </p:column>
 
-                    <!-- Numéro client / code-barres (filter) -->
                     <p:column filterBy="#{fa.utilisateurIdUtilisateur.codeBarreIdCB.codeBarre}"
                               filterMatchMode="contains">
                         <f:facet name="header">#{I18N['factures.label.NumeroClient']}</f:facet>
                         <h:outputText value ="#{fa.utilisateurIdUtilisateur.codeBarreIdCB.codeBarre}"/>
                     </p:column>
 
-                    <!-- Lien PDF -->
                     <p:column>
                         <f:facet name="header">#{I18N['factures.label.lien']}</f:facet>
                         <h:commandLink action="#{factureBean.downloadPdfFacture}" immediate="true">
@@ -48,16 +45,15 @@
                         </h:commandLink>
                     </p:column>
 
-                    <!-- Date début (simple text filter on formatted value) -->
-                    <p:column filterBy="#{fa.dateDebut}"
+                    <p:column headerText="#{I18N['factures.label.DateDebut']}"
+                              sortBy="#{fa.dateDebut}"
+                              filterBy="#{factureBean.fmtDate(fa.dateDebut)}"
                               filterMatchMode="contains">
-                        <f:facet name="header">#{I18N['factures.label.DateDebut']}</f:facet>
                         <h:outputText value ="#{fa.dateDebut}">
                             <f:convertDateTime pattern="dd/MM/yyyy HH:mm" timeZone="Europe/Brussels"/>
                         </h:outputText>
                     </p:column>
 
-                    <!-- Tools: show/hide filters + clear (header) -->
                     <p:column>
                         <f:facet name="header">
                             <h:panelGroup style="display:flex;gap:.5rem;align-items:center;justify-content:flex-end">
@@ -68,7 +64,6 @@
                             </h:panelGroup>
                         </f:facet>
                     </p:column>
-
                 </p:dataTable>
             </p:panel>
 
