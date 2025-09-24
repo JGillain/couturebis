@@ -126,29 +126,36 @@ public class TarifBean implements Serializable {
 
         if(tarif.getId() != null && tarif.getId() != 0){
             flagV1 = (service.getById(tarif.getId()).getDenomination().equals(tarif.getDenomination()) || service.findOneTarifByDenom(tarif).size() == 0);
+            log.debug("miaou");
         }
         else {
             flagV1=service.findOneTarifByDenom(tarif).size()==0;
+            log.debug("miaou2");
         }
 
         for (JourCustom j: grilleJour){
             if (j.getNbrJours() == 1) {
                 flagJ = true;
+                log.debug("miaou3");
             }
-            if (j.getDateFin().getTime()<tarif.getDateDebut().getTime() || j.getDateFin().getTime()<j.getDateDebut().getTime()){
+            if (j.getDateFin().getTime()<j.getDateDebut().getTime()){
                 flagD1 = true;
+                log.debug("miaou4");
             }
         }
         for (PenaCustom p:grillePena) {
             if (p.getDateFin().getTime()<p.getDateDebut().getTime()){
                 flagD1 = true;
+                log.debug("miaou5");
                 break;
             }
         }
         if(tarif.getId() != null && tarif.getId() != 0){
             flagD2=false;
+            log.debug("miaou6");
         }
-        else {flagD2=!service.findOneTarifByDateDebut(tarif).isEmpty();}
+        else {flagD2=!service.findOneTarifByDateDebut(tarif).isEmpty();
+        log.debug("miaou7");}
 
 
         if (flagJ && !flagD1 && flagV1 && !flagD2) {
